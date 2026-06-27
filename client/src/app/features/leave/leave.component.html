@@ -1,0 +1,150 @@
+<div class="leave-page fade-in">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Leave Management</h1>
+      <p class="page-sub">Apply for leaves and track your request history</p>
+    </div>
+    <button class="btn btn-primary btn-sm btn-pill" (click)="showApplyModal.set(true)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Apply for New Leave
+    </button>
+  </div>
+
+  <!-- ── Leave balances ────────────────────────────────────────── -->
+  <section class="section">
+    <h2 class="section-title">Leave Types &amp; Balances</h2>
+    <div class="balances-grid">
+      @for (b of balances(); track b.type) {
+        <div class="balance-card card card-padded">
+          <div class="balance-header">
+            <span class="balance-name">{{ b.typeName }}</span>
+            <span class="balance-fraction font-mono">{{ b.used }}/{{ b.total }}</span>
+          </div>
+          <div class="progress-bar" style="margin-top: 10px;">
+            <div class="progress-fill" [style.width.%]="usedPercent(b)" [style.background]="b.color"></div>
+          </div>
+          <div class="balance-footer">
+            <span class="balance-remaining" [style.color]="b.color">{{ b.remaining }} remaining</span>
+            <span class="balance-used">{{ b.used }} used</span>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ── Annual leave summary ──────────────────────────────────── -->
+  <section class="section">
+    <div class="annual-strip card">
+      <div class="annual-stat">
+        <span class="as-val">{{ leaveStats.taken }}</span>
+        <span class="as-label">Leaves<br>Taken</span>
+      </div>
+      <div class="annual-stat highlight">
+        <span class="as-val" style="color: var(--success)">{{ leaveStats.remaining }}</span>
+        <span class="as-label">Leaves<br>Remaining</span>
+      </div>
+      <div class="annual-stat">
+        <span class="as-val">{{ leaveStats.total }}</span>
+        <span class="as-label">Total<br>Entitlement</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Leave requests ────────────────────────────────────────── -->
+  <section class="section">
+    <div class="requests-header">
+      <h2 class="section-title">Leave Requests</h2>
+      <div class="filter-tabs">
+        @for (f of ['all','approved','pending','rejected']; track f) {
+          <button
+            class="filter-tab"
+            [class.active]="activeFilter() === f"
+            (click)="activeFilter.set($any(f))">
+            {{ f | titlecase }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="requests-list">
+      @for (req of filteredRequests; track req.id) {
+        <div class="request-item card fade-in">
+          <div class="req-status-bar" [class]="req.status"></div>
+          <div class="req-body">
+            <div class="req-main">
+              <div class="req-type">{{ req.typeName }}</div>
+              <span class="badge" [class]="statusClass(req.status)">
+                {{ req.status | titlecase }}
+              </span>
+            </div>
+            <div class="req-dates">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              {{ formatDate(req.fromDate) }}
+              @if (req.fromDate !== req.toDate) {
+                — {{ formatDate(req.toDate) }}
+              }
+              <span class="req-days">{{ req.days }} day{{ req.days > 1 ? 's' : '' }}</span>
+            </div>
+            <div class="req-reason">{{ req.reason }}</div>
+            @if (req.approvedBy) {
+              <div class="req-by">{{ req.status === 'approved' ? 'Approved' : 'Reviewed' }} by {{ req.approvedBy }}</div>
+            }
+            <div class="req-applied">Applied: {{ formatDate(req.appliedOn) }}</div>
+          </div>
+        </div>
+      }
+
+      @if (filteredRequests.length === 0) {
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p>No {{ activeFilter() === 'all' ? '' : activeFilter() }} leave requests found.</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ── Apply modal ───────────────────────────────────────────── -->
+  @if (showApplyModal()) {
+    <div class="modal-overlay fade-in" (click)="showApplyModal.set(false)">
+      <div class="modal card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Apply for Leave</h3>
+          <button class="close-btn" (click)="showApplyModal.set(false)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Leave Type</label>
+            <select class="form-control">
+              @for (b of balances(); track b.type) {
+                <option [value]="b.type">{{ b.typeName }} ({{ b.remaining }} remaining)</option>
+              }
+            </select>
+          </div>
+          <div class="modal-dates">
+            <div class="form-group">
+              <label class="form-label">From Date</label>
+              <input type="date" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">To Date</label>
+              <input type="date" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reason</label>
+            <textarea class="form-control" rows="3" placeholder="Briefly describe the reason for leave…"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" (click)="showApplyModal.set(false)">Cancel</button>
+            <button class="btn btn-primary" (click)="showApplyModal.set(false)">Submit Request</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,126 @@
+<div class="attendance-page fade-in">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <h1 class="page-title">Attendance Tracker</h1>
+    <p class="page-sub">Track your daily punch records and monthly summary</p>
+  </div>
+
+  @if (monthlyData(); as data) {
+    <div class="page-body">
+
+      <!-- ── Summary strip ─────────────────────────────────────── -->
+      <div class="summary-strip">
+        <div class="summary-stat">
+          <span class="ss-value" style="color: var(--success)">{{ data.presentDays }}</span>
+          <span class="ss-label">Present</span>
+        </div>
+        <div class="summary-stat">
+          <span class="ss-value" style="color: var(--danger)">{{ data.absentDays }}</span>
+          <span class="ss-label">Absent</span>
+        </div>
+        <div class="summary-stat">
+          <span class="ss-value" style="color: var(--warning)">{{ data.leaveDays }}</span>
+          <span class="ss-label">Leaves</span>
+        </div>
+        <div class="summary-stat">
+          <span class="ss-value" style="color: var(--accent-2)">{{ data.totalWorkingDays }}</span>
+          <span class="ss-label">Working Days</span>
+        </div>
+      </div>
+
+      <!-- ── Calendar card ─────────────────────────────────────── -->
+      <div class="card calendar-card">
+
+        <!-- Month navigation -->
+        <div class="cal-nav">
+          <button class="nav-btn" (click)="prevMonth()" aria-label="Previous month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <h2 class="cal-month-label">{{ monthLabel() }}</h2>
+          <button class="nav-btn" (click)="nextMonth()" [disabled]="!canGoNext()" aria-label="Next month">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- Day of week headers -->
+        <div class="dow-row">
+          @for (d of DOW; track d) {
+            <div class="dow">{{ d }}</div>
+          }
+        </div>
+
+        <!-- Day grid -->
+        <div class="day-grid">
+          @for (cell of calendarCells(); track $index) {
+            <div
+              class="day-cell"
+              [class]="cell ? 'status-' + cell.status : 'empty'"
+              [class.today]="isToday(cell)"
+              [class.selected]="selectedDay() === cell"
+              (click)="selectDay(cell)"
+              [attr.aria-label]="cell ? cell.date + ' ' + cell.status : null"
+              [attr.role]="cell && cell.status !== 'weekend' && cell.status !== 'future' ? 'button' : null"
+              [attr.tabindex]="cell && cell.status !== 'weekend' && cell.status !== 'future' ? 0 : null">
+              @if (cell) {
+                <span class="day-num">{{ cell.date | slice:8 }}</span>
+                @if (cell.status === 'leave') {
+                  <span class="day-icon">🌿</span>
+                }
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-row">
+          <span class="leg"><span class="ld present"></span> Present</span>
+          <span class="leg"><span class="ld absent"></span> Absent</span>
+          <span class="leg"><span class="ld leave"></span> Leave</span>
+          <span class="leg"><span class="ld holiday"></span> Holiday</span>
+          <span class="leg"><span class="ld weekend"></span> Weekend</span>
+        </div>
+
+      </div>
+
+      <!-- ── Day detail panel ──────────────────────────────────── -->
+      @if (selectedDay(); as day) {
+        <div class="day-detail card card-padded fade-in">
+          <div class="dd-header">
+            <div>
+              <h3 class="dd-date">{{ formatDayDisplay(day.date) }}</h3>
+              <span class="badge" [class]="'badge-' + (day.status === 'present' ? 'success' : day.status === 'leave' ? 'warning' : 'danger')">
+                {{ statusLabel(day.status) }}
+              </span>
+            </div>
+            <button class="close-btn" (click)="selectedDay.set(null)" aria-label="Close">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          @if (day.status === 'present') {
+            <div class="dd-row-grid">
+              <div class="dd-stat">
+                <span class="dd-label">Check In</span>
+                <span class="dd-val font-mono">{{ day.checkIn }}</span>
+              </div>
+              <div class="dd-stat">
+                <span class="dd-label">Check Out</span>
+                <span class="dd-val font-mono">{{ day.checkOut }}</span>
+              </div>
+              <div class="dd-stat">
+                <span class="dd-label">Work Hours</span>
+                <span class="dd-val font-mono">{{ day.workHours?.toFixed(1) }} h</span>
+              </div>
+            </div>
+          } @else if (day.status === 'absent') {
+            <p class="dd-note">No check-in recorded for this day. Contact HR if this is an error.</p>
+          } @else if (day.status === 'leave') {
+            <p class="dd-note">Leave approved for this day.</p>
+          }
+        </div>
+      }
+
+    </div>
+  }
+</div>

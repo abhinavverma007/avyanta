@@ -1,0 +1,98 @@
+<div class="shell">
+
+  <!-- Top header -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+
+      <!-- Brand -->
+      <a routerLink="/dashboard" class="shell-brand">
+        <span class="brand-sun">SUN</span><span class="brand-desh">दे</span><span class="brand-sh">श</span>
+      </a>
+
+      <!-- Live clock -->
+      <div class="live-clock font-mono" id="live-clock">
+        {{ user()?.location }}
+      </div>
+
+      <!-- Profile -->
+      <div class="profile-area">
+        <button class="avatar-btn" (click)="toggleProfile()" [attr.aria-expanded]="profileOpen()" aria-haspopup="true">
+          <div class="avatar">{{ getInitials(user()?.name ?? 'U') }}</div>
+          <svg class="chevron" [class.open]="profileOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        @if (profileOpen()) {
+          <div class="profile-dropdown fade-in" role="menu">
+            <div class="profile-info">
+              <div class="profile-name">{{ user()?.name }}</div>
+              <div class="profile-role">{{ user()?.designation }}</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a routerLink="/profile" class="dropdown-item" (click)="profileOpen.set(false)" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              My Profile
+            </a>
+            <a href="#" class="dropdown-item" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 12 2 10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 7.07-2.93"/></svg>
+              Settings
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" (click)="logout()" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sign Out
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Body: sidebar + main -->
+  <div class="shell-body">
+
+    <!-- Sidebar nav (desktop) -->
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-inner">
+        @for (item of navItems(); track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            class="sidebar-link"
+            [attr.aria-current]="null">
+            <span class="nav-icon" [innerHTML]="getIconSvg(item.icon)"></span>
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        }
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="emp-id">{{ user()?.employeeId }}</div>
+        <div class="emp-dept">{{ user()?.department }}</div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main-content" id="main-content">
+      <router-outlet />
+    </main>
+
+  </div>
+
+  <!-- Bottom tab bar (mobile) -->
+  <nav class="bottom-bar" aria-label="Mobile navigation">
+    @for (item of navItems(); track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        class="bottom-tab"
+        [attr.aria-current]="null">
+        <span class="tab-icon" [innerHTML]="getIconSvg(item.icon)"></span>
+        <span class="tab-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+</div>

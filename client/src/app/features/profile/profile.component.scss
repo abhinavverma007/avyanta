@@ -1,0 +1,135 @@
+.profile-page { max-width: 640px; margin: 0 auto; }
+
+/* ─── Hero ───────────────────────────────────────────────────────── */
+.profile-hero {
+  background: linear-gradient(135deg, #0D2B6E 0%, #1B4FD8 60%, #2563EB 100%);
+  padding: 32px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  @media (max-width: 480px) { flex-direction: column; text-align: center; }
+}
+
+.profile-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #F59E0B);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.2);
+}
+
+.profile-name {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.profile-designation {
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.75);
+  margin-top: 3px;
+  margin-bottom: 8px;
+}
+
+.role-badge {
+  display: inline-block;
+  background: rgba(247,112,10,0.85);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ─── Body ───────────────────────────────────────────────────────── */
+.profile-body {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-section-title {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+
+/* ─── Detail grid ────────────────────────────────────────────────── */
+.detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+
+  &:last-child { border-bottom: none; }
+}
+
+.detail-label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+  min-width: 110px;
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  color: var(--text);
+  text-align: right;
+}
+
+/* ─── Action list ────────────────────────────────────────────────── */
+.action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9375rem;
+  color: var(--text);
+  font-weight: 500;
+  text-align: left;
+  width: 100%;
+  transition: color var(--transition);
+
+  &:last-child { border-bottom: none; }
+  &:hover { color: var(--accent-2); }
+  &.danger { color: var(--danger); }
+  &.danger:hover { color: var(--danger); opacity: 0.8; }
+}
+
+.action-arrow { margin-left: auto; color: var(--text-light); }

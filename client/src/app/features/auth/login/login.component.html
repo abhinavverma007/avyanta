@@ -1,0 +1,174 @@
+<div class="login-root">
+
+  <!-- Left panel: brand hero -->
+  <div class="hero-panel">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="brand-logo">
+        <span class="brand-sun">SUN</span><span class="brand-desh">देश</span>
+      </div>
+      <p class="hero-tagline">Empowering India<br>with Solar Energy.</p>
+      <p class="hero-sub">Login to your dedicated portal.</p>
+    </div>
+    <div class="solar-panels-bg"></div>
+  </div>
+
+  <!-- Right panel: login form -->
+  <div class="form-panel">
+    <div class="form-inner fade-in">
+
+      <!-- Role tab selector -->
+      <div class="role-tabs" role="tablist" aria-label="Select portal">
+        @for (tab of roleTabs; track tab.role; let i = $index) {
+          <button
+            class="role-tab"
+            [class.active]="activeTabIndex() === i"
+            (click)="setTab(i)"
+            role="tab"
+            [attr.aria-selected]="activeTabIndex() === i">
+            <span class="tab-icon">{{ tab.icon }}</span>
+            <span class="tab-label">{{ tab.label }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Form header -->
+      <div class="form-header">
+        <h1 class="form-title">
+          @if (activeTab.role === 'customer') { Welcome, Customer! }
+          @else if (activeTab.role === 'vendor') { Welcome back! }
+          @else if (activeTab.role === 'employee') { Employee Login! }
+          @else { Director Login }
+        </h1>
+        <p class="form-subtitle">Log in to SUN<strong>दे</strong>श</p>
+      </div>
+
+      <!-- Login method toggle (for roles that have it) -->
+      @if (activeTab.loginMethods.length > 1 && activeTab.role !== 'director') {
+        <div class="method-tabs">
+          <button class="method-tab" [class.active]="loginMethod() === 'email'" (click)="loginMethod.set('email')">
+            Login via Email/Password
+          </button>
+          <button class="method-tab" [class.active]="loginMethod() === 'otp'" (click)="loginMethod.set('otp')">
+            {{ activeTab.role === 'customer' ? 'Login with Social' : 'Login via Mobile/OTP' }}
+          </button>
+        </div>
+      }
+
+      <!-- Login form -->
+      <form class="login-form" (ngSubmit)="onSubmit()" novalidate>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <input
+              type="email"
+              class="form-control"
+              [placeholder]="activeTab.emailPlaceholder"
+              [value]="email()"
+              (input)="email.set($any($event.target).value)"
+              autocomplete="email"
+            />
+          </div>
+        </div>
+
+        @if (loginMethod() === 'email') {
+          @if (activeTab.role !== 'customer') {
+            <div class="form-group">
+              <label class="form-label">
+                @if (activeTab.role === 'director') { Biometric Login / Secure Token }
+                @else { Password }
+              </label>
+              <div class="input-icon-wrap password-wrap">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <input
+                  [type]="showPassword() ? 'text' : 'password'"
+                  class="form-control"
+                  placeholder="••••••••••"
+                  [value]="password()"
+                  (input)="password.set($any($event.target).value)"
+                  autocomplete="current-password"
+                />
+                <button type="button" class="toggle-pw" (click)="showPassword.set(!showPassword())" aria-label="Toggle password visibility">
+                  @if (showPassword()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (activeTab.role !== 'customer' && activeTab.role !== 'employee') {
+            <div class="form-row-between">
+              <label class="checkbox-label">
+                <input type="checkbox" [checked]="rememberMe()" (change)="rememberMe.set($any($event.target).checked)" />
+                <span>Remember me</span>
+              </label>
+              <a href="#" class="forgot-link">
+                @if (activeTab.role === 'director') { Secure Access Recovery }
+                @else { Forgot Password? }
+              </a>
+            </div>
+          }
+        } @else {
+          <div class="form-group">
+            <label class="form-label">Mobile Number</label>
+            <div class="input-icon-wrap">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+              <input type="tel" class="form-control" placeholder="+91 XXXXX XXXXX" autocomplete="tel" />
+            </div>
+          </div>
+          <button type="button" class="btn btn-ghost btn-full">Send OTP</button>
+        }
+
+        @if (error()) {
+          <p class="error-msg" role="alert">{{ error() }}</p>
+        }
+
+        <button type="submit" class="btn btn-blue btn-full btn-lg login-btn" [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner"></span> Authenticating…
+          } @else {
+            @if (activeTab.role === 'employee') { Corporate SSO Login }
+            @else { LOGIN to SUN<strong>दे</strong>श }
+          }
+        </button>
+
+        @if (activeTab.role === 'customer') {
+          <p class="register-link">{{ activeTab.footerNote }}</p>
+        } @else {
+          <p class="footer-note">{{ activeTab.footerNote }}</p>
+        }
+      </form>
+
+      <!-- Quick demo access -->
+      <div class="demo-section">
+        <p class="demo-label">Quick demo — pick a role</p>
+        <div class="demo-btns">
+          <button class="btn btn-ghost btn-sm" (click)="demoLogin('employee')">Employee</button>
+          <button class="btn btn-ghost btn-sm" (click)="demoLogin('field_worker')">Field Worker</button>
+          <button class="btn btn-ghost btn-sm" (click)="demoLogin('director')">Director</button>
+          <button class="btn btn-ghost btn-sm" (click)="demoLogin('customer')">Customer</button>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="login-footer">
+      <a href="#">Terms of Service</a>
+      <span>·</span>
+      <a href="#">Privacy Policy</a>
+    </footer>
+  </div>
+</div>

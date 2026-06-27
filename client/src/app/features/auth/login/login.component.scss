@@ -1,0 +1,307 @@
+.login-root {
+  display: flex;
+  min-height: 100dvh;
+}
+
+/* ─── Hero panel ─────────────────────────────────────────────────── */
+.hero-panel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: none;
+  background: linear-gradient(145deg, #0D2B6E 0%, #1B4FD8 45%, #F7700A 100%);
+
+  @media (min-width: 900px) { display: flex; align-items: flex-end; }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(13,27,42,0.25) 0%, rgba(13,43,110,0.6) 100%);
+  z-index: 1;
+}
+
+/* Solar panels pattern */
+.solar-panels-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.04) 0px,
+      rgba(255,255,255,0.04) 2px,
+      transparent 2px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255,255,255,0.04) 0px,
+      rgba(255,255,255,0.04) 2px,
+      transparent 2px,
+      transparent 40px
+    );
+}
+
+/* Sun arc — the aesthetic risk: sunrise arc at the panel mid-point */
+.hero-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%,
+    rgba(247,112,10,0.55) 0%,
+    rgba(247,112,10,0.15) 45%,
+    transparent 70%
+  );
+  z-index: 0;
+  animation: sunrise 4s ease-out both;
+}
+
+@keyframes sunrise {
+  from { opacity: 0; transform: translateX(-50%) translateY(60px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 48px;
+}
+
+.brand-logo {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 32px;
+  letter-spacing: -0.02em;
+}
+.brand-sun  { color: #F7700A; }
+.brand-desh { color: #fff; }
+
+.hero-tagline {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.hero-sub {
+  font-size: 0.9375rem;
+  color: rgba(255,255,255,0.7);
+}
+
+/* ─── Form panel ─────────────────────────────────────────────────── */
+.form-panel {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  overflow-y: auto;
+
+  @media (min-width: 900px) {
+    box-shadow: -4px 0 32px rgba(13,27,42,0.1);
+  }
+}
+
+.form-inner {
+  flex: 1;
+  padding: 40px 36px 24px;
+
+  @media (max-width: 480px) { padding: 28px 20px 20px; }
+}
+
+/* ─── Role tabs ──────────────────────────────────────────────────── */
+.role-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--ground);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 28px;
+}
+
+.role-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 5px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all var(--transition);
+  font-family: var(--font-display);
+}
+
+.role-tab .tab-icon { font-size: 1.125rem; line-height: 1; }
+.role-tab .tab-label { letter-spacing: 0.02em; }
+
+.role-tab.active {
+  background: var(--surface);
+  color: var(--accent-2);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ─── Form header ────────────────────────────────────────────────── */
+.form-header { margin-bottom: 24px; }
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.form-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ─── Method tabs ────────────────────────────────────────────────── */
+.method-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.method-tab {
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.method-tab.active {
+  color: var(--accent-2);
+  border-bottom-color: var(--accent-2);
+}
+
+/* ─── Login form ─────────────────────────────────────────────────── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.password-wrap .form-control { padding-right: 44px; }
+
+.toggle-pw {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  padding: 4px;
+}
+.toggle-pw:hover { color: var(--text); }
+
+.form-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.forgot-link {
+  font-size: 0.8125rem;
+  color: var(--accent-2);
+  font-weight: 500;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+.error-msg {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  padding: 8px 12px;
+  background: var(--danger-bg);
+  border-radius: var(--radius-sm);
+}
+
+.login-btn {
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+.register-link, .footer-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.register-link { color: var(--accent-2); }
+
+/* ─── Spinner ────────────────────────────────────────────────────── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Demo section ───────────────────────────────────────────────── */
+.demo-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.demo-label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-align: center;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+.demo-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────── */
+.login-footer {
+  padding: 16px 36px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  border-top: 1px solid var(--border);
+}
+
+.login-footer a:hover { color: var(--text-muted); }

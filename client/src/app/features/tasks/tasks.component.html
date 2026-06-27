@@ -1,0 +1,104 @@
+<div class="tasks-page fade-in">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Today's Overview</p>
+      <h1 class="page-title">{{ formatTodayHeader() }}</h1>
+    </div>
+  </div>
+
+  <!-- ── Today's Tasks summary ────────────────────────────────── -->
+  <section class="section">
+    <div class="today-card card card-padded">
+      <div class="today-inner">
+
+        <!-- Progress ring -->
+        <div class="ring-wrap" [attr.aria-label]="percent() + '% complete'">
+          <svg width="100" height="100" viewBox="0 0 100 100" role="img">
+            <circle class="ring-bg" cx="50" cy="50" r="40" />
+            <circle
+              class="ring-progress"
+              cx="50" cy="50" r="40"
+              [style.stroke-dashoffset]="ringOffset()"
+              [style.stroke]="percent() >= 75 ? 'var(--success)' : percent() >= 40 ? 'var(--accent)' : 'var(--accent-2)'"
+            />
+          </svg>
+          <div class="ring-label">
+            <span class="ring-pct font-display">{{ percent() }}%</span>
+          </div>
+        </div>
+
+        <!-- Task summary -->
+        <div class="today-summary">
+          <p class="summary-headline">
+            <strong>{{ completedCount() }} of {{ totalCount() }}</strong> Tasks Completed
+          </p>
+          <div class="progress-bar" style="margin: 8px 0 12px;">
+            <div class="progress-fill blue" [style.width.%]="percent()"></div>
+          </div>
+          <ul class="task-list">
+            @for (task of tasks(); track task.id) {
+              <li
+                class="task-item"
+                [class.done]="task.status === 'completed'"
+                [class.active]="task.status === 'in_progress'"
+                (click)="toggleTask(task.id)"
+                role="checkbox"
+                [attr.aria-checked]="task.status === 'completed'">
+                <span class="task-check">
+                  @if (task.status === 'completed') {
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  }
+                </span>
+                <span class="task-title">{{ task.title }}</span>
+                @if (task.status === 'in_progress') {
+                  <span class="badge badge-info" style="font-size: 0.625rem; padding: 2px 6px;">Active</span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Upcoming Installations ────────────────────────────────── -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Upcoming Installations</h2>
+      <span class="section-count">{{ installations().length }} tasks listed</span>
+    </div>
+
+    <div class="installations-list">
+      @for (inst of installations(); track inst.id) {
+        <div class="installation-card card fade-in">
+          <div class="inst-left">
+            <div class="inst-icon">{{ typeIcon(inst.type) }}</div>
+          </div>
+          <div class="inst-body">
+            <div class="inst-time font-mono">
+              @if (formatDate(inst.scheduledDate) === 'Today') {
+                [{{ inst.startTime }}{{ inst.endTime ? ' - ' + inst.endTime : '' }}]
+              } @else {
+                [{{ formatDate(inst.scheduledDate) }}, {{ inst.startTime }}]
+              }
+            </div>
+            <div class="inst-client">
+              <strong>Client: {{ inst.clientName }}</strong>
+              <span class="inst-addr">{{ inst.address }}, {{ inst.city }}</span>
+            </div>
+            <div class="inst-type">{{ inst.typeName }}</div>
+          </div>
+          <div class="inst-right">
+            <span class="badge" [class]="statusClass(inst.status)">{{ statusLabel(inst.status) }}</span>
+            <button class="map-btn" aria-label="Open in maps">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+</div>
