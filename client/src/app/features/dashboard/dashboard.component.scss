@@ -152,10 +152,12 @@
 
 .punch-btn.punch-out.active,
 .punch-btn.punch-out:not(:disabled):hover {
-  background: #64748B;
+  background: var(--accent);
   color: #fff;
-  border-color: #64748B;
+  border-color: var(--accent);
 }
+.punch-btn.punch-out.active .punch-sub,
+.punch-btn.punch-out:not(:disabled):hover .punch-sub { color: rgba(255,255,255,0.75); }
 
 .punch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -269,15 +271,6 @@
   .cal-day { color: #7C2D00; font-weight: 600; }
 }
 
-.cal-cell.status-weekend {
-  .cal-day { color: var(--text-light); }
-}
-
-.cal-cell.status-holiday {
-  background: var(--info-bg);
-  .cal-day { color: var(--info); font-weight: 600; }
-}
-
 .cal-cell.status-future {
   .cal-day { color: var(--text-light); }
 }
@@ -313,7 +306,6 @@
 .dot.present { background: var(--success); }
 .dot.absent  { background: var(--danger); border-radius: 2px; }
 .dot.leave   { background: var(--warning); border-radius: 2px; }
-.dot.weekend { background: var(--border-strong); }
 
 /* ─── Quick links ────────────────────────────────────────────────── */
 .quick-links {

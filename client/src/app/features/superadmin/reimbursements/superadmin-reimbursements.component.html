@@ -1,0 +1,59 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <h1 class="page-title">Reimbursement Claims</h1>
+    <p class="page-sub">Review and approve expense claims — approved amounts flow into that month's payable salary</p>
+  </div>
+
+  <div class="tabs">
+    @for (tab of tabs; track tab) {
+      <button class="tab" [class.active]="activeTab() === tab" (click)="setTab(tab)">
+        {{ tab | titlecase }}
+      </button>
+    }
+  </div>
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Loading claims…</p>
+    } @else if (claims().length === 0) {
+      <p class="empty-note">No claims in this view.</p>
+    } @else {
+      <div class="claims-list">
+        @for (claim of claims(); track claim.id) {
+          <div class="claim-row">
+            <div class="claim-main">
+              <div class="claim-top">
+                <span class="badge badge-info">{{ categoryLabel(claim.category) }}</span>
+                <span class="claim-amount font-mono">₹{{ claim.amount | number }}</span>
+                <span class="badge" [class]="claim.status === 'approved' ? 'badge-success' : claim.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
+                  {{ claim.status | titlecase }}
+                </span>
+              </div>
+              <p class="claim-employee">{{ claim.employee?.name }} · {{ claim.employee?.employeeId }} · {{ claim.employee?.department }}</p>
+              <p class="claim-desc">{{ claim.description || '—' }}</p>
+              <p class="claim-date">Expense date: {{ claim.date }}</p>
+              @if (claim.reviewNote) {
+                <p class="claim-note">Review note: {{ claim.reviewNote }}</p>
+              }
+            </div>
+
+            @if (claim.status === 'pending') {
+              <div class="claim-actions">
+                <input
+                  class="form-control note-input"
+                  placeholder="Optional note…"
+                  [value]="noteFor(claim.id)"
+                  (input)="setNote(claim.id, $any($event.target).value)"
+                />
+                <div class="claim-buttons">
+                  <button class="btn btn-success btn-sm" [disabled]="actingId() === claim.id" (click)="approve(claim)">Approve</button>
+                  <button class="btn btn-ghost btn-sm" [disabled]="actingId() === claim.id" (click)="reject(claim)">Reject</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

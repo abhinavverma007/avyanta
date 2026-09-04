@@ -1,24 +1,28 @@
-export type LeaveStatus = 'approved' | 'pending' | 'rejected';
-export type LeaveType = 'casual' | 'sick' | 'paid' | 'comp_off' | 'maternity';
+// No leave "types" — the superadmin sets a flat monthly quota per employee
+// (Employee.paidLeavesPerMonth) and that's the only gate. Just dates + reason.
 
-export interface LeaveRequest {
-  id: string;
-  type: LeaveType;
-  typeName: string;
-  fromDate: string;
-  toDate: string;
-  days: number;
-  reason: string;
-  status: LeaveStatus;
-  appliedOn: string;
-  approvedBy?: string;
+export interface LeaveSummary {
+  year: number;
+  month: number;
+  quota: number;
+  taken: number;
+  remaining: number;
 }
 
-export interface LeaveBalance {
-  type: LeaveType;
-  typeName: string;
-  used: number;
+export interface LeaveRecord {
+  date: string; // YYYY-MM-DD
+  reason: string;
+}
+
+export interface ApplyLeavePayload {
+  dates: string[];
+  reason: string;
+}
+
+export interface PaginatedLeaves {
+  leaves: LeaveRecord[];
   total: number;
-  remaining: number;
-  color: string;
+  page: number;
+  limit: number;
+  totalPages: number;
 }

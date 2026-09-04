@@ -60,8 +60,8 @@
               [class.selected]="selectedDay() === cell"
               (click)="selectDay(cell)"
               [attr.aria-label]="cell ? cell.date + ' ' + cell.status : null"
-              [attr.role]="cell && cell.status !== 'weekend' && cell.status !== 'future' ? 'button' : null"
-              [attr.tabindex]="cell && cell.status !== 'weekend' && cell.status !== 'future' ? 0 : null">
+              [attr.role]="cell && cell.status !== 'future' ? 'button' : null"
+              [attr.tabindex]="cell && cell.status !== 'future' ? 0 : null">
               @if (cell) {
                 <span class="day-num">{{ cell.date | slice:8 }}</span>
                 @if (cell.status === 'leave') {
@@ -77,8 +77,6 @@
           <span class="leg"><span class="ld present"></span> Present</span>
           <span class="leg"><span class="ld absent"></span> Absent</span>
           <span class="leg"><span class="ld leave"></span> Leave</span>
-          <span class="leg"><span class="ld holiday"></span> Holiday</span>
-          <span class="leg"><span class="ld weekend"></span> Weekend</span>
         </div>
 
       </div>
@@ -101,16 +99,16 @@
           @if (day.status === 'present') {
             <div class="dd-row-grid">
               <div class="dd-stat">
-                <span class="dd-label">Check In</span>
+                <span class="dd-label">First Punch In</span>
                 <span class="dd-val font-mono">{{ day.checkIn }}</span>
               </div>
               <div class="dd-stat">
-                <span class="dd-label">Check Out</span>
-                <span class="dd-val font-mono">{{ day.checkOut }}</span>
+                <span class="dd-label">Last Punch Out</span>
+                <span class="dd-val font-mono">{{ day.checkOut ?? 'Still clocked in' }}</span>
               </div>
               <div class="dd-stat">
-                <span class="dd-label">Work Hours</span>
-                <span class="dd-val font-mono">{{ day.workHours?.toFixed(1) }} h</span>
+                <span class="dd-label">Total Working Hours</span>
+                <span class="dd-val font-mono">{{ (day.workHours ?? 0).toFixed(1) }} h</span>
               </div>
             </div>
           } @else if (day.status === 'absent') {

@@ -1,0 +1,69 @@
+.page-header { margin-bottom: var(--space-5); }
+.page-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 700; color: var(--text); }
+.page-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--space-4);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.tab:hover { background: var(--surface-raised); }
+.tab.active { background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
+
+.table-card { overflow: hidden; }
+.empty-note { padding: var(--space-8); text-align: center; color: var(--text-muted); }
+
+.claims-list { display: flex; flex-direction: column; }
+.claim-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--border);
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+}
+.claim-row:last-child { border-bottom: none; }
+
+.claim-main { flex: 1; min-width: 0; }
+.claim-top { display: flex; align-items: center; gap: var(--space-3); margin-bottom: 6px; }
+.claim-amount { font-weight: 700; font-size: 1.0625rem; }
+.claim-employee { font-size: 0.875rem; font-weight: 600; margin-bottom: 2px; }
+.claim-desc { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 2px; }
+.claim-date { font-size: 0.75rem; color: var(--text-light); }
+.claim-note { font-size: 0.8125rem; color: var(--accent-2); margin-top: 6px; }
+
+.claim-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+  flex-shrink: 0;
+
+  @media (max-width: 640px) { min-width: 0; width: 100%; }
+}
+.note-input { font-size: 0.8125rem; padding: 8px 10px; }
+.claim-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+
+  @media (max-width: 640px) {
+    .btn { flex: 1; }
+  }
+}

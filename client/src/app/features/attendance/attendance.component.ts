@@ -44,9 +44,9 @@ export class AttendanceComponent implements OnInit {
   }
 
   loadMonth(): void {
-    this.monthlyData.set(
-      this.attendance.getMonthlyAttendance(this.viewYear(), this.viewMonth())
-    );
+    this.attendance
+      .getMonthlyAttendance(this.viewYear(), this.viewMonth())
+      .then(data => this.monthlyData.set(data));
   }
 
   prevMonth(): void {
@@ -77,7 +77,7 @@ export class AttendanceComponent implements OnInit {
   }
 
   selectDay(day: DayAttendance | null): void {
-    if (!day || day.status === 'weekend' || day.status === 'future') return;
+    if (!day || day.status === 'future') return;
     this.selectedDay.set(day);
   }
 
@@ -95,8 +95,7 @@ export class AttendanceComponent implements OnInit {
 
   statusLabel(status: string): string {
     const map: Record<string, string> = {
-      present: 'Present', absent: 'Absent', leave: 'Leave',
-      holiday: 'Holiday', weekend: 'Weekend', future: '—',
+      present: 'Present', absent: 'Absent', leave: 'Leave', future: '—',
     };
     return map[status] ?? status;
   }

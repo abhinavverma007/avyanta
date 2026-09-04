@@ -1,0 +1,69 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <h1 class="page-title">Reimbursement Claims</h1>
+    <p class="page-sub">Submit expenses like petrol or food for approval — approved claims are added to your payable salary</p>
+  </div>
+
+  <div class="card card-padded form-card">
+    <h3 class="form-card-title">New Claim</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-control" [ngModel]="category()" (ngModelChange)="category.set($event)">
+          @for (c of categories; track c) {
+            <option [ngValue]="c">{{ categoryLabel(c) }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₹)</label>
+        <input class="form-control" type="number" min="1" [value]="amount()" (input)="amount.set($any($event.target).valueAsNumber)" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expense Date</label>
+        <input class="form-control" type="date" [value]="date()" (input)="date.set($any($event.target).value)" />
+      </div>
+      <div class="form-group description-group">
+        <label class="form-label">Description</label>
+        <input class="form-control" placeholder="e.g. Fuel for site visit" [value]="description()" (input)="description.set($any($event.target).value)" />
+      </div>
+    </div>
+
+    @if (error()) { <p class="error-msg">{{ error() }}</p> }
+    @if (success()) { <p class="success-msg">{{ success() }}</p> }
+
+    <button class="btn btn-blue" [disabled]="submitting()" (click)="submitClaim()">
+      {{ submitting() ? 'Submitting…' : 'Submit Claim' }}
+    </button>
+  </div>
+
+  <div class="card table-card">
+    <h3 class="table-title">Your Claims</h3>
+    @if (loading()) {
+      <p class="empty-note">Loading…</p>
+    } @else if (claims().length === 0) {
+      <p class="empty-note">No claims submitted yet.</p>
+    } @else {
+      <div class="claims-list">
+        @for (claim of claims(); track claim.id) {
+          <div class="claim-row">
+            <div>
+              <div class="claim-top">
+                <span class="badge badge-info">{{ categoryLabel(claim.category) }}</span>
+                <span class="claim-amount font-mono">₹{{ claim.amount | number }}</span>
+                <span class="badge" [class]="claim.status === 'approved' ? 'badge-success' : claim.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
+                  {{ claim.status | titlecase }}
+                </span>
+              </div>
+              <p class="claim-desc">{{ claim.description || '—' }}</p>
+              <p class="claim-date">Expense date: {{ claim.date }}</p>
+              @if (claim.reviewNote) {
+                <p class="claim-note">Note from superadmin: {{ claim.reviewNote }}</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

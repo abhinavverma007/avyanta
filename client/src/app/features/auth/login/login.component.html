@@ -23,6 +23,7 @@
           <button
             class="role-tab"
             [class.active]="activeTabIndex() === i"
+            [style.display]="tab.role === 'employee' ? null : 'none'"
             (click)="setTab(i)"
             role="tab"
             [attr.aria-selected]="activeTabIndex() === i">
@@ -140,7 +141,7 @@
           @if (loading()) {
             <span class="spinner"></span> Authenticating…
           } @else {
-            @if (activeTab.role === 'employee') { Corporate SSO Login }
+            @if (activeTab.role === 'employee') { Employee Login }
             @else { LOGIN to SUN<strong>दे</strong>श }
           }
         </button>
@@ -152,23 +153,17 @@
         }
       </form>
 
-      <!-- Quick demo access -->
-      <div class="demo-section">
+      <!-- Quick demo access (disabled now that login is backed by real employee accounts) -->
+      <div class="demo-section" style="display: none;">
         <p class="demo-label">Quick demo — pick a role</p>
         <div class="demo-btns">
           <button class="btn btn-ghost btn-sm" (click)="demoLogin('employee')">Employee</button>
-          <button class="btn btn-ghost btn-sm" (click)="demoLogin('field_worker')">Field Worker</button>
-          <button class="btn btn-ghost btn-sm" (click)="demoLogin('director')">Director</button>
-          <button class="btn btn-ghost btn-sm" (click)="demoLogin('customer')">Customer</button>
+          <button class="btn btn-ghost btn-sm" style="display: none;" (click)="demoLogin('field_worker')">Field Worker</button>
+          <button class="btn btn-ghost btn-sm" style="display: none;" (click)="demoLogin('director')">Director</button>
+          <button class="btn btn-ghost btn-sm" style="display: none;" (click)="demoLogin('customer')">Customer</button>
         </div>
       </div>
 
     </div>
-
-    <footer class="login-footer">
-      <a href="#">Terms of Service</a>
-      <span>·</span>
-      <a href="#">Privacy Policy</a>
-    </footer>
   </div>
 </div>

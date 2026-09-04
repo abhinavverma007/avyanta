@@ -1,0 +1,129 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Tasks</h1>
+      <p class="page-sub">Assign work to one or more employees, for a single day or a date range</p>
+    </div>
+    <button class="btn btn-blue" (click)="openForm()">+ Assign Task</button>
+  </div>
+
+  @if (showForm()) {
+    <div class="card card-padded form-panel fade-in">
+      <h3 class="form-panel-title">Assign Task</h3>
+
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label class="form-label">Title</label>
+          <input class="form-control" placeholder="e.g. Panel installation" [value]="title()" (input)="title.set($any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">From</label>
+          <input class="form-control" type="date" [value]="fromDate()" (input)="fromDate.set($any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">To</label>
+          <input class="form-control" type="date" [value]="toDate()" (input)="toDate.set($any($event.target).value)" />
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Site / Location</label>
+          <input class="form-control" placeholder="e.g. Sector 12, Jaipur" [value]="site()" (input)="site.set($any($event.target).value)" />
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Description</label>
+          <input class="form-control" placeholder="Optional details" [value]="description()" (input)="description.set($any($event.target).value)" />
+        </div>
+      </div>
+
+      <p class="days-count">{{ selectedDates().length }} day{{ selectedDates().length === 1 ? '' : 's' }} selected</p>
+
+      <div class="employee-picker">
+        <p class="form-label">Assign to</p>
+
+        @if (selectedEmployeeList().length > 0) {
+          <div class="selected-chips">
+            @for (emp of selectedEmployeeList(); track emp.id) {
+              <span class="chip">
+                {{ emp.name }}
+                <button type="button" class="chip-remove" (click)="removeSelectedEmployee(emp.id)" aria-label="Remove">×</button>
+              </span>
+            }
+          </div>
+        }
+
+        <input
+          class="form-control"
+          placeholder="Search by name, employee ID or department…"
+          [value]="employeeSearch()"
+          (input)="onEmployeeSearchInput($any($event.target).value)"
+        />
+
+        <div class="employee-checklist">
+          @if (employeeSearchLoading()) {
+            <p class="picker-note">Searching…</p>
+          } @else if (employeeResults().length === 0) {
+            <p class="picker-note">No matching employees.</p>
+          } @else {
+            @for (emp of employeeResults(); track emp.id) {
+              <label class="employee-check">
+                <input type="checkbox" [checked]="isSelected(emp.id)" (change)="toggleEmployee(emp)" />
+                <span>{{ emp.name }} <span class="emp-code">({{ emp.employeeId }})</span></span>
+              </label>
+            }
+          }
+        </div>
+      </div>
+
+      @if (formError()) { <p class="error-msg">{{ formError() }}</p> }
+      @if (formSuccess()) { <p class="success-msg">{{ formSuccess() }}</p> }
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-blue" [disabled]="saving()" (click)="submitForm()">
+          {{ saving() ? 'Assigning…' : 'Assign Task' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="filter-row">
+    <input class="form-control filter-date" type="date" [value]="filterDate()" (input)="onFilterDateChange($any($event.target).value)" />
+    @if (filterDate()) {
+      <button class="btn btn-ghost btn-sm" (click)="clearFilter()">Clear filter</button>
+    }
+    <span class="result-count">{{ total() }} task{{ total() === 1 ? '' : 's' }}</span>
+  </div>
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Loading…</p>
+    } @else if (tasks().length === 0) {
+      <p class="empty-note">No tasks assigned{{ filterDate() ? ' for this date' : '' }} yet.</p>
+    } @else {
+      <div class="task-list">
+        @for (task of tasks(); track task.id) {
+          <div class="task-row">
+            <div class="task-main">
+              <div class="task-top">
+                <span class="task-date font-mono">{{ task.date }}</span>
+                <h3 class="task-title">{{ task.title }}</h3>
+              </div>
+              @if (task.site) { <p class="task-site">📍 {{ task.site }}</p> }
+              @if (task.description) { <p class="task-desc">{{ task.description }}</p> }
+              <p class="task-employees">
+                @for (emp of task.employees; track emp.id) {
+                  <span class="badge badge-info">{{ emp.name }}</span>
+                }
+              </p>
+            </div>
+            <button class="btn btn-ghost btn-sm" (click)="deleteTask(task)">Remove</button>
+          </div>
+        }
+      </div>
+      <div class="pagination-row">
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
+        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+      </div>
+    }
+  </div>
+</div>

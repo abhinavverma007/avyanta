@@ -1,0 +1,67 @@
+export type ReimbursementCategory = 'petrol' | 'food' | 'travel' | 'other';
+export type ReimbursementStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Reimbursement {
+  id: string;
+  category: ReimbursementCategory;
+  amount: number;
+  description: string;
+  date: string; // YYYY-MM-DD
+  status: ReimbursementStatus;
+  reviewNote: string;
+  reviewedAt?: string;
+  createdAt: string;
+}
+
+export interface AdminReimbursement extends Reimbursement {
+  employee: {
+    id: string;
+    name: string;
+    employeeId: string;
+    department: string;
+  } | null;
+}
+
+export interface CreateReimbursementPayload {
+  category: ReimbursementCategory;
+  amount: number;
+  description?: string;
+  date: string;
+}
+
+export interface SalaryRow {
+  employeeId: string;
+  name: string;
+  employeeCode: string;
+  department: string;
+  year: number;
+  month: number;
+  baseSalary: number;
+  totalWorkingDays: number;
+  presentDays: number;
+  absentDays: number;
+  paidLeavesPerMonth: number;
+  leavesTaken: number;
+  perDaySalary: number;
+  deduction: number;
+  reimbursementTotal: number;
+  reimbursementCount: number;
+  payable: number;
+}
+
+export interface SalarySummary {
+  year: number;
+  month: number;
+  rows: SalaryRow[];
+  totalPayable: number;
+}
+
+export interface SalaryDetail extends SalaryRow {
+  reimbursements: Array<{
+    id: string;
+    category: ReimbursementCategory;
+    amount: number;
+    description: string;
+    date: string;
+  }>;
+}

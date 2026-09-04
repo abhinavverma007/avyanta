@@ -147,15 +147,6 @@
   &:hover { transform: scale(1.05); }
 }
 
-.day-cell.status-holiday {
-  background: var(--info-bg);
-  .day-num { color: var(--info); font-weight: 600; }
-}
-
-.day-cell.status-weekend {
-  .day-num { color: var(--text-light); font-size: 0.75rem; }
-}
-
 .day-cell.status-future {
   .day-num { color: var(--text-light); opacity: 0.5; }
 }
@@ -199,8 +190,6 @@
 .ld.present  { background: var(--success); }
 .ld.absent   { background: var(--danger); border-radius: 2px; }
 .ld.leave    { background: var(--warning); border-radius: 2px; }
-.ld.holiday  { background: var(--info); }
-.ld.weekend  { background: var(--border-strong); }
 
 /* ─── Day detail ─────────────────────────────────────────────────── */
 .day-detail {}

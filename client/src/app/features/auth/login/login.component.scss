@@ -292,16 +292,3 @@
   gap: 8px;
   justify-content: center;
 }
-
-/* ─── Footer ─────────────────────────────────────────────────────── */
-.login-footer {
-  padding: 16px 36px;
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  font-size: 0.75rem;
-  color: var(--text-light);
-  border-top: 1px solid var(--border);
-}
-
-.login-footer a:hover { color: var(--text-muted); }

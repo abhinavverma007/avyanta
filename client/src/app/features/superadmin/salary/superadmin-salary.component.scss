@@ -1,0 +1,75 @@
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+.page-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 700; color: var(--text); }
+.page-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+
+.month-picker {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+
+  @media (min-width: 481px) { width: auto; }
+}
+.month-picker .form-control {
+  width: 100%;
+  min-width: 0;
+
+  @media (min-width: 481px) { width: auto; min-width: 130px; }
+}
+
+.summary-strip {
+  display: flex;
+  gap: var(--space-6);
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  flex-wrap: wrap;
+}
+.summary-stat { display: flex; flex-direction: column; gap: 2px; }
+.ss-value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
+.ss-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+
+.table-card { overflow: hidden; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.empty-note { padding: var(--space-8); text-align: center; color: var(--text-muted); }
+
+.salary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.salary-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+}
+.salary-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.row-clickable { cursor: pointer; }
+.row-clickable:hover { background: var(--surface-raised); }
+.emp-name { font-weight: 600; }
+.emp-sub { font-size: 0.75rem; color: var(--text-muted); }
+.payable { font-weight: 700; }
+.expand-arrow { color: var(--text-light); text-align: center; }
+
+.detail-row td { background: var(--surface-raised); border-bottom: 1px solid var(--border); white-space: normal; }
+.detail-panel { padding: var(--space-2) 0; }
+.detail-line { font-size: 0.8125rem; margin-bottom: 6px; }
+.reimb-list { margin: 6px 0 0 var(--space-4); font-size: 0.8125rem; }
+.reimb-list li { list-style: disc; margin-bottom: 4px; }

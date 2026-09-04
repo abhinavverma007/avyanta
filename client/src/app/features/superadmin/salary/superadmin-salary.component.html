@@ -1,0 +1,101 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Payable Salary</h1>
+      <p class="page-sub">Base salary minus unpaid absences beyond leave quota, plus approved reimbursements</p>
+    </div>
+
+    <div class="month-picker">
+      <select class="form-control" [ngModel]="month()" (ngModelChange)="setMonth($event)">
+        @for (m of months; track m; let i = $index) {
+          <option [ngValue]="i + 1">{{ m }}</option>
+        }
+      </select>
+      <select class="form-control" [ngModel]="year()" (ngModelChange)="setYear($event)">
+        @for (y of years; track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="summary-strip">
+    <div class="summary-stat">
+      <span class="ss-value">{{ rows().length }}</span>
+      <span class="ss-label">Employees</span>
+    </div>
+    <div class="summary-stat">
+      <span class="ss-value" style="color: var(--success)">₹{{ totalPayable() | number }}</span>
+      <span class="ss-label">Total Payable</span>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Calculating…</p>
+    } @else if (rows().length === 0) {
+      <p class="empty-note">No active employees.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="salary-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Base Salary</th>
+              <th>Present</th>
+              <th>Absent</th>
+              <th>Leaves Taken / Quota</th>
+              <th>Deduction</th>
+              <th>Reimbursements</th>
+              <th>Payable</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.employeeId) {
+              <tr class="row-clickable" (click)="toggleDetail(row)">
+                <td>
+                  <div class="emp-name">{{ row.name }}</div>
+                  <div class="emp-sub">{{ row.employeeCode }} · {{ row.department || '—' }}</div>
+                </td>
+                <td class="font-mono">₹{{ row.baseSalary | number }}</td>
+                <td>{{ row.presentDays }}</td>
+                <td>{{ row.absentDays }}</td>
+                <td>{{ row.leavesTaken }} / {{ row.paidLeavesPerMonth }}</td>
+                <td class="font-mono text-danger">-₹{{ row.deduction | number }}</td>
+                <td class="font-mono text-success">+₹{{ row.reimbursementTotal | number }} ({{ row.reimbursementCount }})</td>
+                <td class="font-mono payable">₹{{ row.payable | number }}</td>
+                <td class="expand-arrow">{{ expandedId() === row.employeeId ? '▲' : '▼' }}</td>
+              </tr>
+              @if (expandedId() === row.employeeId) {
+                <tr class="detail-row">
+                  <td colspan="9">
+                    @if (detailLoading()) {
+                      <p class="empty-note">Loading breakdown…</p>
+                    } @else {
+                      @if (detail(); as d) {
+                        <div class="detail-panel">
+                          <p class="detail-line">Per working day rate: <strong class="font-mono">₹{{ d.perDaySalary | number }}</strong> (based on {{ d.totalWorkingDays }} working days this month)</p>
+                          @if (d.reimbursements.length > 0) {
+                            <p class="detail-line">Approved reimbursements:</p>
+                            <ul class="reimb-list">
+                              @for (r of d.reimbursements; track r.id) {
+                                <li>{{ r.date }} — {{ r.category | titlecase }} — ₹{{ r.amount | number }} @if (r.description) { — {{ r.description }} }</li>
+                              }
+                            </ul>
+                          } @else {
+                            <p class="detail-line text-muted">No approved reimbursements this month.</p>
+                          }
+                        </div>
+                      }
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

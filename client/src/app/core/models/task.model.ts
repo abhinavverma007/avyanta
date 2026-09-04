@@ -1,23 +1,14 @@
-export type TaskStatus = 'completed' | 'in_progress' | 'pending' | 'cancelled';
-export type InstallationType = 'solar_panel' | 'battery_storage' | 'inverter' | 'site_inspection' | 'site_audit' | 'permit_review' | 'client_meeting';
-
-export interface DailyTask {
+export interface Coworker {
   id: string;
-  title: string;
-  status: TaskStatus;
+  name: string;
+  employeeId: string;
 }
 
-export interface Installation {
+export interface TodayTask {
   id: string;
-  type: InstallationType;
-  typeName: string;
-  clientName: string;
-  address: string;
-  city: string;
-  scheduledDate: string;   // YYYY-MM-DD
-  startTime: string;       // HH:MM AM/PM
-  endTime?: string;
-  status: TaskStatus;
-  notes?: string;
-  coordinates?: { lat: number; lng: number };
+  title: string;
+  description: string;
+  site: string;
+  date: string; // YYYY-MM-DD
+  coworkers: Coworker[]; // everyone else assigned to the same task today
 }

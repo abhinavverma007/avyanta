@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/user.model';
+import { isValidEmail } from '../../../core/utils/validators';
 
 interface RoleTab {
   role: UserRole;
@@ -50,8 +51,8 @@ export class LoginComponent {
       label: 'Employee',
       icon: '👷',
       tagline: 'Staff Portal',
-      emailPlaceholder: 'corporate email address',
-      authLabel: 'Corporate SSO Login',
+      emailPlaceholder: 'your email address',
+      authLabel: 'Employee Login',
       footerNote: 'Access restricted to SUNदेश employees.',
       loginMethods: ['email'],
     },
@@ -88,18 +89,18 @@ export class LoginComponent {
   }
 
   async onSubmit(): Promise<void> {
-    this.loading.set(true);
     this.error.set('');
+    if (!isValidEmail(this.email())) {
+      this.error.set('Enter a valid email address.');
+      return;
+    }
+
+    this.loading.set(true);
     try {
       await this.auth.login(this.activeTab.role, this.email(), this.password());
-      const role = this.activeTab.role;
-      if (role === 'field_worker') {
-        this.router.navigate(['/tasks']);
-      } else {
-        this.router.navigate(['/dashboard']);
-      }
-    } catch {
-      this.error.set('Invalid credentials. Please try again.');
+      this.router.navigate(['/dashboard']);
+    } catch (err: any) {
+      this.error.set(err?.error?.message ?? 'Invalid credentials. Please try again.');
     } finally {
       this.loading.set(false);
     }

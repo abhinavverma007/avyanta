@@ -1,50 +1,114 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule, TitleCasePipe } from '@angular/common';
+import { Component, OnInit, computed, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LeaveService } from '../../core/services/leave.service';
-import { LeaveBalance, LeaveRequest } from '../../core/models/leave.model';
+import { LeaveRecord, LeaveSummary } from '../../core/models/leave.model';
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function datesInRange(from: string, to: string): string[] {
+  const dates: string[] = [];
+  const start = new Date(from);
+  const end = new Date(to);
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return dates;
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    dates.push(d.toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+const PAGE_SIZE = 3;
 
 @Component({
   selector: 'app-leave',
   standalone: true,
-  imports: [CommonModule, TitleCasePipe],
+  imports: [CommonModule, FormsModule],
   templateUrl: './leave.component.html',
   styleUrl: './leave.component.scss',
 })
 export class LeaveComponent implements OnInit {
-  balances = signal<LeaveBalance[]>([]);
-  requests = signal<LeaveRequest[]>([]);
-  activeFilter = signal<'all' | 'approved' | 'pending' | 'rejected'>('all');
-  showApplyModal = signal(false);
+  summary = signal<LeaveSummary | null>(null);
+  leaves = signal<LeaveRecord[]>([]);
+  loading = signal(true);
 
-  readonly leaveStats = { taken: 0, remaining: 1, total: 25 };
+  page = signal(1);
+  totalPages = signal(1);
+  total = signal(0);
+
+  fromDate = signal(todayStr());
+  toDate = signal(todayStr());
+  reason = signal('');
+  submitting = signal(false);
+  error = signal('');
+  success = signal('');
+
+  readonly selectedDates = computed(() => datesInRange(this.fromDate(), this.toDate()));
 
   constructor(private leaveService: LeaveService) {}
 
   ngOnInit(): void {
-    this.balances.set(this.leaveService.getLeaveBalances());
-    this.requests.set(this.leaveService.getLeaveRequests());
+    this.loadSummary();
+    this.loadHistory();
   }
 
-  get filteredRequests(): LeaveRequest[] {
-    const f = this.activeFilter();
-    if (f === 'all') return this.requests();
-    return this.requests().filter(r => r.status === f);
+  loadSummary(): void {
+    this.leaveService.summary().then(summary => this.summary.set(summary));
   }
 
-  usedPercent(balance: LeaveBalance): number {
-    return Math.round((balance.used / balance.total) * 100);
+  loadHistory(): void {
+    this.loading.set(true);
+    this.leaveService.mine(this.page(), PAGE_SIZE).then(res => {
+      this.leaves.set(res.leaves);
+      this.total.set(res.total);
+      this.totalPages.set(res.totalPages);
+      this.loading.set(false);
+    });
   }
 
-  statusClass(status: string): string {
-    const map: Record<string, string> = {
-      approved: 'badge-success',
-      pending:  'badge-warning',
-      rejected: 'badge-danger',
-    };
-    return map[status] ?? '';
+  prevPage(): void {
+    if (this.page() <= 1) return;
+    this.page.update(p => p - 1);
+    this.loadHistory();
+  }
+
+  nextPage(): void {
+    if (this.page() >= this.totalPages()) return;
+    this.page.update(p => p + 1);
+    this.loadHistory();
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  async submitLeave(): Promise<void> {
+    this.error.set('');
+    this.success.set('');
+
+    const dates = this.selectedDates();
+    if (dates.length === 0) {
+      this.error.set('Pick a valid date range.');
+      return;
+    }
+    if (!this.reason().trim()) {
+      this.error.set('A reason is required.');
+      return;
+    }
+
+    this.submitting.set(true);
+    try {
+      await this.leaveService.apply({ dates, reason: this.reason() });
+      this.success.set(`Leave marked for ${dates.length} day${dates.length === 1 ? '' : 's'}.`);
+      this.reason.set('');
+      this.page.set(1);
+      this.loadSummary();
+      this.loadHistory();
+    } catch (err: any) {
+      this.error.set(err?.error?.message ?? 'Could not apply leave. Please try again.');
+    } finally {
+      this.submitting.set(false);
+    }
   }
 }

@@ -132,4 +132,45 @@
   &.danger:hover { color: var(--danger); opacity: 0.8; }
 }
 
-.action-arrow { margin-left: auto; color: var(--text-light); }
+.action-arrow {
+  margin-left: auto;
+  color: var(--text-light);
+  transition: transform var(--transition);
+}
+.action-arrow.open { transform: rotate(90deg); }
+
+/* ─── Change password (inline expand) ───────────────────────────── */
+.change-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.password-wrap { position: relative; }
+.password-wrap .form-control { padding-right: 44px; }
+.toggle-pw {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  padding: 4px;
+}
+.toggle-pw:hover { color: var(--text); }
+
+.error-msg {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  padding: 8px 12px;
+  background: var(--danger-bg);
+  border-radius: var(--radius-sm);
+}
+.success-msg {
+  font-size: 0.8125rem;
+  color: var(--success);
+  padding: 8px 12px;
+  background: var(--success-bg);
+  border-radius: var(--radius-sm);
+}

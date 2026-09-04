@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { LeaveService } from '../../core/services/leave.service';
 import { MonthlyAttendance } from '../../core/models/attendance.model';
+import { LeaveSummary } from '../../core/models/leave.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,11 +18,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly user = computed(() => this.auth.user());
   readonly punchState = computed(() => this.attendance.punchState());
   readonly lastPunchTime = computed(() => this.attendance.lastPunchTime());
+  readonly workHours = computed(() => this.attendance.workHours());
+  readonly punching = computed(() => this.attendance.punching());
 
   currentTime = signal(new Date());
   monthlyData = signal<MonthlyAttendance | null>(null);
+  leaveSummary = signal<LeaveSummary | null>(null);
   private clockTimer?: number;
-  leaveStats = { taken: 0, remaining: 1, total: 25 };
 
   // Mini calendar
   readonly today = new Date();
@@ -31,12 +34,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private attendance: AttendanceService,
     private leaveService: LeaveService,
-  ) {
-    this.leaveStats = this.leaveService.getLeaveStats();
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.monthlyData.set(this.attendance.getCurrentMonthAttendance());
+    this.attendance.getCurrentMonthAttendance().then(data => this.monthlyData.set(data));
+    this.attendance.loadToday();
+    this.leaveService.summary().then(summary => this.leaveSummary.set(summary));
     this.clockTimer = window.setInterval(() => {
       this.currentTime.set(new Date());
     }, 1000);
@@ -46,9 +49,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     clearInterval(this.clockTimer);
   }
 
-  punch(): void {
-    this.attendance.punch();
-    this.monthlyData.set(this.attendance.getCurrentMonthAttendance());
+  async punch(): Promise<void> {
+    await this.attendance.punch();
+    this.attendance.getCurrentMonthAttendance().then(data => this.monthlyData.set(data));
   }
 
   formatTime(date: Date): string {

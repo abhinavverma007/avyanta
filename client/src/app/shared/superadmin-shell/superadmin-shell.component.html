@@ -1,0 +1,51 @@
+<div class="sa-shell">
+  <header class="sa-topbar">
+    <div class="sa-brand">
+      <span class="brand-sun">SUN</span><span class="brand-desh">देश</span>
+      <span class="sa-tag">Superadmin</span>
+    </div>
+
+    <nav class="sa-nav">
+      @for (item of navItems; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
+      }
+    </nav>
+
+    <div class="sa-account">
+      <button class="avatar-btn" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" aria-haspopup="true">
+        <div class="avatar">{{ getInitials(admin()?.name ?? 'A') }}</div>
+        <svg class="chevron" [class.open]="menuOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+
+      @if (menuOpen()) {
+        <div class="account-dropdown fade-in" role="menu">
+          <div class="account-info">
+            <div class="account-name">{{ admin()?.name }}</div>
+            <div class="account-email">{{ admin()?.email }}</div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" (click)="logout()" role="menuitem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </button>
+        </div>
+      }
+    </div>
+  </header>
+
+  <main class="sa-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Bottom tab bar (mobile) -->
+  <nav class="sa-bottom-bar" aria-label="Superadmin navigation">
+    @for (item of navItems; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" class="sa-bottom-tab">
+        <span class="tab-icon" [innerHTML]="getIconSvg(item.icon)"></span>
+        <span class="tab-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+</div>

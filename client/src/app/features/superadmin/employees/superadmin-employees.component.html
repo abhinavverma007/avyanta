@@ -1,0 +1,198 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Employees</h1>
+      <p class="page-sub">Manage your master employee list, salaries and leave allowances</p>
+    </div>
+    <button class="btn btn-blue" (click)="openCreateForm()">+ Add Employee</button>
+  </div>
+
+  <div class="search-row">
+    <input
+      class="form-control search-input"
+      placeholder="Search by name, email, employee ID or department…"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+    />
+    <span class="result-count">{{ total() }} employee{{ total() === 1 ? '' : 's' }}</span>
+  </div>
+
+  @if (credentialBanner(); as cred) {
+    <div class="card card-padded credential-banner fade-in">
+      <div>
+        <p class="cb-title">Credentials for {{ cred.name }}</p>
+        <p class="cb-sub">Share these with the employee manually — the password won't be shown again.</p>
+        <div class="cb-row"><span class="cb-label">Email</span><span class="font-mono">{{ cred.email }}</span></div>
+        <div class="cb-row">
+          <span class="cb-label">Password</span>
+          <span class="font-mono cb-password">{{ cred.password }}</span>
+          <button class="btn btn-ghost btn-sm" (click)="copyPassword(cred.password)">Copy</button>
+        </div>
+      </div>
+      <button class="close-btn" (click)="dismissBanner()" aria-label="Dismiss">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  }
+
+  @if (showForm()) {
+    <div class="card card-padded form-panel fade-in">
+      <h3 class="form-panel-title">{{ formMode() === 'create' ? 'Add Employee' : 'Edit Employee' }}</h3>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-control" [value]="form().name" (input)="onNameInput($any($event.target).value)" />
+        </div>
+
+        @if (formMode() === 'create') {
+          <div class="form-group">
+            <label class="form-label">Email (auto-generated)</label>
+            <input class="form-control font-mono" [value]="emailPreviewLoading() ? 'Generating…' : (emailPreview() || '—')" disabled />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="password-row">
+              <div class="password-wrap">
+                <input
+                  class="form-control"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  placeholder="Leave blank to autogenerate on save"
+                  [value]="form().password"
+                  (input)="updateField('password', $any($event.target).value)"
+                />
+                <button type="button" class="toggle-pw" (click)="showPassword.set(!showPassword())" aria-label="Toggle password visibility">
+                  @if (showPassword()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="fillGeneratedPassword()">Autogenerate</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Join Date</label>
+            <input class="form-control" type="date" [value]="form().joinDate" (input)="updateField('joinDate', $any($event.target).value)" />
+          </div>
+        } @else {
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-control" [value]="editingEmail()" disabled />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Employee ID</label>
+            <input class="form-control" [value]="editingEmployeeId()" disabled />
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label">Designation</label>
+          <input class="form-control" [value]="form().designation" (input)="updateField('designation', $any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <input class="form-control" [value]="form().department" (input)="updateField('department', $any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-control" [value]="form().phone" (input)="updateField('phone', $any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input class="form-control" [value]="form().location" (input)="updateField('location', $any($event.target).value)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Aadhaar Number</label>
+          <input
+            class="form-control font-mono"
+            placeholder="XXXX-XXXX-XXXX-XXXX"
+            inputmode="numeric"
+            maxlength="19"
+            [value]="form().aadhaarNumber"
+            (input)="onAadhaarInput($any($event.target).value)"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly Salary (₹)</label>
+          <input class="form-control" type="number" min="0" [value]="form().salaryMonthly" (input)="updateField('salaryMonthly', $any($event.target).valueAsNumber)" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Paid Leaves / Month</label>
+          <input class="form-control" type="number" min="0" [value]="form().paidLeavesPerMonth" (input)="updateField('paidLeavesPerMonth', $any($event.target).valueAsNumber)" />
+        </div>
+      </div>
+
+      @if (formError()) {
+        <p class="error-msg">{{ formError() }}</p>
+      }
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-blue" [disabled]="saving()" (click)="submitForm()">
+          {{ saving() ? 'Saving…' : (formMode() === 'create' ? 'Create Employee' : 'Save Changes') }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Loading employees…</p>
+    } @else if (employees().length === 0) {
+      <p class="empty-note">No employees yet. Click "Add Employee" to create your first login.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="employees-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Employee ID</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Salary</th>
+              <th>Leaves/mo</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (emp of employees(); track emp.id) {
+              <tr>
+                <td>
+                  <div class="emp-name">{{ emp.name }}</div>
+                  <div class="emp-sub">{{ emp.designation }}</div>
+                </td>
+                <td class="font-mono">{{ emp.employeeId }}</td>
+                <td>{{ emp.department || '—' }}</td>
+                <td class="font-mono">{{ emp.email }}</td>
+                <td class="font-mono">₹{{ emp.salaryMonthly | number }}</td>
+                <td>{{ emp.paidLeavesPerMonth }}</td>
+                <td>
+                  <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
+                    {{ emp.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="row-actions">
+                  <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                  <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
+                    {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
+                  </button>
+                  <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
+                    {{ emp.isActive ? 'Deactivate' : 'Activate' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-row">
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
+        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+      </div>
+    }
+  </div>
+</div>
