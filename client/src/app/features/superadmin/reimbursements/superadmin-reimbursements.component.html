@@ -1,9 +1,4 @@
-<div class="page fade-in">
-  <div class="page-header">
-    <h1 class="page-title">Reimbursement Claims</h1>
-    <p class="page-sub">Review and approve expense claims — approved amounts flow into that month's payable salary</p>
-  </div>
-
+<div class="panel fade-in">
   <div class="tabs">
     @for (tab of tabs; track tab) {
       <button class="tab" [class.active]="activeTab() === tab" (click)="setTab(tab)">

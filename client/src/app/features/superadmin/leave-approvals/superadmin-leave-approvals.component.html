@@ -1,0 +1,52 @@
+<div class="panel fade-in">
+  <div class="tabs">
+    @for (tab of tabs; track tab) {
+      <button class="tab" [class.active]="activeTab() === tab" (click)="setTab(tab)">
+        {{ tab | titlecase }}
+      </button>
+    }
+  </div>
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Loading leave requests…</p>
+    } @else if (leaves().length === 0) {
+      <p class="empty-note">No leave requests in this view.</p>
+    } @else {
+      <div class="claims-list">
+        @for (leave of leaves(); track leave.id) {
+          <div class="claim-row">
+            <div class="claim-main">
+              <div class="claim-top">
+                <span class="claim-amount font-mono">{{ formatDate(leave.date) }}</span>
+                <span class="badge" [class]="leave.status === 'approved' ? 'badge-success' : leave.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
+                  {{ leave.status | titlecase }}
+                </span>
+              </div>
+              <p class="claim-employee">{{ leave.employee?.name }} · {{ leave.employee?.employeeId }} · {{ leave.employee?.department }}</p>
+              <p class="claim-desc">{{ leave.reason }}</p>
+              @if (leave.reviewNote) {
+                <p class="claim-note">Review note: {{ leave.reviewNote }}</p>
+              }
+            </div>
+
+            @if (leave.status === 'pending') {
+              <div class="claim-actions">
+                <input
+                  class="form-control note-input"
+                  placeholder="Optional note…"
+                  [value]="noteFor(leave.id)"
+                  (input)="setNote(leave.id, $any($event.target).value)"
+                />
+                <div class="claim-buttons">
+                  <button class="btn btn-success btn-sm" [disabled]="actingId() === leave.id" (click)="approve(leave)">Approve</button>
+                  <button class="btn btn-ghost btn-sm" [disabled]="actingId() === leave.id" (click)="reject(leave)">Reject</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -37,13 +37,16 @@ export interface SalaryRow {
   year: number;
   month: number;
   baseSalary: number;
-  totalWorkingDays: number;
+  calendarDaysInMonth: number;
+  elapsedDays: number;
   presentDays: number;
   absentDays: number;
+  pendingLeaveDays: number;
   paidLeavesPerMonth: number;
   leavesTaken: number;
   perDaySalary: number;
   deduction: number;
+  earnedTillDate: number;
   reimbursementTotal: number;
   reimbursementCount: number;
   payable: number;

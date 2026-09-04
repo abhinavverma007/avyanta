@@ -30,14 +30,9 @@ export const routes: Routes = [
           import('./features/attendance/attendance.component').then(m => m.AttendanceComponent),
       },
       {
-        path: 'leave',
+        path: 'requests',
         loadComponent: () =>
-          import('./features/leave/leave.component').then(m => m.LeaveComponent),
-      },
-      {
-        path: 'reimbursements',
-        loadComponent: () =>
-          import('./features/reimbursements/reimbursements.component').then(m => m.ReimbursementsComponent),
+          import('./features/requests/requests.component').then(m => m.RequestsComponent),
       },
       {
         path: 'tasks',
@@ -82,9 +77,14 @@ export const routes: Routes = [
               import('./features/superadmin/tasks/superadmin-tasks.component').then(m => m.SuperadminTasksComponent),
           },
           {
-            path: 'reimbursements',
+            path: 'approvals',
             loadComponent: () =>
-              import('./features/superadmin/reimbursements/superadmin-reimbursements.component').then(m => m.SuperadminReimbursementsComponent),
+              import('./features/superadmin/approvals/superadmin-approvals.component').then(m => m.SuperadminApprovalsComponent),
+          },
+          {
+            path: 'employees/:id/attendance',
+            loadComponent: () =>
+              import('./features/superadmin/employee-attendance/superadmin-employee-attendance.component').then(m => m.SuperadminEmployeeAttendanceComponent),
           },
           {
             path: 'salary',

@@ -1,0 +1,64 @@
+<div class="panel fade-in">
+  <p class="tab-intro">Forgot to punch on a day? Request it be corrected — a superadmin needs to approve it first.</p>
+
+  <div class="card card-padded form-card">
+    <h3 class="form-card-title">Apply for Regularization</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-control" type="date" [value]="date()" (input)="date.set($any($event.target).value)" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Check In</label>
+        <input class="form-control" type="time" [value]="checkIn()" (input)="checkIn.set($any($event.target).value)" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Check Out</label>
+        <input class="form-control" type="time" [value]="checkOut()" (input)="checkOut.set($any($event.target).value)" />
+      </div>
+      <div class="form-group reason-group">
+        <label class="form-label">Reason</label>
+        <input class="form-control" placeholder="e.g. Forgot to punch in" [value]="reason()" (input)="reason.set($any($event.target).value)" />
+      </div>
+    </div>
+
+    @if (error()) { <p class="error-msg">{{ error() }}</p> }
+    @if (success()) { <p class="success-msg">{{ success() }}</p> }
+
+    <button class="btn btn-blue" [disabled]="submitting()" (click)="submitRequest()">
+      {{ submitting() ? 'Submitting…' : 'Request Regularization' }}
+    </button>
+  </div>
+
+  <div class="card table-card">
+    <h3 class="table-title">Regularization History</h3>
+    @if (loading()) {
+      <p class="empty-note">Loading…</p>
+    } @else if (requests().length === 0) {
+      <p class="empty-note">No regularization requests yet.</p>
+    } @else {
+      <div class="reg-list">
+        @for (r of requests(); track r.id) {
+          <div class="reg-row">
+            <div class="reg-main">
+              <span class="reg-date">{{ formatDate(r.date) }}</span>
+              <span class="reg-times font-mono">{{ r.requestedCheckIn }}–{{ r.requestedCheckOut }}</span>
+              <span class="reg-reason">{{ r.reason }}</span>
+              @if (r.reviewNote) {
+                <span class="reg-note">Review note: {{ r.reviewNote }}</span>
+              }
+            </div>
+            <span class="badge" [class]="r.status === 'approved' ? 'badge-success' : r.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
+              {{ r.status | titlecase }}
+            </span>
+          </div>
+        }
+      </div>
+      <div class="pagination-row">
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
+        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }} ({{ total() }} total)</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,12 +1,15 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, SlicePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AttendanceService } from '../../core/services/attendance.service';
+import { AttendanceRegularizationService } from '../../core/services/attendance-regularization.service';
 import { MonthlyAttendance, DayAttendance } from '../../core/models/attendance.model';
+import { RegularizationRecord } from '../../core/models/attendance-regularization.model';
 
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CommonModule, SlicePipe],
+  imports: [CommonModule, SlicePipe, FormsModule],
   templateUrl: './attendance.component.html',
   styleUrl: './attendance.component.scss',
 })
@@ -20,6 +23,16 @@ export class AttendanceComponent implements OnInit {
   filterStatus = signal<string>('all');
 
   monthlyData = signal<MonthlyAttendance | null>(null);
+
+  regularizations = signal<RegularizationRecord[]>([]);
+  readonly regularizationByDate = computed(() => new Map(this.regularizations().map(r => [r.date, r])));
+
+  regReason = signal('');
+  regCheckIn = signal('09:30');
+  regCheckOut = signal('18:00');
+  regSubmitting = signal(false);
+  regError = signal('');
+  regSuccess = signal('');
 
   readonly calendarCells = computed(() => {
     const data = this.monthlyData();
@@ -37,16 +50,21 @@ export class AttendanceComponent implements OnInit {
     return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
   });
 
-  constructor(private attendance: AttendanceService) {}
+  constructor(private attendance: AttendanceService, private regularizationService: AttendanceRegularizationService) {}
 
   ngOnInit(): void {
     this.loadMonth();
+    this.loadRegularizations();
   }
 
   loadMonth(): void {
     this.attendance
       .getMonthlyAttendance(this.viewYear(), this.viewMonth())
       .then(data => this.monthlyData.set(data));
+  }
+
+  loadRegularizations(): void {
+    this.regularizationService.mine(1, 100).then(res => this.regularizations.set(res.requests));
   }
 
   prevMonth(): void {
@@ -79,6 +97,42 @@ export class AttendanceComponent implements OnInit {
   selectDay(day: DayAttendance | null): void {
     if (!day || day.status === 'future') return;
     this.selectedDay.set(day);
+    this.regReason.set('');
+    this.regError.set('');
+    this.regSuccess.set('');
+  }
+
+  async submitRegularization(): Promise<void> {
+    const day = this.selectedDay();
+    if (!day) return;
+
+    this.regError.set('');
+    this.regSuccess.set('');
+    if (!this.regReason().trim()) {
+      this.regError.set('A reason is required.');
+      return;
+    }
+    if (this.regCheckOut() <= this.regCheckIn()) {
+      this.regError.set('Check-out must be after check-in.');
+      return;
+    }
+
+    this.regSubmitting.set(true);
+    try {
+      await this.regularizationService.apply({
+        date: day.date,
+        reason: this.regReason(),
+        requestedCheckIn: this.regCheckIn(),
+        requestedCheckOut: this.regCheckOut(),
+      });
+      this.regSuccess.set('Regularization request submitted — awaiting superadmin approval.');
+      this.regReason.set('');
+      this.loadRegularizations();
+    } catch (err: any) {
+      this.regError.set(err?.error?.message ?? 'Could not submit request. Please try again.');
+    } finally {
+      this.regSubmitting.set(false);
+    }
   }
 
   isToday(day: DayAttendance | null): boolean {
@@ -95,7 +149,7 @@ export class AttendanceComponent implements OnInit {
 
   statusLabel(status: string): string {
     const map: Record<string, string> = {
-      present: 'Present', absent: 'Absent', leave: 'Leave', future: '—',
+      present: 'Present', absent: 'Absent', leave: 'Leave', pending: 'Pending Approval', future: '—',
     };
     return map[status] ?? status;
   }

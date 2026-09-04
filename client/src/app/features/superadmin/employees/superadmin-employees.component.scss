@@ -99,6 +99,13 @@
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .empty-note { padding: var(--space-8); text-align: center; color: var(--text-muted); }
 
+/* Table on laptop/desktop, cards on mobile — swap which is visible by width. */
+.employees-grid { display: none; }
+@media (max-width: 768px) {
+  .table-scroll { display: none; }
+  .employees-grid { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-4); }
+}
+
 .employees-table {
   width: 100%;
   border-collapse: collapse;
@@ -133,3 +140,45 @@
   border-top: 1px solid var(--border);
 }
 .page-indicator { font-size: 0.8125rem; color: var(--text-muted); }
+
+/* ─── Employee cards (mobile) ────────────────────────────────────── */
+.employee-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: var(--space-4);
+}
+
+.ec-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.ec-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: var(--space-4);
+}
+.ec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 0.8125rem;
+}
+.ec-label { color: var(--text-muted); flex-shrink: 0; }
+.ec-row span:last-child { text-align: right; word-break: break-word; }
+
+.ec-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .btn { flex: 1; min-width: 120px; text-align: center; }
+}

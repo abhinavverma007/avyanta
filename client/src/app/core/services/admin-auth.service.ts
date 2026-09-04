@@ -38,6 +38,15 @@ export class AdminAuthService {
     return true;
   }
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const res = await firstValueFrom(
+      this.http.post<AdminLoginResponse>(`${environment.apiUrl}/admin/auth/change-password`, { currentPassword, newPassword }),
+    );
+    this._state.set({ admin: res.admin, isAuthenticated: true });
+    localStorage.setItem(ADMIN_TOKEN_KEY, res.token);
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(res.admin));
+  }
+
   logout(): void {
     this._state.set({ admin: null, isAuthenticated: false });
     localStorage.removeItem(ADMIN_TOKEN_KEY);

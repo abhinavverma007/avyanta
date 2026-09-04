@@ -66,6 +66,8 @@
                 <span class="day-num">{{ cell.date | slice:8 }}</span>
                 @if (cell.status === 'leave') {
                   <span class="day-icon">🌿</span>
+                } @else if (cell.status === 'pending') {
+                  <span class="day-icon">⏳</span>
                 }
               }
             </div>
@@ -77,6 +79,7 @@
           <span class="leg"><span class="ld present"></span> Present</span>
           <span class="leg"><span class="ld absent"></span> Absent</span>
           <span class="leg"><span class="ld leave"></span> Leave</span>
+          <span class="leg"><span class="ld pending"></span> Pending Approval</span>
         </div>
 
       </div>
@@ -87,7 +90,7 @@
           <div class="dd-header">
             <div>
               <h3 class="dd-date">{{ formatDayDisplay(day.date) }}</h3>
-              <span class="badge" [class]="'badge-' + (day.status === 'present' ? 'success' : day.status === 'leave' ? 'warning' : 'danger')">
+              <span class="badge" [class]="'badge-' + (day.status === 'present' ? 'success' : (day.status === 'leave' || day.status === 'pending') ? 'warning' : 'danger')">
                 {{ statusLabel(day.status) }}
               </span>
             </div>
@@ -112,9 +115,46 @@
               </div>
             </div>
           } @else if (day.status === 'absent') {
-            <p class="dd-note">No check-in recorded for this day. Contact HR if this is an error.</p>
+            <p class="dd-note">No check-in recorded for this day.</p>
+
+            @if (regularizationByDate().get(day.date); as reg) {
+              <div class="reg-status">
+                <span class="badge" [class]="reg.status === 'approved' ? 'badge-success' : reg.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
+                  Regularization {{ reg.status | titlecase }}
+                </span>
+                <p class="dd-note">Requested {{ reg.requestedCheckIn }}–{{ reg.requestedCheckOut }} — {{ reg.reason }}</p>
+                @if (reg.reviewNote) {
+                  <p class="dd-note">Review note: {{ reg.reviewNote }}</p>
+                }
+              </div>
+            } @else {
+              <div class="reg-form">
+                <p class="reg-form-title">Forgot to punch? Request regularization for this day.</p>
+                <div class="reg-form-row">
+                  <div class="reg-field">
+                    <label class="form-label">Check In</label>
+                    <input class="form-control" type="time" [value]="regCheckIn()" (input)="regCheckIn.set($any($event.target).value)" />
+                  </div>
+                  <div class="reg-field">
+                    <label class="form-label">Check Out</label>
+                    <input class="form-control" type="time" [value]="regCheckOut()" (input)="regCheckOut.set($any($event.target).value)" />
+                  </div>
+                </div>
+                <div class="reg-field">
+                  <label class="form-label">Reason</label>
+                  <input class="form-control" placeholder="e.g. Forgot to punch in" [value]="regReason()" (input)="regReason.set($any($event.target).value)" />
+                </div>
+                @if (regError()) { <p class="error-msg">{{ regError() }}</p> }
+                @if (regSuccess()) { <p class="success-msg">{{ regSuccess() }}</p> }
+                <button class="btn btn-blue btn-sm" [disabled]="regSubmitting()" (click)="submitRegularization()">
+                  {{ regSubmitting() ? 'Submitting…' : 'Request Regularization' }}
+                </button>
+              </div>
+            }
           } @else if (day.status === 'leave') {
-            <p class="dd-note">Leave approved for this day.</p>
+            <p class="dd-note">Leave approved for this day{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+          } @else if (day.status === 'pending') {
+            <p class="dd-note">Leave request pending superadmin approval{{ day.reason ? ' — ' + day.reason : '' }}.</p>
           }
         </div>
       }

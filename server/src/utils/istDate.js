@@ -24,4 +24,13 @@ function istHHMM(date) {
   return `${h}:${m}`;
 }
 
-module.exports = { istNow, istDateString, istMinutesSinceMidnight, istHHMM };
+// Inverse of istHHMM/istDateString — builds the real stored instant for a
+// given IST calendar day + wall-clock time (e.g. for a superadmin-approved
+// attendance regularization, where there's no live punch to record from).
+function istToDate(dateStr, hhmm) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const [h, min] = hhmm.split(':').map(Number);
+  return new Date(Date.UTC(y, m - 1, d, h, min, 0) - IST_OFFSET_MS);
+}
+
+module.exports = { istNow, istDateString, istMinutesSinceMidnight, istHHMM, istToDate };

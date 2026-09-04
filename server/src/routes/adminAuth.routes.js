@@ -7,9 +7,8 @@ const router = express.Router();
 
 router.post('/login', asyncHandler(ctrl.login));
 router.get('/me', adminAuth, asyncHandler(ctrl.me));
-// Not behind the adminAuth middleware — see adminAuth.controller.js's
-// register() for how this is protected instead (open only while zero
-// admins exist; requires a valid admin token after that).
+router.post('/change-password', adminAuth, asyncHandler(ctrl.changePassword));
+// Deliberately open — see the comment on register() in adminAuth.controller.js.
 router.post('/register', asyncHandler(ctrl.register));
 
 module.exports = router;

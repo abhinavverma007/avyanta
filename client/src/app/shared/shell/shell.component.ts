@@ -22,8 +22,7 @@ export class ShellComponent {
   readonly allNavItems: NavItem[] = [
     { path: '/dashboard',  label: 'Home',       icon: 'home',        roles: ['employee','director','customer','vendor'] },
     { path: '/attendance', label: 'Attendance',  icon: 'calendar',    roles: ['employee','director'] },
-    { path: '/leave',      label: 'Leave',       icon: 'leaf',        roles: ['employee','director'] },
-    { path: '/reimbursements', label: 'Claims',  icon: 'receipt',     roles: ['employee'] },
+    { path: '/requests',   label: 'Requests',    icon: 'receipt',     roles: ['employee','director'] },
     { path: '/tasks',      label: 'Tasks',       icon: 'tasks',       roles: ['field_worker','employee'] },
     { path: '/profile',    label: 'Profile',     icon: 'user',        roles: ['employee','field_worker','director','customer','vendor'] },
   ];

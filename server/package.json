@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "manage:employees": "node src/scripts/manageEmployees.js",
-    "manage:admins": "node src/scripts/manageAdmins.js"
+    "manage:admins": "node src/scripts/manageAdmins.js",
+    "migrate:leave-status": "node src/scripts/migrateLeaveStatus.js"
   },
   "engines": {
     "node": ">=18"

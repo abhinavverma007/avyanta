@@ -23,6 +23,22 @@ function resolveYearMonth(req) {
   return { year, month };
 }
 
+function sanitize(l) {
+  return {
+    id: l._id.toString(),
+    date: l.date,
+    reason: l.reason,
+    status: l.status,
+    reviewNote: l.reviewNote,
+    reviewedAt: l.reviewedAt,
+  };
+}
+
+// Pending requests reserve quota the same as approved ones — otherwise an
+// employee could apply well past their quota while requests sit unreviewed.
+// Rejected requests free the quota back up entirely.
+const RESERVES_QUOTA = { $in: ['pending', 'approved'] };
+
 // How many of this employee's monthly leave quota are left, for a given month.
 exports.summary = async (req, res) => {
   const { year, month } = resolveYearMonth(req);
@@ -31,6 +47,7 @@ exports.summary = async (req, res) => {
   const taken = await Leave.countDocuments({
     employee: req.employee._id,
     date: { $gte: start, $lte: end },
+    status: RESERVES_QUOTA,
   });
   const quota = req.employee.paidLeavesPerMonth || 0;
 
@@ -48,7 +65,7 @@ exports.mine = async (req, res) => {
   ]);
 
   res.json({
-    leaves: leaves.map((l) => ({ date: l.date, reason: l.reason })),
+    leaves: leaves.map(sanitize),
     total,
     page,
     limit,
@@ -56,10 +73,12 @@ exports.mine = async (req, res) => {
   });
 };
 
-// No leave "types" and no approval step — the monthly quota the superadmin
-// sets on the employee's profile is the only gate. A request that fits
-// within the remaining quota for every month it touches is applied
-// immediately; one that doesn't is rejected outright (never partially).
+// No leave "types" — the monthly quota the superadmin sets on the employee's
+// profile is the only gate on how many days can be requested. A request that
+// fits within the remaining quota for every month it touches is created as
+// 'pending' and waits for the superadmin to approve or reject it (see
+// adminLeave.controller.js); one that doesn't fit is rejected outright at
+// request time (never partially).
 exports.create = async (req, res) => {
   const { dates, reason } = req.body;
 
@@ -85,7 +104,11 @@ exports.create = async (req, res) => {
   }
 
   const existingLeaves = await Leave.find({ employee: req.employee._id, date: { $in: uniqueDates } });
-  const existingLeaveDates = new Set(existingLeaves.map((l) => l.date));
+  const alreadyApproved = existingLeaves.find((l) => l.status === 'approved');
+  if (alreadyApproved) {
+    return res.status(409).json({ message: `${alreadyApproved.date} is already an approved leave.` });
+  }
+  const existingLeaveDates = new Set(existingLeaves.filter((l) => l.status !== 'rejected').map((l) => l.date));
 
   const byMonth = new Map();
   for (const d of uniqueDates) {
@@ -100,6 +123,7 @@ exports.create = async (req, res) => {
     const alreadyTaken = await Leave.countDocuments({
       employee: req.employee._id,
       date: { $gte: start, $lte: end, $nin: monthDates },
+      status: RESERVES_QUOTA,
     });
     const newInThisMonth = monthDates.filter((d) => !existingLeaveDates.has(d)).length;
     if (alreadyTaken + newInThisMonth > quota) {
@@ -113,11 +137,13 @@ exports.create = async (req, res) => {
   for (const d of uniqueDates) {
     const rec = await Leave.findOneAndUpdate(
       { employee: req.employee._id, date: d },
-      { $set: { reason: trimmedReason } },
+      { $set: { reason: trimmedReason, status: 'pending', reviewNote: '', reviewedAt: null } },
       { upsert: true, new: true },
     );
     results.push(rec);
   }
 
-  res.status(201).json({ leaves: results.map((r) => ({ date: r.date, reason: r.reason })) });
+  res.status(201).json({ leaves: results.map(sanitize) });
 };
+
+exports.sanitize = sanitize;

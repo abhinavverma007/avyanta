@@ -38,11 +38,15 @@ function toDayAttendance(record) {
 }
 
 // Shared by an employee's own /attendance/monthly view and the admin salary
-// calculator, so both agree on what counts as present/absent/leave/future.
+// calculator, so both agree on what counts as present/absent/leave/pending/future.
 // No weekends or holidays — every day is a working day until it's in the
 // future. A real punch always wins over a leave record for the same date
 // (e.g. they ended up coming in after all); a leave booked for a date that
-// hasn't happened yet still shows as 'leave', not 'future'.
+// hasn't happened yet still shows as 'leave'/'pending', not 'future'. A
+// pending (not yet reviewed) leave request is excluded from every count —
+// present, absent and leave — until the superadmin approves or rejects it.
+// A rejected request is treated as if it never existed, so it falls through
+// to the normal absent/future check below.
 async function computeMonthlyAttendance(employee, year, month) {
   const pad = (n) => String(n).padStart(2, '0');
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -70,8 +74,12 @@ async function computeMonthlyAttendance(employee, year, month) {
     }
 
     const leave = leaveByDate.get(dateStr);
-    if (leave) {
+    if (leave && leave.status === 'approved') {
       days.push({ date: dateStr, status: 'leave', reason: leave.reason });
+      continue;
+    }
+    if (leave && leave.status === 'pending') {
+      days.push({ date: dateStr, status: 'pending', reason: leave.reason });
       continue;
     }
 
@@ -83,14 +91,16 @@ async function computeMonthlyAttendance(employee, year, month) {
     days.push({ date: dateStr, status: 'absent' });
   }
 
-  const workingDays = days.filter((d) => d.status !== 'future');
+  const workingDays = days.filter((d) => d.status !== 'future' && d.status !== 'pending');
   return {
     month,
     year,
     days,
+    calendarDaysInMonth: daysInMonth, // the actual number of days in this month, e.g. 30 for September
     presentDays: workingDays.filter((d) => d.status === 'present').length,
     absentDays: workingDays.filter((d) => d.status === 'absent').length,
     leaveDays: workingDays.filter((d) => d.status === 'leave').length,
+    pendingLeaveDays: days.filter((d) => d.status === 'pending').length,
     totalWorkingDays: workingDays.length,
   };
 }

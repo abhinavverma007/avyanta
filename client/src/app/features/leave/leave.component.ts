@@ -100,7 +100,7 @@ export class LeaveComponent implements OnInit {
     this.submitting.set(true);
     try {
       await this.leaveService.apply({ dates, reason: this.reason() });
-      this.success.set(`Leave marked for ${dates.length} day${dates.length === 1 ? '' : 's'}.`);
+      this.success.set(`Leave request submitted for ${dates.length} day${dates.length === 1 ? '' : 's'} — awaiting superadmin approval.`);
       this.reason.set('');
       this.page.set(1);
       this.loadSummary();

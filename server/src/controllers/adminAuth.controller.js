@@ -34,6 +34,32 @@ exports.me = async (req, res) => {
   res.json({ admin: sanitize(req.admin) });
 };
 
+exports.changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current and new password are required.' });
+  }
+  if (String(newPassword).length < 6) {
+    return res.status(400).json({ message: 'New password must be at least 6 characters.' });
+  }
+
+  const admin = req.admin;
+  const match = await bcrypt.compare(currentPassword, admin.passwordHash);
+  if (!match) {
+    return res.status(401).json({ message: 'Current password is incorrect.' });
+  }
+
+  admin.passwordHash = await bcrypt.hash(String(newPassword), 10);
+  // Bumping tokenVersion invalidates any other session on other devices; we
+  // hand back a freshly signed token below so this session stays valid —
+  // the frontend still forces a logout+re-login as a deliberate UX choice.
+  admin.tokenVersion += 1;
+  await admin.save();
+
+  const token = signToken({ sub: admin._id.toString(), role: 'admin', tokenVersion: admin.tokenVersion });
+  res.json({ token, admin: sanitize(admin) });
+};
+
 // Open on purpose — no token required, and no limit on how many superadmin
 // accounts can be seeded this way. Convenient for bootstrapping via Postman,
 // but that means anyone with the URL can create a superadmin account, so

@@ -1,8 +1,5 @@
-<div class="page fade-in">
-  <div class="page-header">
-    <h1 class="page-title">Leave</h1>
-    <p class="page-sub">Your superadmin sets how many leave days you get each month — no leave types, just dates and a reason.</p>
-  </div>
+<div class="panel fade-in">
+  <p class="tab-intro">Your superadmin sets how many leave days you get each month — no leave types, just dates and a reason.</p>
 
   @if (summary(); as s) {
     <div class="summary-strip">
@@ -56,10 +53,18 @@
       <p class="empty-note">No leave taken yet.</p>
     } @else {
       <div class="leave-list">
-        @for (l of leaves(); track l.date) {
+        @for (l of leaves(); track l.id) {
           <div class="leave-row">
-            <span class="leave-date">{{ formatDate(l.date) }}</span>
-            <span class="leave-reason">{{ l.reason }}</span>
+            <div class="leave-main">
+              <span class="leave-date">{{ formatDate(l.date) }}</span>
+              <span class="leave-reason">{{ l.reason }}</span>
+              @if (l.reviewNote) {
+                <span class="leave-note">Review note: {{ l.reviewNote }}</span>
+              }
+            </div>
+            <span class="badge" [class]="l.status === 'approved' ? 'badge-success' : l.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
+              {{ l.status | titlecase }}
+            </span>
           </div>
         }
       </div>

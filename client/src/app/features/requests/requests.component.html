@@ -1,0 +1,26 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <h1 class="page-title">Requests</h1>
+    <p class="page-sub">Apply for leave, submit an expense claim, or request an attendance correction</p>
+  </div>
+
+  <div class="section-switcher">
+    <button class="section-tab" [class.active]="section() === 'leave'" (click)="setSection('leave')">
+      Leave
+    </button>
+    <button class="section-tab" [class.active]="section() === 'reimbursement'" (click)="setSection('reimbursement')">
+      Reimbursement
+    </button>
+    <button class="section-tab" [class.active]="section() === 'regularization'" (click)="setSection('regularization')">
+      Regularization
+    </button>
+  </div>
+
+  @if (section() === 'leave') {
+    <app-leave />
+  } @else if (section() === 'reimbursement') {
+    <app-reimbursements />
+  } @else {
+    <app-regularization />
+  }
+</div>

@@ -1,7 +1,7 @@
 const Employee = require('../models/Employee');
 const Reimbursement = require('../models/Reimbursement');
 const { computeMonthlyAttendance } = require('../utils/attendanceStats');
-const { istNow } = require('../utils/istDate');
+const { istNow, istDateString } = require('../utils/istDate');
 
 const round2 = (n) => Math.round(n * 100) / 100;
 
@@ -14,16 +14,36 @@ function monthRange(year, month) {
   };
 }
 
+// Salary is computed "till date": for the current month, only days up to
+// today count at all (future days are neither paid nor deducted); a past
+// month naturally includes every day since none of it is 'future' anymore.
+// The daily rate is always baseSalary / calendar-days-in-month — a flat
+// company-wide rate, not something that shrinks as the month progresses.
+// Present and approved-leave days are paid; absent and not-yet-approved
+// (pending) leave days are not — a pending request only starts costing the
+// employee money once the superadmin actually reviews and rejects it, or
+// costs them nothing once approved, but sits withholding pay while pending.
 async function computeSalary(employee, year, month) {
   const attendance = await computeMonthlyAttendance(employee, year, month);
   const baseSalary = employee.salaryMonthly || 0;
-  const perDaySalary = attendance.totalWorkingDays > 0 ? baseSalary / attendance.totalWorkingDays : 0;
+  const perDaySalary = attendance.calendarDaysInMonth > 0 ? baseSalary / attendance.calendarDaysInMonth : 0;
 
-  // Leave requests are capped at the monthly quota when they're taken (see
-  // leave.controller.js), so every day marked 'leave' is already paid by
-  // construction — only genuine absences (no punch, no leave record) cost pay.
+  // computeMonthlyAttendance deliberately labels a future-dated *approved*
+  // leave as 'leave' rather than 'future', so the attendance calendar can
+  // show it ahead of time — but for "till date" salary that's wrong, a leave
+  // day next week hasn't happened yet and can't be paid or deducted today.
+  // Bound "elapsed" by the actual calendar date, not the status label.
+  const todayStr = istDateString();
+  const elapsedDays = attendance.days.filter((d) => d.date <= todayStr);
+  const presentDays = elapsedDays.filter((d) => d.status === 'present').length;
+  const absentDays = elapsedDays.filter((d) => d.status === 'absent').length;
+  const leavesTaken = elapsedDays.filter((d) => d.status === 'leave').length;
+  const paidDays = presentDays + leavesTaken;
+  const unpaidDays = elapsedDays.length - paidDays; // absent + pending (unapproved) leave, dated so far
+
   const paidLeavesPerMonth = employee.paidLeavesPerMonth || 0;
-  const deduction = round2(attendance.absentDays * perDaySalary);
+  const deduction = round2(unpaidDays * perDaySalary);
+  const earnedTillDate = round2(paidDays * perDaySalary);
 
   const { start, end } = monthRange(year, month);
   const reimbursements = await Reimbursement.find({
@@ -33,7 +53,7 @@ async function computeSalary(employee, year, month) {
   });
   const reimbursementTotal = round2(reimbursements.reduce((sum, r) => sum + r.amount, 0));
 
-  const payable = round2(baseSalary - deduction + reimbursementTotal);
+  const payable = round2(earnedTillDate + reimbursementTotal);
 
   return {
     employeeId: employee._id.toString(),
@@ -43,13 +63,16 @@ async function computeSalary(employee, year, month) {
     year,
     month,
     baseSalary,
-    totalWorkingDays: attendance.totalWorkingDays,
-    presentDays: attendance.presentDays,
-    absentDays: attendance.absentDays,
+    calendarDaysInMonth: attendance.calendarDaysInMonth,
+    elapsedDays: elapsedDays.length,
+    presentDays,
+    absentDays,
+    pendingLeaveDays: attendance.pendingLeaveDays,
     paidLeavesPerMonth,
-    leavesTaken: attendance.leaveDays,
+    leavesTaken,
     perDaySalary: round2(perDaySalary),
     deduction,
+    earnedTillDate,
     reimbursementTotal,
     reimbursementCount: reimbursements.length,
     payable,

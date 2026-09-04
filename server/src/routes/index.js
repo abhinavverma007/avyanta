@@ -4,11 +4,15 @@ const attendanceRoutes = require('./attendance.routes');
 const leaveRoutes = require('./leave.routes');
 const reimbursementRoutes = require('./reimbursements.routes');
 const tasksRoutes = require('./tasks.routes');
+const regularizationRoutes = require('./attendanceRegularization.routes');
 const adminAuthRoutes = require('./adminAuth.routes');
 const adminEmployeesRoutes = require('./adminEmployees.routes');
 const adminReimbursementsRoutes = require('./adminReimbursements.routes');
+const adminLeaveRoutes = require('./adminLeave.routes');
 const adminSalaryRoutes = require('./adminSalary.routes');
 const adminTasksRoutes = require('./adminTasks.routes');
+const adminAttendanceRoutes = require('./adminAttendance.routes');
+const adminRegularizationRoutes = require('./adminAttendanceRegularization.routes');
 
 const router = express.Router();
 
@@ -20,12 +24,16 @@ router.use('/attendance', attendanceRoutes);
 router.use('/leave', leaveRoutes);
 router.use('/reimbursements', reimbursementRoutes);
 router.use('/tasks', tasksRoutes);
+router.use('/regularizations', regularizationRoutes);
 
 // Superadmin-facing
 router.use('/admin/auth', adminAuthRoutes);
 router.use('/admin/employees', adminEmployeesRoutes);
 router.use('/admin/reimbursements', adminReimbursementsRoutes);
+router.use('/admin/leaves', adminLeaveRoutes);
 router.use('/admin/salary', adminSalaryRoutes);
 router.use('/admin/tasks', adminTasksRoutes);
+router.use('/admin/attendance', adminAttendanceRoutes);
+router.use('/admin/regularizations', adminRegularizationRoutes);
 
 module.exports = router;

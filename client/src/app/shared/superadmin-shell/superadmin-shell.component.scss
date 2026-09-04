@@ -111,7 +111,8 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  min-width: 220px;
+  min-width: 280px;
+  max-width: min(320px, calc(100vw - 32px));
   overflow: hidden;
   z-index: 200;
 }
@@ -137,6 +138,48 @@
 .dropdown-item:hover { background: var(--surface-raised); }
 .dropdown-item.danger { color: var(--danger); }
 .dropdown-item.danger:hover { background: var(--danger-bg); }
+
+.dropdown-item-arrow {
+  margin-left: auto;
+  color: var(--text-light);
+  transition: transform var(--transition);
+}
+.dropdown-item-arrow.open { transform: rotate(90deg); }
+
+/* ─── Change password (inline expand) ────────────────────────────── */
+.change-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) 16px var(--space-4);
+}
+
+.password-wrap { position: relative; }
+.password-wrap .form-control { padding-right: 44px; }
+.toggle-pw {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  padding: 4px;
+}
+.toggle-pw:hover { color: var(--text); }
+
+.error-msg {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  padding: 8px 12px;
+  background: var(--danger-bg);
+  border-radius: var(--radius-sm);
+}
+.success-msg {
+  font-size: 0.8125rem;
+  color: var(--success);
+  padding: 8px 12px;
+  background: var(--success-bg);
+  border-radius: var(--radius-sm);
+}
 
 /* ─── Content ─────────────────────────────────────────────────────── */
 .sa-content {

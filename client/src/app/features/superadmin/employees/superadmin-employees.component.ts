@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AdminEmployeeService } from '../../../core/services/admin-employee.service';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { generatePassword } from '../../../core/utils/generate-password';
@@ -30,12 +31,12 @@ function formatAadhaar(raw: string): string {
   return digits.match(/.{1,4}/g)?.join('-') ?? digits;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 3;
 
 @Component({
   selector: 'app-superadmin-employees',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './superadmin-employees.component.html',
   styleUrl: './superadmin-employees.component.scss',
 })

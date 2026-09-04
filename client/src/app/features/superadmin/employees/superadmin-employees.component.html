@@ -143,6 +143,7 @@
     } @else if (employees().length === 0) {
       <p class="empty-note">No employees yet. Click "Add Employee" to create your first login.</p>
     } @else {
+      <!-- Table view — laptop/desktop -->
       <div class="table-scroll">
         <table class="employees-table">
           <thead>
@@ -154,6 +155,7 @@
               <th>Salary</th>
               <th>Leaves/mo</th>
               <th>Status</th>
+              <th>Attendance</th>
               <th></th>
             </tr>
           </thead>
@@ -174,6 +176,9 @@
                     {{ emp.isActive ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
+                <td>
+                  <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', emp.id, 'attendance']">See Attendance History</a>
+                </td>
                 <td class="row-actions">
                   <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
                   <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
@@ -188,6 +193,41 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Card view — mobile / narrow screens -->
+      <div class="employees-grid">
+        @for (emp of employees(); track emp.id) {
+          <div class="employee-card">
+            <div class="ec-header">
+              <div>
+                <div class="emp-name">{{ emp.name }}</div>
+                <div class="emp-sub">{{ emp.designation || '—' }}</div>
+              </div>
+              <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
+                {{ emp.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+            <div class="ec-body">
+              <div class="ec-row"><span class="ec-label">Employee ID</span><span class="font-mono">{{ emp.employeeId }}</span></div>
+              <div class="ec-row"><span class="ec-label">Department</span><span>{{ emp.department || '—' }}</span></div>
+              <div class="ec-row"><span class="ec-label">Email</span><span class="font-mono">{{ emp.email }}</span></div>
+              <div class="ec-row"><span class="ec-label">Salary</span><span class="font-mono">₹{{ emp.salaryMonthly | number }}</span></div>
+              <div class="ec-row"><span class="ec-label">Leaves/mo</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
+            </div>
+            <div class="ec-actions">
+              <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', emp.id, 'attendance']">Attendance History</a>
+              <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+              <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
+                {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
+              </button>
+              <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
+                {{ emp.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
       <div class="pagination-row">
         <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
         <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>

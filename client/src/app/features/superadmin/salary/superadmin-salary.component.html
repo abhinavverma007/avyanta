@@ -2,7 +2,7 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Payable Salary</h1>
-      <p class="page-sub">Base salary minus unpaid absences beyond leave quota, plus approved reimbursements</p>
+      <p class="page-sub">Earned till date this month — present and approved-leave days are paid, absent and not-yet-approved leave days are withheld, plus approved reimbursements</p>
     </div>
 
     <div class="month-picker">
@@ -19,23 +19,60 @@
     </div>
   </div>
 
+  <div class="search-row">
+    <input
+      class="form-control search-input"
+      placeholder="Search by employee name…"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+    />
+    <span class="result-count">{{ filteredRows().length }} employee{{ filteredRows().length === 1 ? '' : 's' }}</span>
+  </div>
+
   <div class="summary-strip">
     <div class="summary-stat">
-      <span class="ss-value">{{ rows().length }}</span>
+      <span class="ss-value">{{ filteredRows().length }}</span>
       <span class="ss-label">Employees</span>
     </div>
     <div class="summary-stat">
-      <span class="ss-value" style="color: var(--success)">₹{{ totalPayable() | number }}</span>
-      <span class="ss-label">Total Payable</span>
+      <span class="ss-value" style="color: var(--success)">₹{{ filteredTotalPayable() | number }}</span>
+      <span class="ss-label">Total Payable Till Date</span>
     </div>
   </div>
+
+  <ng-template #detailPanelTpl let-row="row">
+    @if (detailLoading()) {
+      <p class="empty-note">Loading breakdown…</p>
+    } @else {
+      @if (detail(); as d) {
+        <div class="detail-panel">
+          <p class="detail-line">Daily rate: <strong class="font-mono">₹{{ d.perDaySalary | number }}</strong> (₹{{ d.baseSalary | number }} ÷ {{ d.calendarDaysInMonth }} days in month)</p>
+          <p class="detail-line">{{ d.elapsedDays }} of {{ d.calendarDaysInMonth }} days elapsed this month — earned till date: <strong class="font-mono">₹{{ d.earnedTillDate | number }}</strong></p>
+          @if (row.pendingLeaveDays > 0) {
+            <p class="detail-line text-warning">{{ row.pendingLeaveDays }} leave day(s) still awaiting your approval — withheld until reviewed.</p>
+          }
+          @if (d.reimbursements.length > 0) {
+            <p class="detail-line">Approved reimbursements:</p>
+            <ul class="reimb-list">
+              @for (r of d.reimbursements; track r.id) {
+                <li>{{ r.date }} — {{ r.category | titlecase }} — ₹{{ r.amount | number }} @if (r.description) { — {{ r.description }} }</li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-line text-muted">No approved reimbursements this month.</p>
+          }
+        </div>
+      }
+    }
+  </ng-template>
 
   <div class="card table-card">
     @if (loading()) {
       <p class="empty-note">Calculating…</p>
-    } @else if (rows().length === 0) {
-      <p class="empty-note">No active employees.</p>
+    } @else if (filteredRows().length === 0) {
+      <p class="empty-note">{{ rows().length === 0 ? 'No active employees.' : 'No employees match your search.' }}</p>
     } @else {
+      <!-- Table view — laptop/desktop -->
       <div class="table-scroll">
         <table class="salary-table">
           <thead>
@@ -45,14 +82,14 @@
               <th>Present</th>
               <th>Absent</th>
               <th>Leaves Taken / Quota</th>
-              <th>Deduction</th>
+              <th>Pending Leave</th>
               <th>Reimbursements</th>
-              <th>Payable</th>
+              <th>Payable Till Date</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            @for (row of rows(); track row.employeeId) {
+            @for (row of filteredRows(); track row.employeeId) {
               <tr class="row-clickable" (click)="toggleDetail(row)">
                 <td>
                   <div class="emp-name">{{ row.name }}</div>
@@ -62,7 +99,13 @@
                 <td>{{ row.presentDays }}</td>
                 <td>{{ row.absentDays }}</td>
                 <td>{{ row.leavesTaken }} / {{ row.paidLeavesPerMonth }}</td>
-                <td class="font-mono text-danger">-₹{{ row.deduction | number }}</td>
+                <td>
+                  @if (row.pendingLeaveDays > 0) {
+                    <span class="badge badge-warning">{{ row.pendingLeaveDays }} unreviewed</span>
+                  } @else {
+                    —
+                  }
+                </td>
                 <td class="font-mono text-success">+₹{{ row.reimbursementTotal | number }} ({{ row.reimbursementCount }})</td>
                 <td class="font-mono payable">₹{{ row.payable | number }}</td>
                 <td class="expand-arrow">{{ expandedId() === row.employeeId ? '▲' : '▼' }}</td>
@@ -70,31 +113,54 @@
               @if (expandedId() === row.employeeId) {
                 <tr class="detail-row">
                   <td colspan="9">
-                    @if (detailLoading()) {
-                      <p class="empty-note">Loading breakdown…</p>
-                    } @else {
-                      @if (detail(); as d) {
-                        <div class="detail-panel">
-                          <p class="detail-line">Per working day rate: <strong class="font-mono">₹{{ d.perDaySalary | number }}</strong> (based on {{ d.totalWorkingDays }} working days this month)</p>
-                          @if (d.reimbursements.length > 0) {
-                            <p class="detail-line">Approved reimbursements:</p>
-                            <ul class="reimb-list">
-                              @for (r of d.reimbursements; track r.id) {
-                                <li>{{ r.date }} — {{ r.category | titlecase }} — ₹{{ r.amount | number }} @if (r.description) { — {{ r.description }} }</li>
-                              }
-                            </ul>
-                          } @else {
-                            <p class="detail-line text-muted">No approved reimbursements this month.</p>
-                          }
-                        </div>
-                      }
-                    }
+                    <ng-container [ngTemplateOutlet]="detailPanelTpl" [ngTemplateOutletContext]="{ row: row }" />
                   </td>
                 </tr>
               }
             }
           </tbody>
         </table>
+      </div>
+
+      <!-- Card view — mobile / narrow screens -->
+      <div class="salary-grid">
+        @for (row of cardRows(); track row.employeeId) {
+          <div class="salary-card" (click)="toggleDetail(row)">
+            <div class="sc-header">
+              <div>
+                <div class="emp-name">{{ row.name }}</div>
+                <div class="emp-sub">{{ row.employeeCode }} · {{ row.department || '—' }}</div>
+              </div>
+              <span class="font-mono payable">₹{{ row.payable | number }}</span>
+            </div>
+            <div class="sc-body">
+              <div class="sc-row"><span class="sc-label">Base Salary</span><span class="font-mono">₹{{ row.baseSalary | number }}</span></div>
+              <div class="sc-row"><span class="sc-label">Present</span><span>{{ row.presentDays }}</span></div>
+              <div class="sc-row"><span class="sc-label">Absent</span><span>{{ row.absentDays }}</span></div>
+              <div class="sc-row"><span class="sc-label">Leaves Taken / Quota</span><span>{{ row.leavesTaken }} / {{ row.paidLeavesPerMonth }}</span></div>
+              <div class="sc-row">
+                <span class="sc-label">Pending Leave</span>
+                @if (row.pendingLeaveDays > 0) {
+                  <span class="badge badge-warning">{{ row.pendingLeaveDays }} unreviewed</span>
+                } @else {
+                  <span>—</span>
+                }
+              </div>
+              <div class="sc-row"><span class="sc-label">Reimbursements</span><span class="font-mono text-success">+₹{{ row.reimbursementTotal | number }} ({{ row.reimbursementCount }})</span></div>
+            </div>
+
+            @if (expandedId() === row.employeeId) {
+              <div class="sc-detail" (click)="$event.stopPropagation()">
+                <ng-container [ngTemplateOutlet]="detailPanelTpl" [ngTemplateOutletContext]="{ row: row }" />
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div class="pagination-row card-pagination">
+        <button class="btn btn-ghost btn-sm" [disabled]="cardPage() <= 1" (click)="prevCardPage()">← Prev</button>
+        <span class="page-indicator">Page {{ cardPage() }} of {{ cardTotalPages() }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="cardPage() >= cardTotalPages()" (click)="nextCardPage()">Next →</button>
       </div>
     }
   </div>

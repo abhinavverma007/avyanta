@@ -14,6 +14,7 @@ const AUTH_ENDPOINTS_WITH_EXPECTED_401 = [
   `${environment.apiUrl}/auth/login`,
   `${environment.apiUrl}/auth/change-password`,
   `${environment.apiUrl}/admin/auth/login`,
+  `${environment.apiUrl}/admin/auth/change-password`,
 ];
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {

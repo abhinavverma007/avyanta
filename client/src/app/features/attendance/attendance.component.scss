@@ -147,6 +147,15 @@
   &:hover { transform: scale(1.05); }
 }
 
+.day-cell.status-pending {
+  background: var(--surface);
+  border: 1.5px dashed var(--warning);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  .day-num { color: var(--warning); font-weight: 700; }
+  &:hover { transform: scale(1.05); }
+}
+
 .day-cell.status-future {
   .day-num { color: var(--text-light); opacity: 0.5; }
 }
@@ -190,6 +199,7 @@
 .ld.present  { background: var(--success); }
 .ld.absent   { background: var(--danger); border-radius: 2px; }
 .ld.leave    { background: var(--warning); border-radius: 2px; }
+.ld.pending  { background: var(--surface); border: 1.5px dashed var(--warning); border-radius: 2px; }
 
 /* ─── Day detail ─────────────────────────────────────────────────── */
 .day-detail {}
@@ -252,4 +262,27 @@
   font-size: 0.875rem;
   color: var(--text-muted);
   line-height: 1.6;
+}
+
+/* ─── Regularization ─────────────────────────────────────────────── */
+.reg-status { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+
+.reg-form { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.reg-form-title { font-size: 0.8125rem; color: var(--text-muted); }
+.reg-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.reg-field { display: flex; flex-direction: column; gap: 4px; }
+
+.error-msg {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  padding: 8px 12px;
+  background: var(--danger-bg);
+  border-radius: var(--radius-sm);
+}
+.success-msg {
+  font-size: 0.8125rem;
+  color: var(--success);
+  padding: 8px 12px;
+  background: var(--success-bg);
+  border-radius: var(--radius-sm);
 }
