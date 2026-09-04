@@ -1,7 +1,7 @@
 // Owner-only CLI to manage the master employee list directly in MongoDB.
 // Run from the server/ directory, e.g.:
 //   npm run manage:employees -- add --name "Rahul Sharma" --email rahul.sharma@sundesh.in \
-//     --password "TempPass123!" --employeeId SDE-2847 --designation "Senior Solar Technician" \
+//     --password "TempPass123!" --employeeId SD-0001 --designation "Senior Solar Technician" \
 //     --department Operations --phone "+91 98765 43210" --joinDate 2021-04-15 --location "Jaipur, Rajasthan"
 //   npm run manage:employees -- list
 //   npm run manage:employees -- reset-password --email rahul.sharma@sundesh.in --password "NewPass123!"

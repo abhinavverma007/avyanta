@@ -32,7 +32,7 @@ async function generateEmployeeId() {
     { $inc: { seq: 1 } },
     { upsert: true, new: true },
   );
-  return `SDE-${counter.seq}`;
+  return `SD-${String(counter.seq).padStart(4, '0')}`;
 }
 
 module.exports = { slugifyName, generateUniqueEmail, generateEmployeeId };
