@@ -23,9 +23,10 @@ const EMPTY_FORM: EmployeeForm = {
   phone: '', joinDate: '', location: '', aadhaarNumber: '', salaryMonthly: null, paidLeavesPerMonth: null,
 };
 
-// Groups digits into 4-4-4-4 with hyphens as the superadmin types, capped at 16 digits.
+// Groups digits into 4-4-4 with hyphens as the superadmin types, capped at
+// 12 digits (real Aadhaar numbers are 12 digits).
 function formatAadhaar(raw: string): string {
-  const digits = raw.replace(/\D/g, '').slice(0, 16);
+  const digits = raw.replace(/\D/g, '').slice(0, 12);
   return digits.match(/.{1,4}/g)?.join('-') ?? digits;
 }
 
@@ -161,6 +162,16 @@ export class SuperadminEmployeesComponent implements OnInit {
     this.updateField('aadhaarNumber', formatAadhaar(value));
   }
 
+  onSalaryInput(value: string): void {
+    const digits = value.replace(/\D/g, '');
+    this.updateField('salaryMonthly', digits ? Number(digits) : null);
+  }
+
+  formatMoney(value: number | null): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '';
+    return value.toLocaleString('en-IN');
+  }
+
   fillGeneratedPassword(): void {
     this.updateField('password', generatePassword());
   }
@@ -177,8 +188,8 @@ export class SuperadminEmployeesComponent implements OnInit {
     }
 
     const aadhaarDigits = f.aadhaarNumber.replace(/-/g, '');
-    if (aadhaarDigits && aadhaarDigits.length !== 16) {
-      this.formError.set('Aadhaar number must be 16 digits.');
+    if (aadhaarDigits && aadhaarDigits.length !== 12) {
+      this.formError.set('Aadhaar number must be 12 digits.');
       return;
     }
 

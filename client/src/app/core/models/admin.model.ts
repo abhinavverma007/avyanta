@@ -19,7 +19,7 @@ export interface AdminEmployee {
   employeeId: string;
   joinDate: string;
   location: string;
-  aadhaarNumber: string; // 16 digits, no hyphens
+  aadhaarNumber: string; // 12 digits, no hyphens
   shiftStart: string;
   salaryMonthly: number;
   paidLeavesPerMonth: number;

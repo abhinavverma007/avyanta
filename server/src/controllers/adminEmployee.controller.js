@@ -7,13 +7,14 @@ function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Accepts digits with or without hyphens; stores canonical 16-digit form.
-// Throws a 400-flagged error if a non-empty value isn't exactly 16 digits.
+// Accepts digits with or without hyphens; stores canonical 12-digit form
+// (real Aadhaar numbers are 12 digits). Throws a 400-flagged error if a
+// non-empty value isn't exactly 12 digits.
 function normalizeAadhaar(value) {
   if (value === undefined || value === null || value === '') return '';
   const digits = String(value).replace(/\D/g, '');
-  if (digits.length !== 16) {
-    const err = new Error('Aadhaar number must be exactly 16 digits.');
+  if (digits.length !== 12) {
+    const err = new Error('Aadhaar number must be exactly 12 digits.');
     err.status = 400;
     throw err;
   }

@@ -107,16 +107,16 @@
           <label class="form-label">Aadhaar Number</label>
           <input
             class="form-control font-mono"
-            placeholder="XXXX-XXXX-XXXX-XXXX"
+            placeholder="XXXX-XXXX-XXXX"
             inputmode="numeric"
-            maxlength="19"
+            maxlength="14"
             [value]="form().aadhaarNumber"
             (input)="onAadhaarInput($any($event.target).value)"
           />
         </div>
         <div class="form-group">
           <label class="form-label">Monthly Salary (₹)</label>
-          <input class="form-control" type="number" min="0" [value]="form().salaryMonthly" (input)="updateField('salaryMonthly', $any($event.target).valueAsNumber)" />
+          <input class="form-control" inputmode="numeric" [value]="formatMoney(form().salaryMonthly)" (input)="onSalaryInput($any($event.target).value)" />
         </div>
         <div class="form-group">
           <label class="form-label">Paid Leaves / Month</label>

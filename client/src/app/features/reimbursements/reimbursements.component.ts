@@ -44,6 +44,16 @@ export class ReimbursementsComponent implements OnInit {
     return map[category] ?? category;
   }
 
+  onAmountInput(value: string): void {
+    const digits = value.replace(/\D/g, '');
+    this.amount.set(digits ? Number(digits) : null);
+  }
+
+  formatMoney(value: number | null): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '';
+    return value.toLocaleString('en-IN');
+  }
+
   async submitClaim(): Promise<void> {
     this.error.set('');
     this.success.set('');
