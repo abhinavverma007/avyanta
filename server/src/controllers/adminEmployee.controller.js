@@ -33,6 +33,7 @@ function sanitize(emp) {
     joinDate: emp.joinDate,
     location: emp.location,
     aadhaarNumber: emp.aadhaarNumber,
+    upiId: emp.upiId,
     shiftStart: emp.shiftStart,
     salaryMonthly: emp.salaryMonthly,
     paidLeavesPerMonth: emp.paidLeavesPerMonth,
@@ -110,6 +111,7 @@ exports.create = async (req, res) => {
     joinDate,
     location: req.body.location || '',
     aadhaarNumber: normalizeAadhaar(req.body.aadhaarNumber),
+    upiId: String(req.body.upiId || '').trim(),
     shiftStart: req.body.shiftStart || '09:30',
     salaryMonthly: req.body.salaryMonthly || 0,
     paidLeavesPerMonth: req.body.paidLeavesPerMonth || 0,
@@ -129,6 +131,9 @@ exports.update = async (req, res) => {
   }
   if (req.body.aadhaarNumber !== undefined) {
     updates.aadhaarNumber = normalizeAadhaar(req.body.aadhaarNumber);
+  }
+  if (req.body.upiId !== undefined) {
+    updates.upiId = String(req.body.upiId).trim();
   }
 
   const employee = await Employee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });

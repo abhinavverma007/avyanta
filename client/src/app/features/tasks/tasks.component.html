@@ -1,18 +1,33 @@
 <div class="page fade-in">
   <div class="page-header">
-    <h1 class="page-title">Today's Work</h1>
+    <h1 class="page-title">Work</h1>
     <p class="page-sub">{{ formatTodayHeader() }}</p>
+  </div>
+
+  <div class="section-switcher">
+    <button class="section-tab" [class.active]="range() === 'past'" (click)="setRange('past')">
+      Past Work
+    </button>
+    <button class="section-tab" [class.active]="range() === 'today'" (click)="setRange('today')">
+      Today's Work
+    </button>
+    <button class="section-tab" [class.active]="range() === 'upcoming'" (click)="setRange('upcoming')">
+      Upcoming Work
+    </button>
   </div>
 
   <div class="card">
     @if (loading()) {
       <p class="empty-note">Loading…</p>
     } @else if (tasks().length === 0) {
-      <p class="empty-note">No work assigned for today.</p>
+      <p class="empty-note">{{ emptyMessage() }}</p>
     } @else {
       <div class="task-list">
         @for (task of tasks(); track task.id) {
           <div class="task-row">
+            @if (range() !== 'today') {
+              <p class="task-date">{{ formatDate(task.date) }}</p>
+            }
             <h3 class="task-title">{{ task.title }}</h3>
             @if (task.site) {
               <p class="task-site">📍 {{ task.site }}</p>
@@ -25,6 +40,11 @@
             }
           </div>
         }
+      </div>
+      <div class="pagination-row">
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
+        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }} ({{ total() }} total)</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
       </div>
     }
   </div>

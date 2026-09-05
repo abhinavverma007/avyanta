@@ -16,9 +16,42 @@ function sanitize(task, employeeId) {
   };
 }
 
-// Deliberately today-only — no upcoming/future tasks are ever returned here.
-exports.today = async (req, res) => {
+const RANGES = ['past', 'today', 'upcoming'];
+
+// Three tabs on the employee Tasks page — Past Work, Today's Work, Upcoming
+// Work — each scoped strictly to this employee's own assignments and
+// nothing else. Past sorts most-recent-first, upcoming sorts soonest-first.
+exports.mine = async (req, res) => {
+  const range = RANGES.includes(req.query.range) ? req.query.range : 'today';
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
   const today = istDateString();
-  const tasks = await Task.find({ employees: req.employee._id, date: today }).populate('employees', 'name employeeId');
-  res.json({ date: today, tasks: tasks.map((t) => sanitize(t, req.employee._id.toString())) });
+
+  const filter = { employees: req.employee._id };
+  let sort;
+  if (range === 'past') {
+    filter.date = { $lt: today };
+    sort = { date: -1 };
+  } else if (range === 'upcoming') {
+    filter.date = { $gt: today };
+    sort = { date: 1 };
+  } else {
+    filter.date = today;
+    sort = { date: 1 };
+  }
+
+  const [tasks, total] = await Promise.all([
+    Task.find(filter).sort(sort).skip((page - 1) * limit).limit(limit).populate('employees', 'name employeeId'),
+    Task.countDocuments(filter),
+  ]);
+
+  res.json({
+    range,
+    date: today,
+    tasks: tasks.map((t) => sanitize(t, req.employee._id.toString())),
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  });
 };

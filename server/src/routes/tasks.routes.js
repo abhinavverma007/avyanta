@@ -6,6 +6,6 @@ const ctrl = require('../controllers/task.controller');
 const router = express.Router();
 
 router.use(auth);
-router.get('/today', asyncHandler(ctrl.today));
+router.get('/mine', asyncHandler(ctrl.mine));
 
 module.exports = router;

@@ -57,6 +57,16 @@ exports.today = async (req, res) => {
   });
 };
 
+// For the "I punched in by mistake" case — wipes today's attendance record
+// entirely, back to exactly the state as if no punch had happened today.
+// Deliberately hardcoded to today's date server-side (never a client-passed
+// date), so this can never be used to erase a past day's attendance.
+exports.unmarkToday = async (req, res) => {
+  const today = istDateString();
+  await Attendance.deleteOne({ employee: req.employee._id, date: today });
+  res.json({ date: today, status: 'absent', punchState: 'out' });
+};
+
 exports.monthly = async (req, res) => {
   const now = istNow();
   const year = parseInt(req.query.year, 10) || now.getUTCFullYear();

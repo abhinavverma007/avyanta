@@ -25,6 +25,12 @@ export class AdminEmployeeService {
     return firstValueFrom(this.http.get<PaginatedEmployees>(this.base, { params: query }));
   }
 
+  get(id: string): Promise<AdminEmployee> {
+    return firstValueFrom(
+      this.http.get<{ employee: AdminEmployee }>(`${this.base}/${id}`),
+    ).then(r => r.employee);
+  }
+
   create(payload: CreateEmployeePayload): Promise<EmployeeWithGeneratedPassword> {
     return firstValueFrom(this.http.post<EmployeeWithGeneratedPassword>(this.base, payload));
   }

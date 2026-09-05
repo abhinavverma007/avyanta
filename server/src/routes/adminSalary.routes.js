@@ -8,5 +8,6 @@ const router = express.Router();
 router.use(adminAuth);
 router.get('/', asyncHandler(ctrl.summary));
 router.get('/:employeeId', asyncHandler(ctrl.detail));
+router.post('/:employeeId/pay', asyncHandler(ctrl.recordPayout));
 
 module.exports = router;

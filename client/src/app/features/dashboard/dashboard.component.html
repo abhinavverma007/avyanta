@@ -53,6 +53,20 @@
             Last Punch {{ punchState() === 'out' ? 'Out' : 'In' }}: {{ formatTime(lastPunchTime()!) }} | {{ formatDate(lastPunchTime()!) }}
             @if (workHours() !== undefined) { — {{ workHours()!.toFixed(1) }}h worked today }
           </p>
+
+          @if (!showUnmarkConfirm()) {
+            <button class="unmark-link" (click)="showUnmarkConfirm.set(true)">Punched in by mistake? Unmark today's attendance</button>
+          } @else {
+            <div class="unmark-confirm">
+              <p class="unmark-warning">This resets today completely — as if you never punched in. Are you sure?</p>
+              <div class="unmark-actions">
+                <button class="btn btn-ghost btn-sm" [disabled]="unmarking()" (click)="showUnmarkConfirm.set(false)">Cancel</button>
+                <button class="btn btn-danger btn-sm" [disabled]="unmarking()" (click)="unmarkToday()">
+                  {{ unmarking() ? 'Resetting…' : "Yes, reset today's attendance" }}
+                </button>
+              </div>
+            </div>
+          }
         }
       </div>
     </section>

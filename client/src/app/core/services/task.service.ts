@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { TodayTask } from '../models/task.model';
+import { PaginatedTasks, TaskRange } from '../models/task.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
@@ -10,10 +10,9 @@ export class TaskService {
 
   constructor(private http: HttpClient) {}
 
-  // Deliberately today-only — the backend never returns upcoming tasks here.
-  today(): Promise<TodayTask[]> {
+  mine(range: TaskRange, page = 1, limit = 10): Promise<PaginatedTasks> {
     return firstValueFrom(
-      this.http.get<{ date: string; tasks: TodayTask[] }>(`${this.base}/today`),
-    ).then(r => r.tasks);
+      this.http.get<PaginatedTasks>(`${this.base}/mine`, { params: { range, page, limit } }),
+    );
   }
 }

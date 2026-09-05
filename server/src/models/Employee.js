@@ -13,6 +13,7 @@ const employeeSchema = new mongoose.Schema(
     joinDate: { type: String, required: true }, // YYYY-MM-DD
     location: { type: String, default: '' },
     aadhaarNumber: { type: String, default: '' }, // 12 digits, stored without hyphens
+    upiId: { type: String, default: '' }, // e.g. name@okhdfcbank — used for the salary "Pay Now" UPI deep link
     shiftStart: { type: String, default: '09:30' }, // HH:mm, IST
     isActive: { type: Boolean, default: true },
     salaryMonthly: { type: Number, default: 0 }, // gross monthly salary, INR

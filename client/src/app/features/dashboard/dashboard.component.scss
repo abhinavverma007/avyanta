@@ -169,6 +169,35 @@
   text-align: center;
 }
 
+.unmark-link {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-align: center;
+  text-decoration: underline;
+}
+.unmark-link:hover { color: var(--danger); }
+
+.unmark-confirm {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--danger-bg);
+  border-radius: var(--radius-sm);
+}
+.unmark-warning {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  margin-bottom: 10px;
+  text-align: center;
+}
+.unmark-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
 /* ─── Stat cards ─────────────────────────────────────────────────── */
 .stat-cards {
   display: grid;

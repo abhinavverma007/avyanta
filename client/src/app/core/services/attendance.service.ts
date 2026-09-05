@@ -48,6 +48,18 @@ export class AttendanceService {
     }
   }
 
+  // Wipes today's attendance entirely — back to the exact state as if no
+  // punch had happened today. Server-side this is always scoped to today,
+  // never a client-passed date.
+  async unmarkToday(): Promise<void> {
+    await firstValueFrom(this.http.delete<TodayAttendance>(`${this.base}/today`));
+    this.punchState.set('out');
+    this.lastPunchTime.set(null);
+    this.firstPunchIn.set(null);
+    this.lastPunchOut.set(null);
+    this.workHours.set(undefined);
+  }
+
   getMonthlyAttendance(year: number, month: number): Promise<MonthlyAttendance> {
     return firstValueFrom(
       this.http.get<MonthlyAttendance>(`${this.base}/monthly`, {

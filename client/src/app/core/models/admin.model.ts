@@ -20,6 +20,7 @@ export interface AdminEmployee {
   joinDate: string;
   location: string;
   aadhaarNumber: string; // 12 digits, no hyphens
+  upiId: string;
   shiftStart: string;
   salaryMonthly: number;
   paidLeavesPerMonth: number;
@@ -38,6 +39,7 @@ export interface CreateEmployeePayload {
   joinDate: string;
   location?: string;
   aadhaarNumber?: string;
+  upiId?: string;
   shiftStart?: string;
   salaryMonthly?: number;
   paidLeavesPerMonth?: number;
@@ -50,6 +52,7 @@ export interface UpdateEmployeePayload {
   phone?: string;
   location?: string;
   aadhaarNumber?: string;
+  upiId?: string;
   salaryMonthly?: number;
   paidLeavesPerMonth?: number;
   isActive?: boolean;

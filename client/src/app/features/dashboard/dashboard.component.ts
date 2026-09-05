@@ -26,6 +26,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   leaveSummary = signal<LeaveSummary | null>(null);
   private clockTimer?: number;
 
+  showUnmarkConfirm = signal(false);
+  unmarking = signal(false);
+
   // Mini calendar
   readonly today = new Date();
   readonly DAYS_OF_WEEK = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -52,6 +55,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   async punch(): Promise<void> {
     await this.attendance.punch();
     this.attendance.getCurrentMonthAttendance().then(data => this.monthlyData.set(data));
+  }
+
+  async unmarkToday(): Promise<void> {
+    this.unmarking.set(true);
+    try {
+      await this.attendance.unmarkToday();
+      this.showUnmarkConfirm.set(false);
+      this.attendance.getCurrentMonthAttendance().then(data => this.monthlyData.set(data));
+    } finally {
+      this.unmarking.set(false);
+    }
   }
 
   formatTime(date: Date): string {

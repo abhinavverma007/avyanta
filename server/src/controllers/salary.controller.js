@@ -1,5 +1,6 @@
 const Employee = require('../models/Employee');
 const Reimbursement = require('../models/Reimbursement');
+const Payout = require('../models/Payout');
 const { computeMonthlyAttendance } = require('../utils/attendanceStats');
 const { istNow, istDateString } = require('../utils/istDate');
 
@@ -55,11 +56,21 @@ async function computeSalary(employee, year, month) {
 
   const payable = round2(earnedTillDate + reimbursementTotal);
 
+  // What's actually been paid out for this employee+month so far, vs. what
+  // the numbers currently say is owed — a recorded fact, not recomputed.
+  // Balance nets the two, so a late correction after payment shows up as a
+  // small top-up owed, not the full amount demanded again from scratch.
+  const payouts = await Payout.find({ employee: employee._id, year, month }).sort({ paidAt: 1 });
+  const paidAmount = round2(payouts.reduce((sum, p) => sum + p.amount, 0));
+  const balance = round2(payable - paidAmount);
+  const lastPaidAt = payouts.length > 0 ? payouts[payouts.length - 1].paidAt : null;
+
   return {
     employeeId: employee._id.toString(),
     name: employee.name,
     employeeCode: employee.employeeId,
     department: employee.department,
+    upiId: employee.upiId || '',
     year,
     month,
     baseSalary,
@@ -76,6 +87,9 @@ async function computeSalary(employee, year, month) {
     reimbursementTotal,
     reimbursementCount: reimbursements.length,
     payable,
+    paidAmount,
+    balance,
+    lastPaidAt,
   };
 }
 
@@ -95,7 +109,7 @@ exports.summary = async (req, res) => {
     year,
     month,
     rows,
-    totalPayable: round2(rows.reduce((sum, r) => sum + r.payable, 0)),
+    totalBalance: round2(rows.reduce((sum, r) => sum + r.balance, 0)),
   });
 };
 
@@ -111,6 +125,7 @@ exports.detail = async (req, res) => {
     status: 'approved',
     date: { $gte: start, $lte: end },
   }).sort({ date: 1 });
+  const payouts = await Payout.find({ employee: employee._id, year, month }).sort({ paidAt: 1 });
 
   res.json({
     ...salary,
@@ -121,5 +136,51 @@ exports.detail = async (req, res) => {
       description: r.description,
       date: r.date,
     })),
+    payouts: payouts.map((p) => ({
+      id: p._id.toString(),
+      amount: p.amount,
+      paidAt: p.paidAt,
+      note: p.note,
+    })),
   });
+};
+
+// Records that the owner paid `amount` to this employee for this month —
+// a fact, not a recomputation. Doesn't touch `payable`; the next read nets
+// this against the live payable to produce `balance`. Rejects an amount
+// that doesn't leave a sane non-negative balance so a slipped decimal
+// point or duplicate click can't silently overpay on record.
+exports.recordPayout = async (req, res) => {
+  const { year, month, amount, note } = req.body;
+  const employee = await Employee.findById(req.params.employeeId);
+  if (!employee) return res.status(404).json({ message: 'Employee not found.' });
+
+  const y = parseInt(year, 10);
+  const m = parseInt(month, 10);
+  if (!y || !m || m < 1 || m > 12) {
+    return res.status(400).json({ message: 'A valid year and month are required.' });
+  }
+  const amt = Number(amount);
+  if (!amt || amt <= 0) {
+    return res.status(400).json({ message: 'Amount must be greater than 0.' });
+  }
+
+  const salary = await computeSalary(employee, y, m);
+  if (round2(amt - salary.balance) > 0.01) {
+    return res.status(409).json({
+      message: `Only ₹${salary.balance} is currently owed for this month — can't record a payout larger than that.`,
+    });
+  }
+
+  const payout = await Payout.create({
+    employee: employee._id,
+    year: y,
+    month: m,
+    amount: amt,
+    paidAt: new Date(),
+    note: note || '',
+  });
+
+  const updated = await computeSalary(employee, y, m);
+  res.status(201).json({ payout: { id: payout._id.toString(), amount: payout.amount, paidAt: payout.paidAt, note: payout.note }, salary: updated });
 };

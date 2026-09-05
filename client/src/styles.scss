@@ -173,6 +173,15 @@ h1, h2, h3, h4, h5 {
   box-shadow: 0 4px 12px rgba(15,157,88,0.35);
 }
 
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220,38,38,0.35);
+}
+
 .btn-sm  { padding: 6px 14px; font-size: 0.8125rem; }
 .btn-lg  { padding: 13px 28px; font-size: 1rem; }
 .btn-full { width: 100%; }

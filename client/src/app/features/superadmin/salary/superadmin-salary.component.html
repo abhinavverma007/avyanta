@@ -35,8 +35,8 @@
       <span class="ss-label">Employees</span>
     </div>
     <div class="summary-stat">
-      <span class="ss-value" style="color: var(--success)">₹{{ filteredTotalPayable() | number }}</span>
-      <span class="ss-label">Total Payable Till Date</span>
+      <span class="ss-value" style="color: var(--success)">₹{{ filteredTotalBalance() | number }}</span>
+      <span class="ss-label">Total Balance Owed</span>
     </div>
   </div>
 
@@ -61,6 +61,27 @@
           } @else {
             <p class="detail-line text-muted">No approved reimbursements this month.</p>
           }
+
+          <div class="payout-section">
+            @if (d.balance > 0) {
+              <p class="detail-line">Balance owed: <strong class="font-mono text-danger">₹{{ d.balance | number }}</strong> ({{ d.paidAmount > 0 ? ('₹' + (d.paidAmount | number) + ' already paid') : 'nothing paid yet' }})</p>
+              @if (payoutError()) { <p class="error-msg">{{ payoutError() }}</p> }
+              <button class="btn btn-success btn-sm" [disabled]="payingId() === row.employeeId" (click)="markAsPaid(row)">
+                {{ payingId() === row.employeeId ? 'Recording…' : 'Mark ₹' + (d.balance | number) + ' as Paid' }}
+              </button>
+            } @else if (d.paidAmount > 0) {
+              <p class="detail-line text-success">✓ Fully paid — ₹{{ d.paidAmount | number }} recorded{{ d.lastPaidAt ? ' (last on ' + (d.lastPaidAt | date:'d MMM y') + ')' : '' }}.</p>
+            }
+
+            @if (d.payouts.length > 0) {
+              <p class="detail-line">Payment history:</p>
+              <ul class="reimb-list">
+                @for (p of d.payouts; track p.id) {
+                  <li>{{ p.paidAt | date:'d MMM y, h:mm a' }} — ₹{{ p.amount | number }} @if (p.note) { — {{ p.note }} }</li>
+                }
+              </ul>
+            }
+          </div>
         </div>
       }
     }
@@ -84,7 +105,7 @@
               <th>Leaves Taken / Quota</th>
               <th>Pending Leave</th>
               <th>Reimbursements</th>
-              <th>Payable Till Date</th>
+              <th>Balance Owed</th>
               <th></th>
             </tr>
           </thead>
@@ -107,7 +128,12 @@
                   }
                 </td>
                 <td class="font-mono text-success">+₹{{ row.reimbursementTotal | number }} ({{ row.reimbursementCount }})</td>
-                <td class="font-mono payable">₹{{ row.payable | number }}</td>
+                <td class="font-mono payable">
+                  ₹{{ row.balance | number }}
+                  @if (row.paidAmount > 0) {
+                    <div class="paid-note">{{ row.balance <= 0 ? '✓ paid' : (row.paidAmount | number) + ' paid' }}</div>
+                  }
+                </td>
                 <td class="expand-arrow">{{ expandedId() === row.employeeId ? '▲' : '▼' }}</td>
               </tr>
               @if (expandedId() === row.employeeId) {
@@ -131,7 +157,12 @@
                 <div class="emp-name">{{ row.name }}</div>
                 <div class="emp-sub">{{ row.employeeCode }} · {{ row.department || '—' }}</div>
               </div>
-              <span class="font-mono payable">₹{{ row.payable | number }}</span>
+              <div class="sc-amount">
+                <span class="font-mono payable">₹{{ row.balance | number }}</span>
+                @if (row.paidAmount > 0) {
+                  <span class="paid-note">{{ row.balance <= 0 ? '✓ paid' : ('₹' + (row.paidAmount | number) + ' paid') }}</span>
+                }
+              </div>
             </div>
             <div class="sc-body">
               <div class="sc-row"><span class="sc-label">Base Salary</span><span class="font-mono">₹{{ row.baseSalary | number }}</span></div>
@@ -148,6 +179,21 @@
               </div>
               <div class="sc-row"><span class="sc-label">Reimbursements</span><span class="font-mono text-success">+₹{{ row.reimbursementTotal | number }} ({{ row.reimbursementCount }})</span></div>
             </div>
+
+            @if (row.balance <= 0) {
+              <p class="pay-now-note" (click)="$event.stopPropagation()">✓ Fully paid for this month.</p>
+            } @else if (row.upiId) {
+              <a class="btn btn-blue pay-now-btn" [href]="payUrl(row)" (click)="$event.stopPropagation()">
+                Pay Now — ₹{{ row.balance | number }}
+              </a>
+            } @else {
+              <div class="upi-missing-row" (click)="$event.stopPropagation()">
+                <p class="pay-now-note">No UPI ID on file for this employee.</p>
+                <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees']" [queryParams]="{ edit: row.employeeId }">
+                  Add UPI ID
+                </a>
+              </div>
+            }
 
             @if (expandedId() === row.employeeId) {
               <div class="sc-detail" (click)="$event.stopPropagation()">

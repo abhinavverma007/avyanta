@@ -34,6 +34,7 @@ export interface SalaryRow {
   name: string;
   employeeCode: string;
   department: string;
+  upiId: string;
   year: number;
   month: number;
   baseSalary: number;
@@ -50,13 +51,23 @@ export interface SalaryRow {
   reimbursementTotal: number;
   reimbursementCount: number;
   payable: number;
+  paidAmount: number;
+  balance: number;
+  lastPaidAt?: string;
 }
 
 export interface SalarySummary {
   year: number;
   month: number;
   rows: SalaryRow[];
-  totalPayable: number;
+  totalBalance: number;
+}
+
+export interface PayoutRecord {
+  id: string;
+  amount: number;
+  paidAt: string;
+  note: string;
 }
 
 export interface SalaryDetail extends SalaryRow {
@@ -67,4 +78,5 @@ export interface SalaryDetail extends SalaryRow {
     description: string;
     date: string;
   }>;
+  payouts: PayoutRecord[];
 }

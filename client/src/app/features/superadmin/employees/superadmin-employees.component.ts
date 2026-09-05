@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { AdminEmployeeService } from '../../../core/services/admin-employee.service';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { generatePassword } from '../../../core/utils/generate-password';
@@ -15,13 +15,14 @@ interface EmployeeForm {
   joinDate: string;
   location: string;
   aadhaarNumber: string; // formatted with hyphens for display, e.g. 1234-5678-9012-3456
+  upiId: string;
   salaryMonthly: number | null;
   paidLeavesPerMonth: number | null;
 }
 
 const EMPTY_FORM: EmployeeForm = {
   name: '', password: '', designation: '', department: '',
-  phone: '', joinDate: '', location: '', aadhaarNumber: '', salaryMonthly: null, paidLeavesPerMonth: null,
+  phone: '', joinDate: '', location: '', aadhaarNumber: '', upiId: '', salaryMonthly: null, paidLeavesPerMonth: null,
 };
 
 // Groups digits into 4-4-4 with hyphens as the superadmin types, capped at
@@ -66,10 +67,36 @@ export class SuperadminEmployeesComponent implements OnInit {
   credentialBanner = signal<{ name: string; email: string; password: string } | null>(null);
   resettingId = signal<string | null>(null);
 
-  constructor(private employeeService: AdminEmployeeService) {}
+  @ViewChild('upiIdInput') upiIdInputRef?: ElementRef<HTMLInputElement>;
+
+  constructor(
+    private employeeService: AdminEmployeeService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.load();
+    this.handleEditDeepLink();
+  }
+
+  // Supports being deep-linked from elsewhere (e.g. the Salary page's "Add
+  // UPI ID" prompt) with ?edit=<employeeId> — opens that employee's edit
+  // form directly and focuses the UPI ID field, regardless of whether
+  // they're on the currently-loaded page of the (paginated) list.
+  private handleEditDeepLink(): void {
+    const id = this.route.snapshot.queryParamMap.get('edit');
+    if (!id) return;
+
+    this.router.navigate([], { queryParams: {}, replaceUrl: true });
+    this.employeeService.get(id).then(emp => {
+      this.openEditForm(emp);
+      setTimeout(() => {
+        const el = this.upiIdInputRef?.nativeElement;
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el?.focus();
+      });
+    });
   }
 
   load(): void {
@@ -126,6 +153,7 @@ export class SuperadminEmployeesComponent implements OnInit {
       joinDate: emp.joinDate,
       location: emp.location,
       aadhaarNumber: formatAadhaar(emp.aadhaarNumber ?? ''),
+      upiId: emp.upiId ?? '',
       salaryMonthly: emp.salaryMonthly,
       paidLeavesPerMonth: emp.paidLeavesPerMonth,
     });
@@ -206,6 +234,7 @@ export class SuperadminEmployeesComponent implements OnInit {
           joinDate: f.joinDate,
           location: f.location,
           aadhaarNumber: aadhaarDigits || undefined,
+          upiId: f.upiId || undefined,
           salaryMonthly: f.salaryMonthly ?? 0,
           paidLeavesPerMonth: f.paidLeavesPerMonth ?? 0,
         });
@@ -219,6 +248,7 @@ export class SuperadminEmployeesComponent implements OnInit {
           phone: f.phone,
           location: f.location,
           aadhaarNumber: aadhaarDigits,
+          upiId: f.upiId,
           salaryMonthly: f.salaryMonthly ?? 0,
           paidLeavesPerMonth: f.paidLeavesPerMonth ?? 0,
         });
