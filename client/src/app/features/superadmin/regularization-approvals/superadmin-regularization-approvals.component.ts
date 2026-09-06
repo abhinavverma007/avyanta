@@ -14,7 +14,7 @@ type Tab = RegularizationStatus | 'all';
   styleUrl: './superadmin-regularization-approvals.component.scss',
 })
 export class SuperadminRegularizationApprovalsComponent implements OnInit {
-  readonly tabs: Tab[] = ['pending', 'approved', 'rejected', 'all'];
+  readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
 
   requests = signal<AdminRegularization[]>([]);
   loading = signal(true);

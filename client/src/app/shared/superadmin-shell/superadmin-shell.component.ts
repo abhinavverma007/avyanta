@@ -1,14 +1,22 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AdminAuthService } from '../../core/services/admin-auth.service';
+import { AuthService } from '../../core/services/auth.service';
+import { PermissionKey } from '../../core/models/role.model';
+import { ICONS } from '../icons';
 
 interface NavItem {
   path: string;
   label: string;
   icon: string;
+  // Which permission gates this tab for a delegated Supervisor/Manager
+  // session — irrelevant for a true Admin session, which always sees every
+  // tab (see navItems below and superadmin-area.guard.ts, which enforces
+  // the same rule server-route-side).
+  permission: PermissionKey;
 }
 
 @Component({
@@ -19,14 +27,39 @@ interface NavItem {
   styleUrl: './superadmin-shell.component.scss',
 })
 export class SuperadminShellComponent {
-  readonly navItems: NavItem[] = [
-    { path: '/superadmin/employees', label: 'Employees', icon: 'users' },
-    { path: '/superadmin/tasks', label: 'Tasks', icon: 'tasks' },
-    { path: '/superadmin/approvals', label: 'Approvals', icon: 'approvals' },
-    { path: '/superadmin/salary', label: 'Salary', icon: 'wallet' },
+  // Roles & Audit Log live in the account dropdown (below) instead of here —
+  // they're owner-account/settings-shaped actions, not day-to-day work, so
+  // they don't compete for space in the main nav or the mobile tab bar.
+  // They're also never shown to a delegated session at all (see the
+  // template) — that stays strictly owner-only.
+  readonly allNavItems: NavItem[] = [
+    { path: '/superadmin/employees', label: 'Employees', icon: 'users', permission: 'employees' },
+    { path: '/superadmin/tasks', label: 'Tasks', icon: 'tasks', permission: 'tasks' },
+    { path: '/superadmin/approvals', label: 'Approvals', icon: 'approvals', permission: 'approvalsReimbursements' },
+    { path: '/superadmin/salary', label: 'Salary', icon: 'wallet', permission: 'salary' },
   ];
 
   menuOpen = signal(false);
+
+  @ViewChild('accountArea') accountAreaRef?: ElementRef<HTMLElement>;
+
+  // The dropdown otherwise only ever closes via its own buttons — clicking
+  // anywhere else on the page (the nav, the content, elsewhere on the
+  // header) left it stuck open.
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.menuOpen()) return;
+    if (!this.accountAreaRef?.nativeElement.contains(event.target as Node)) {
+      this.closeMenu();
+    }
+  }
+
+  // Used both by the outside-click handler above and by the Roles/Audit Log
+  // links, so navigating there doesn't leave the dropdown stuck open.
+  closeMenu(): void {
+    this.menuOpen.set(false);
+    this.resetChangePasswordForm();
+  }
 
   showChangePassword = signal(false);
   currentPassword = signal('');
@@ -39,9 +72,44 @@ export class SuperadminShellComponent {
   cpError = signal('');
   cpSuccess = signal('');
 
-  readonly admin = computed(() => this.auth.admin());
+  // This console now serves two kinds of session — the true owner
+  // (AdminAuthService) or a Supervisor/Manager delegated some management
+  // permissions (AuthService, an ordinary Employee session — same one the
+  // plain employee shell uses). Which one is active decides what the nav
+  // shows, what the account box displays, and where Change Password/Logout
+  // actually go — see app.routes.ts for how API_SCOPE is set to match.
+  readonly isTrueAdmin = computed(() => this.adminAuth.isAuthenticated());
 
-  constructor(readonly auth: AdminAuthService, private sanitizer: DomSanitizer) {}
+  readonly identityName = computed(() =>
+    this.isTrueAdmin() ? this.adminAuth.admin()?.name : this.auth.user()?.name,
+  );
+  // Email for the owner (there's only ever one); the delegated Role's name
+  // (e.g. "Supervisor") for anyone else, so it's clear whose access this is.
+  readonly identitySubtitle = computed(() =>
+    this.isTrueAdmin() ? this.adminAuth.admin()?.email : this.auth.user()?.role?.name,
+  );
+
+  readonly navItems = computed(() => {
+    if (this.isTrueAdmin()) return this.allNavItems;
+    const permissions = this.auth.user()?.role?.permissions;
+    return this.allNavItems.filter(n => {
+      // The Approvals tab covers four sub-permissions — shown if any one of
+      // them is granted; the page itself only renders the tabs actually
+      // permitted (see anySuperadminAreaGuard).
+      if (n.path === '/superadmin/approvals') {
+        return !!permissions?.approvalsReimbursements || !!permissions?.approvalsLeave
+          || !!permissions?.approvalsRegularization || !!permissions?.approvalsAdvance;
+      }
+      return !!permissions?.[n.permission];
+    });
+  });
+
+  constructor(
+    private adminAuth: AdminAuthService,
+    private auth: AuthService,
+    private sanitizer: DomSanitizer,
+    private router: Router,
+  ) {}
 
   toggleMenu(): void {
     this.menuOpen.update(v => !v);
@@ -83,20 +151,33 @@ export class SuperadminShellComponent {
 
     this.submitting.set(true);
     try {
-      await this.auth.changePassword(this.currentPassword(), this.newPassword());
+      if (this.isTrueAdmin()) {
+        await this.adminAuth.changePassword(this.currentPassword(), this.newPassword());
+      } else {
+        await this.auth.changePassword(this.currentPassword(), this.newPassword());
+      }
       this.cpSuccess.set('Password changed successfully. Logging you out… Please re-login.');
       this.currentPassword.set('');
       this.newPassword.set('');
       this.confirmPassword.set('');
-      setTimeout(() => this.auth.logout(), 1800);
+      setTimeout(() => this.logout(), 1800);
     } catch (err: any) {
       this.cpError.set(err?.error?.message ?? 'Could not change password. Please try again.');
       this.submitting.set(false);
     }
   }
 
+  // AuthService.logout() always sends a *plain* employee back to /login —
+  // right for the ordinary employee shell, wrong here: a Supervisor/Manager
+  // who's logged into this console should land back on /superadmin (where
+  // they came in), not the plain employee login page.
   logout(): void {
-    this.auth.logout();
+    if (this.isTrueAdmin()) {
+      this.adminAuth.logout();
+    } else {
+      this.auth.clearLocalSession();
+      this.router.navigate(['/superadmin']);
+    }
   }
 
   getInitials(name: string): string {
@@ -104,12 +185,6 @@ export class SuperadminShellComponent {
   }
 
   getIconSvg(icon: string): SafeHtml {
-    const icons: Record<string, string> = {
-      users: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-      approvals: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg>`,
-      wallet: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>`,
-      tasks: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-    };
-    return this.sanitizer.bypassSecurityTrustHtml(icons[icon] ?? '');
+    return this.sanitizer.bypassSecurityTrustHtml(ICONS[icon] ?? '');
   }
 }

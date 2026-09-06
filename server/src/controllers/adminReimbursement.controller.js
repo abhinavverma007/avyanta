@@ -1,5 +1,6 @@
 const Reimbursement = require('../models/Reimbursement');
 const { sanitize } = require('./reimbursement.controller');
+const { recordAudit } = require('../utils/audit');
 
 function monthRange(year, month) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -50,6 +51,13 @@ exports.review = (status) => async (req, res) => {
   claim.reviewNote = req.body.reviewNote || '';
   claim.reviewedAt = new Date();
   await claim.save();
+
+  await recordAudit(req, {
+    action: status === 'approved' ? 'reimbursement.approve' : 'reimbursement.reject',
+    resourceType: 'Reimbursement',
+    resourceId: claim._id,
+    summary: `${status === 'approved' ? 'Approved' : 'Rejected'} ${claim.employee?.name}'s ${claim.category} claim of ₹${claim.amount}`,
+  });
 
   res.json({ claim: withEmployee(claim) });
 };

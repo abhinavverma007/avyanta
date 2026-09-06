@@ -2,6 +2,7 @@ const AttendanceRegularization = require('../models/AttendanceRegularization');
 const Attendance = require('../models/Attendance');
 const { sanitize } = require('./attendanceRegularization.controller');
 const { istToDate } = require('../utils/istDate');
+const { recordAudit } = require('../utils/audit');
 
 function shiftStartMinutes(shiftStart) {
   const [h, m] = (shiftStart || '09:30').split(':').map(Number);
@@ -57,6 +58,13 @@ exports.review = (status) => async (req, res) => {
   request.reviewNote = req.body.reviewNote || '';
   request.reviewedAt = new Date();
   await request.save();
+
+  await recordAudit(req, {
+    action: status === 'approved' ? 'regularization.approve' : 'regularization.reject',
+    resourceType: 'AttendanceRegularization',
+    resourceId: request._id,
+    summary: `${status === 'approved' ? 'Approved' : 'Rejected'} ${request.employee?.name}'s regularization for ${request.date}`,
+  });
 
   res.json({ request: withEmployee(request) });
 };

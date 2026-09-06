@@ -138,6 +138,7 @@
 .dropdown-item:hover { background: var(--surface-raised); }
 .dropdown-item.danger { color: var(--danger); }
 .dropdown-item.danger:hover { background: var(--danger-bg); }
+.dropdown-item.active { background: var(--surface-raised); color: var(--accent-2); font-weight: 600; }
 
 .dropdown-item-arrow {
   margin-left: auto;

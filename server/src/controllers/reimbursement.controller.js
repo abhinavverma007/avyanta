@@ -27,12 +27,15 @@ exports.create = async (req, res) => {
   if (!date) {
     return res.status(400).json({ message: 'date is required.' });
   }
+  if (!description || !String(description).trim()) {
+    return res.status(400).json({ message: 'A description is required.' });
+  }
 
   const claim = await Reimbursement.create({
     employee: req.employee._id,
     category,
     amount: Number(amount),
-    description: description || '',
+    description: String(description).trim(),
     date,
   });
   res.status(201).json({ claim: sanitize(claim) });

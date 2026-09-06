@@ -120,7 +120,7 @@
             @if (regularizationByDate().get(day.date); as reg) {
               <div class="reg-status">
                 <span class="badge" [class]="reg.status === 'approved' ? 'badge-success' : reg.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
-                  Regularization {{ reg.status | titlecase }}
+                  Attendance Fix {{ reg.status | titlecase }}
                 </span>
                 <p class="dd-note">Requested {{ reg.requestedCheckIn }}–{{ reg.requestedCheckOut }} — {{ reg.reason }}</p>
                 @if (reg.reviewNote) {
@@ -129,7 +129,7 @@
               </div>
             } @else {
               <div class="reg-form">
-                <p class="reg-form-title">Forgot to punch? Request regularization for this day.</p>
+                <p class="reg-form-title">Forgot to punch? Ask to fix this day's attendance.</p>
                 <div class="reg-form-row">
                   <div class="reg-field">
                     <label class="form-label">Check In</label>
@@ -147,7 +147,7 @@
                 @if (regError()) { <p class="error-msg">{{ regError() }}</p> }
                 @if (regSuccess()) { <p class="success-msg">{{ regSuccess() }}</p> }
                 <button class="btn btn-blue btn-sm" [disabled]="regSubmitting()" (click)="submitRegularization()">
-                  {{ regSubmitting() ? 'Submitting…' : 'Request Regularization' }}
+                  {{ regSubmitting() ? 'Submitting…' : 'Fix Attendance' }}
                 </button>
               </div>
             }

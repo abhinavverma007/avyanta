@@ -38,6 +38,18 @@ export class AuthService {
     return true;
   }
 
+  // Re-fetches the current employee's own record (including their Role's
+  // live permissions) and refreshes the cached copy in memory + localStorage.
+  // Used to bring a stale session back in sync after the owner changes a
+  // Role's permissions while that employee is already logged in — the
+  // backend enforces the new permissions immediately on its own, this just
+  // updates the client-side nav/guards to match without forcing a re-login.
+  async refreshUser(): Promise<void> {
+    const res = await firstValueFrom(this.http.get<{ user: User }>(`${environment.apiUrl}/auth/me`));
+    this._state.update(s => ({ ...s, user: res.user }));
+    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+  }
+
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     const res = await firstValueFrom(
       this.http.post<LoginResponse>(`${environment.apiUrl}/auth/change-password`, { currentPassword, newPassword }),
@@ -47,10 +59,18 @@ export class AuthService {
     localStorage.setItem(USER_KEY, JSON.stringify(res.user));
   }
 
-  logout(): void {
+  // Clears the session without navigating anywhere — used when a login
+  // attempt succeeds at the identity level but turns out not to belong here
+  // (see superadmin-login.component.ts, which needs to show its own error
+  // in place rather than being redirected to /login).
+  clearLocalSession(): void {
     this._state.set({ user: null, isAuthenticated: false });
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+  }
+
+  logout(): void {
+    this.clearLocalSession();
     this.router.navigate(['/login']);
   }
 }

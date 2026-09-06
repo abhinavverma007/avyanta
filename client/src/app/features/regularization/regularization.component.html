@@ -2,7 +2,7 @@
   <p class="tab-intro">Forgot to punch on a day? Request it be corrected — a superadmin needs to approve it first.</p>
 
   <div class="card card-padded form-card">
-    <h3 class="form-card-title">Apply for Regularization</h3>
+    <h3 class="form-card-title">Fix My Attendance</h3>
     <div class="form-grid">
       <div class="form-group">
         <label class="form-label">Date</label>
@@ -26,16 +26,16 @@
     @if (success()) { <p class="success-msg">{{ success() }}</p> }
 
     <button class="btn btn-blue" [disabled]="submitting()" (click)="submitRequest()">
-      {{ submitting() ? 'Submitting…' : 'Request Regularization' }}
+      {{ submitting() ? 'Submitting…' : 'Fix Attendance' }}
     </button>
   </div>
 
   <div class="card table-card">
-    <h3 class="table-title">Regularization History</h3>
+    <h3 class="table-title">Attendance Fix History</h3>
     @if (loading()) {
       <p class="empty-note">Loading…</p>
     } @else if (requests().length === 0) {
-      <p class="empty-note">No regularization requests yet.</p>
+      <p class="empty-note">No attendance fix requests yet.</p>
     } @else {
       <div class="reg-list">
         @for (r of requests(); track r.id) {

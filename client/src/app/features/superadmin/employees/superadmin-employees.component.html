@@ -4,7 +4,9 @@
       <h1 class="page-title">Employees</h1>
       <p class="page-sub">Manage your master employee list, salaries and leave allowances</p>
     </div>
-    <button class="btn btn-blue" (click)="openCreateForm()">+ Add Employee</button>
+    @if (isAdminScope) {
+      <button class="btn btn-blue" (click)="openCreateForm()">+ Add Employee</button>
+    }
   </div>
 
   <div class="search-row">
@@ -36,7 +38,7 @@
   }
 
   @if (showForm()) {
-    <div class="card card-padded form-panel fade-in">
+    <div #formPanel class="card card-padded form-panel fade-in">
       <h3 class="form-panel-title">{{ formMode() === 'create' ? 'Add Employee' : 'Edit Employee' }}</h3>
 
       <div class="form-grid">
@@ -44,6 +46,17 @@
           <label class="form-label">Full Name</label>
           <input class="form-control" [value]="form().name" (input)="onNameInput($any($event.target).value)" />
         </div>
+
+        @if (isAdminScope) {
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select class="form-control" [ngModel]="form().roleId" (ngModelChange)="updateField('roleId', $event)">
+              @for (r of roles(); track r.id) {
+                <option [ngValue]="r.id">{{ r.name }}</option>
+              }
+            </select>
+          </div>
+        }
 
         @if (formMode() === 'create') {
           <div class="form-group">
@@ -111,7 +124,7 @@
             inputmode="numeric"
             maxlength="14"
             [value]="form().aadhaarNumber"
-            (input)="onAadhaarInput($any($event.target).value)"
+            (input)="onAadhaarInput($event)"
           />
         </div>
         <div class="form-group">
@@ -160,6 +173,7 @@
             <tr>
               <th>Name</th>
               <th>Employee ID</th>
+              <th>Role</th>
               <th>Department</th>
               <th>Email</th>
               <th>Salary</th>
@@ -177,6 +191,7 @@
                   <div class="emp-sub">{{ emp.designation }}</div>
                 </td>
                 <td class="font-mono">{{ emp.employeeId }}</td>
+                <td>{{ emp.role?.name || '—' }}</td>
                 <td>{{ emp.department || '—' }}</td>
                 <td class="font-mono">{{ emp.email }}</td>
                 <td class="font-mono">₹{{ emp.salaryMonthly | number }}</td>
@@ -187,16 +202,18 @@
                   </span>
                 </td>
                 <td>
-                  <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', emp.id, 'attendance']">See Attendance History</a>
+                  <a class="btn btn-ghost btn-sm" [routerLink]="attendanceHistoryPath(emp.id)">See Attendance History</a>
                 </td>
                 <td class="row-actions">
                   <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
-                  <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
-                    {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
-                  </button>
-                  <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
-                    {{ emp.isActive ? 'Deactivate' : 'Activate' }}
-                  </button>
+                  @if (isAdminScope) {
+                    <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
+                      {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
+                    </button>
+                    <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
+                      {{ emp.isActive ? 'Deactivate' : 'Activate' }}
+                    </button>
+                  }
                 </td>
               </tr>
             }
@@ -207,33 +224,40 @@
       <!-- Card view — mobile / narrow screens -->
       <div class="employees-grid">
         @for (emp of employees(); track emp.id) {
-          <div class="employee-card">
+          <div class="employee-card" (click)="toggleExpand(emp.id)">
             <div class="ec-header">
               <div>
                 <div class="emp-name">{{ emp.name }}</div>
-                <div class="emp-sub">{{ emp.designation || '—' }}</div>
+                <div class="emp-sub font-mono">{{ emp.employeeId }}</div>
               </div>
               <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
                 {{ emp.isActive ? 'Active' : 'Inactive' }}
               </span>
+              <span class="ec-expand-arrow">{{ expandedId() === emp.id ? '▲' : '▼' }}</span>
             </div>
-            <div class="ec-body">
-              <div class="ec-row"><span class="ec-label">Employee ID</span><span class="font-mono">{{ emp.employeeId }}</span></div>
-              <div class="ec-row"><span class="ec-label">Department</span><span>{{ emp.department || '—' }}</span></div>
-              <div class="ec-row"><span class="ec-label">Email</span><span class="font-mono">{{ emp.email }}</span></div>
-              <div class="ec-row"><span class="ec-label">Salary</span><span class="font-mono">₹{{ emp.salaryMonthly | number }}</span></div>
-              <div class="ec-row"><span class="ec-label">Leaves/mo</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
-            </div>
-            <div class="ec-actions">
-              <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', emp.id, 'attendance']">Attendance History</a>
-              <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
-              <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
-                {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
-              </button>
-              <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
-                {{ emp.isActive ? 'Deactivate' : 'Activate' }}
-              </button>
-            </div>
+
+            @if (expandedId() === emp.id) {
+              <div class="ec-body">
+                <div class="ec-row"><span class="ec-label">Designation</span><span>{{ emp.designation || '—' }}</span></div>
+                <div class="ec-row"><span class="ec-label">Role</span><span>{{ emp.role?.name || '—' }}</span></div>
+                <div class="ec-row"><span class="ec-label">Department</span><span>{{ emp.department || '—' }}</span></div>
+                <div class="ec-row"><span class="ec-label">Email</span><span class="font-mono">{{ emp.email }}</span></div>
+                <div class="ec-row"><span class="ec-label">Salary</span><span class="font-mono">₹{{ emp.salaryMonthly | number }}</span></div>
+                <div class="ec-row"><span class="ec-label">Leaves/mo</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
+              </div>
+              <div class="ec-actions" (click)="$event.stopPropagation()">
+                <a class="btn btn-ghost btn-sm" [routerLink]="attendanceHistoryPath(emp.id)">Attendance History</a>
+                <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                @if (isAdminScope) {
+                  <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
+                    {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
+                  </button>
+                  <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
+                    {{ emp.isActive ? 'Deactivate' : 'Activate' }}
+                  </button>
+                }
+              </div>
+            }
           </div>
         }
       </div>

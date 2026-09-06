@@ -1,0 +1,90 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Roles & Permissions</h1>
+      <p class="page-sub">Define what a Supervisor/Manager (or any custom role) can see and do — assign roles from the Add Employee form.</p>
+    </div>
+    <button class="btn btn-blue" (click)="openCreateForm()">+ Add Role</button>
+  </div>
+
+  @if (showCreateForm()) {
+    <div class="card card-padded form-panel fade-in">
+      <h3 class="form-panel-title">New Role</h3>
+      <div class="form-group">
+        <label class="form-label">Role Name</label>
+        <input
+          class="form-control"
+          placeholder="e.g. Site Supervisor"
+          [value]="newRoleName()"
+          (input)="newRoleName.set($any($event.target).value)"
+        />
+      </div>
+      <p class="form-hint">All permissions start enabled — you can disable specific ones for this role right after creating it.</p>
+      @if (createError()) { <p class="error-msg">{{ createError() }}</p> }
+      <div class="form-actions">
+        <button class="btn btn-ghost" (click)="showCreateForm.set(false)">Cancel</button>
+        <button class="btn btn-blue" [disabled]="creating()" (click)="createRole()">
+          {{ creating() ? 'Creating…' : 'Create Role' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (actionError()) { <p class="error-msg">{{ actionError() }}</p> }
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Loading roles…</p>
+    } @else if (visibleRoles().length === 0) {
+      <p class="empty-note">No delegated roles yet — click "+ Add Role" to create one (e.g. Supervisor or Manager).</p>
+    } @else {
+      <div class="roles-list">
+        @for (role of visibleRoles(); track role.id) {
+          <div class="role-row">
+            <div class="role-summary" (click)="toggleExpand(role)">
+              <div class="role-info">
+                <span class="role-name">{{ role.name }}</span>
+                <span class="role-count">{{ role.employeeCount }} employee{{ role.employeeCount === 1 ? '' : 's' }}</span>
+              </div>
+              <div class="role-summary-actions">
+                <a
+                  class="btn btn-ghost btn-sm"
+                  [routerLink]="['/superadmin/employees']"
+                  [queryParams]="{ addRole: role.id }"
+                  (click)="$event.stopPropagation()">
+                  + Add
+                </a>
+                <span class="expand-arrow">{{ expandedId() === role.id ? '▲' : '▼' }}</span>
+              </div>
+            </div>
+
+            @if (expandedId() === role.id && draftPermissions(); as draft) {
+              <div class="role-detail fade-in">
+                <div class="permission-grid">
+                  @for (p of catalog; track p.key) {
+                    <div class="permission-row">
+                      <div class="permission-text">
+                        <div class="permission-label">{{ p.label }}</div>
+                        <div class="permission-desc">{{ p.description }}</div>
+                      </div>
+                      <label class="toggle-switch">
+                        <input type="checkbox" [checked]="draft[p.key]" (change)="togglePermission(p.key)" />
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                      </label>
+                    </div>
+                  }
+                </div>
+                <div class="role-actions">
+                  <button class="btn btn-ghost text-danger" [disabled]="saving()" (click)="removeRole(role)">Delete Role</button>
+                  <button class="btn btn-blue btn-sm" [disabled]="saving()" (click)="saveDraft(role)">
+                    {{ saving() ? 'Saving…' : 'Save Changes' }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

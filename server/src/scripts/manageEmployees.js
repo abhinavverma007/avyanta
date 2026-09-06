@@ -12,6 +12,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Employee = require('../models/Employee');
+const Role = require('../models/Role');
 
 function parseArgs(argv) {
   const args = {};
@@ -37,11 +38,17 @@ async function main() {
       for (const key of ['name', 'email', 'password', 'employeeId', 'joinDate']) {
         if (!args[key]) throw new Error(`--${key} is required`);
       }
+      const role = args.role
+        ? await Role.findOne({ name: args.role })
+        : await Role.findOne({ isSystem: true });
+      if (!role) throw new Error(args.role ? `Role "${args.role}" not found` : 'System "Employee" role not found — run `npm run seed:roles` first');
+
       const passwordHash = await bcrypt.hash(String(args.password), 10);
       const employee = await Employee.create({
         name: args.name,
         email: String(args.email).toLowerCase().trim(),
         passwordHash,
+        role: role._id,
         employeeId: args.employeeId,
         designation: args.designation || '',
         department: args.department || '',

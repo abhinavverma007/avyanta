@@ -9,9 +9,9 @@
 
   <div class="card table-card">
     @if (loading()) {
-      <p class="empty-note">Loading regularization requests…</p>
+      <p class="empty-note">Loading attendance fix requests…</p>
     } @else if (requests().length === 0) {
-      <p class="empty-note">No regularization requests in this view.</p>
+      <p class="empty-note">No attendance fix requests in this view.</p>
     } @else {
       <div class="claims-list">
         @for (request of requests(); track request.id) {

@@ -13,6 +13,7 @@ export interface AdminEmployee {
   id: string;
   name: string;
   email: string;
+  role: { id: string; name: string } | null;
   designation: string;
   department: string;
   phone: string;
@@ -33,6 +34,7 @@ export interface AdminEmployee {
 export interface CreateEmployeePayload {
   name: string;
   password?: string;
+  role?: string; // Role id — admin-only field, ignored/rejected outside admin scope
   designation?: string;
   department?: string;
   phone?: string;
@@ -47,6 +49,7 @@ export interface CreateEmployeePayload {
 
 export interface UpdateEmployeePayload {
   name?: string;
+  role?: string; // Role id — admin-only field, ignored/rejected outside admin scope
   designation?: string;
   department?: string;
   phone?: string;

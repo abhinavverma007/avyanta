@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { API_SCOPE } from '../tokens/api-scope';
 import {
   AdminEmployee,
   CreateEmployeePayload,
@@ -11,9 +12,17 @@ import {
   UpdateEmployeePayload,
 } from '../models/admin.model';
 
-@Injectable({ providedIn: 'root' })
+// Deliberately NOT providedIn: 'root' — this reads API_SCOPE once in its
+// constructor, and a root singleton is only ever constructed the *first*
+// time anything injects it, permanently freezing whatever scope was active
+// then. Provided fresh per-route instead (see app.routes.ts) so it always
+// picks up the *current* session's scope, not a stale one from earlier in
+// the same tab (this was a real bug: a Supervisor session reused an Admin-
+// scoped instance built earlier in the same browser tab).
+@Injectable()
 export class AdminEmployeeService {
-  private readonly base = `${environment.apiUrl}/admin/employees`;
+  private readonly scope = inject(API_SCOPE);
+  private readonly base = `${environment.apiUrl}/${this.scope}/employees`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,26 +1,45 @@
 <div class="page fade-in">
   <div class="page-header">
     <h1 class="page-title">Approvals</h1>
-    <p class="page-sub">Review and approve expense claims, leave requests and attendance regularizations</p>
+    <p class="page-sub">Review and approve expense claims, leave requests, attendance fix requests and salary advances</p>
   </div>
 
   <div class="section-switcher">
-    <button class="section-tab" [class.active]="section() === 'reimbursements'" (click)="setSection('reimbursements')">
-      Reimbursements
-    </button>
-    <button class="section-tab" [class.active]="section() === 'leave'" (click)="setSection('leave')">
-      Leave
-    </button>
-    <button class="section-tab" [class.active]="section() === 'regularization'" (click)="setSection('regularization')">
-      Regularization
-    </button>
+    @if (visibleSections.includes('reimbursements')) {
+      <button class="section-tab" [class.active]="section() === 'reimbursements'" (click)="setSection('reimbursements')">
+        Reimbursements
+      </button>
+    }
+    @if (visibleSections.includes('leave')) {
+      <button class="section-tab" [class.active]="section() === 'leave'" (click)="setSection('leave')">
+        Leave
+      </button>
+    }
+    @if (visibleSections.includes('regularization')) {
+      <button class="section-tab" [class.active]="section() === 'regularization'" (click)="setSection('regularization')">
+        Fix Attendance
+      </button>
+    }
+    @if (visibleSections.includes('advance')) {
+      <button class="section-tab" [class.active]="section() === 'advance'" (click)="setSection('advance')">
+        Advance
+      </button>
+    }
   </div>
+
+  <select class="form-control section-select" [ngModel]="section()" (ngModelChange)="setSection($event)" aria-label="Approval type">
+    @for (opt of sectionOptions; track opt.value) {
+      <option [ngValue]="opt.value">{{ opt.label }}</option>
+    }
+  </select>
 
   @if (section() === 'reimbursements') {
     <app-superadmin-reimbursements />
   } @else if (section() === 'leave') {
     <app-superadmin-leave-approvals />
-  } @else {
+  } @else if (section() === 'regularization') {
     <app-superadmin-regularization-approvals />
+  } @else {
+    <app-superadmin-advance-approvals />
   }
 </div>

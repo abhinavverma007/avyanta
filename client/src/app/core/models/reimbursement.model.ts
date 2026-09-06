@@ -50,6 +50,8 @@ export interface SalaryRow {
   earnedTillDate: number;
   reimbursementTotal: number;
   reimbursementCount: number;
+  advanceDeduction: number;
+  advanceCount: number;
   payable: number;
   paidAmount: number;
   balance: number;
@@ -77,6 +79,12 @@ export interface SalaryDetail extends SalaryRow {
     amount: number;
     description: string;
     date: string;
+  }>;
+  advances: Array<{
+    id: string;
+    amount: number;
+    reason: string;
+    requestedDate: string;
   }>;
   payouts: PayoutRecord[];
 }

@@ -1,0 +1,48 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Audit Log</h1>
+      <p class="page-sub">Every action taken on your behalf — by you or anyone with a delegated role — with who did it and when.</p>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <input
+      class="form-control search-input"
+      placeholder="Filter this page by actor name…"
+      [value]="actorFilter()"
+      (input)="onActorFilterInput($any($event.target).value)"
+    />
+    <span class="result-count">{{ total() }} total entries</span>
+  </div>
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Loading…</p>
+    } @else if (filteredEntries.length === 0) {
+      <p class="empty-note">{{ entries().length === 0 ? 'No activity recorded yet.' : 'No entries on this page match that name.' }}</p>
+    } @else {
+      <div class="log-list">
+        @for (entry of filteredEntries; track entry.id) {
+          <div class="log-row">
+            <div class="log-main">
+              <div class="log-top">
+                <span class="badge" [class]="entry.actorType === 'admin' ? 'badge-info' : 'badge-warning'">
+                  {{ entry.actorType === 'admin' ? 'Owner' : 'Delegated' }}
+                </span>
+                <span class="log-actor">{{ entry.actorName }}</span>
+              </div>
+              <p class="log-summary">{{ entry.summary }}</p>
+            </div>
+            <span class="log-time">{{ entry.createdAt | date:'d MMM y, h:mm a' }}</span>
+          </div>
+        }
+      </div>
+      <div class="pagination-row">
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
+        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+      </div>
+    }
+  </div>
+</div>

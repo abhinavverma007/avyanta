@@ -14,7 +14,7 @@ type Tab = ReimbursementStatus | 'all';
   styleUrl: './superadmin-reimbursements.component.scss',
 })
 export class SuperadminReimbursementsComponent implements OnInit {
-  readonly tabs: Tab[] = ['pending', 'approved', 'rejected', 'all'];
+  readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
 
   claims = signal<AdminReimbursement[]>([]);
   loading = signal(true);

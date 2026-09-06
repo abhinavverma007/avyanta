@@ -1,9 +1,15 @@
-export type UserRole = 'employee' | 'field_worker' | 'vendor' | 'customer' | 'director';
+import { RolePermissions } from './role.model';
+
+export interface UserRole {
+  id: string;
+  name: string; // 'Employee', 'Supervisor', 'Manager', or any custom role name
+  permissions: RolePermissions;
+}
 
 export interface User {
   id: string;
   name: string;
-  role: UserRole;
+  role: UserRole | null;
   designation: string;
   department: string;
   email: string;
