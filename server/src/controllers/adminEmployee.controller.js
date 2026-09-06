@@ -1,7 +1,9 @@
 const bcrypt = require('bcryptjs');
 const Employee = require('../models/Employee');
+const Role = require('../models/Role');
 const { generatePassword } = require('../utils/password');
 const { generateUniqueEmail, generateEmployeeId } = require('../utils/employeeIdentity');
+const { recordAudit } = require('../utils/audit');
 
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -26,6 +28,7 @@ function sanitize(emp) {
     id: emp._id.toString(),
     name: emp.name,
     email: emp.email,
+    role: emp.role && emp.role.name ? { id: emp.role._id.toString(), name: emp.role.name } : null,
     designation: emp.designation,
     department: emp.department,
     phone: emp.phone,
@@ -59,7 +62,7 @@ exports.list = async (req, res) => {
     : {};
 
   const [employees, total] = await Promise.all([
-    Employee.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+    Employee.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('role', 'name'),
     Employee.countDocuments(filter),
   ]);
 
@@ -73,7 +76,7 @@ exports.list = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
-  const employee = await Employee.findById(req.params.id);
+  const employee = await Employee.findById(req.params.id).populate('role', 'name');
   if (!employee) return res.status(404).json({ message: 'Employee not found.' });
   res.json({ employee: sanitize(employee) });
 };
@@ -89,11 +92,22 @@ exports.previewEmail = async (req, res) => {
 };
 
 // Email and employee ID are never typed by the superadmin — both are
-// generated here so there's nothing to get wrong or collide on.
+// generated here so there's nothing to get wrong or collide on. Admin-only
+// route (see adminEmployees.routes.js), so the `role` field here can be
+// trusted without an extra actor check.
 exports.create = async (req, res) => {
   const { name, joinDate } = req.body;
   for (const [key, val] of Object.entries({ name, joinDate })) {
     if (!val) return res.status(400).json({ message: `${key} is required.` });
+  }
+
+  let role;
+  if (req.body.role) {
+    role = await Role.findById(req.body.role);
+    if (!role) return res.status(400).json({ message: 'Selected role was not found.' });
+  } else {
+    role = await Role.findOne({ isSystem: true });
+    if (!role) return res.status(500).json({ message: 'Default "Employee" role is missing — run the seed:roles script.' });
   }
 
   const [email, employeeId] = await Promise.all([generateUniqueEmail(name), generateEmployeeId()]);
@@ -104,6 +118,7 @@ exports.create = async (req, res) => {
     name,
     email,
     passwordHash,
+    role: role._id,
     employeeId,
     designation: req.body.designation || '',
     department: req.body.department || '',
@@ -116,14 +131,28 @@ exports.create = async (req, res) => {
     salaryMonthly: req.body.salaryMonthly || 0,
     paidLeavesPerMonth: req.body.paidLeavesPerMonth || 0,
   });
+  await employee.populate('role', 'name');
+
+  await recordAudit(req, {
+    action: 'employee.create',
+    resourceType: 'Employee',
+    resourceId: employee._id,
+    summary: `Created employee ${employee.name} (${employee.employeeId})`,
+  });
 
   res.status(201).json({ employee: sanitize(employee), generatedPassword: password });
 };
 
+// This route is reachable both as a true Admin (/admin/employees/:id) and as
+// a permission-delegated Employee (/team/employees/:id) — `role` and
+// `isActive` are hard invariants that stay Admin-only no matter what the
+// "employees" permission is set to for a role, so they're stripped here as
+// a second line of defense even though the frontend already hides those
+// controls outside admin scope.
 exports.update = async (req, res) => {
   const allowed = [
     'name', 'designation', 'department', 'phone', 'location',
-    'salaryMonthly', 'paidLeavesPerMonth', 'isActive', 'shiftStart',
+    'salaryMonthly', 'paidLeavesPerMonth', 'shiftStart',
   ];
   const updates = {};
   for (const key of allowed) {
@@ -136,8 +165,46 @@ exports.update = async (req, res) => {
     updates.upiId = String(req.body.upiId).trim();
   }
 
-  const employee = await Employee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
-  if (!employee) return res.status(404).json({ message: 'Employee not found.' });
+  if (req.admin) {
+    if (req.body.isActive !== undefined) updates.isActive = req.body.isActive;
+    if (req.body.role !== undefined) {
+      const role = await Role.findById(req.body.role);
+      if (!role) return res.status(400).json({ message: 'Selected role was not found.' });
+      updates.role = role._id;
+    }
+  } else if (req.body.isActive !== undefined || req.body.role !== undefined) {
+    return res.status(403).json({ message: 'Only the owner can change an employee\'s active status or role.' });
+  }
+
+  const before = await Employee.findById(req.params.id);
+  if (!before) return res.status(404).json({ message: 'Employee not found.' });
+
+  const employee = await Employee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
+    .populate('role', 'name');
+
+  if (updates.role !== undefined && String(updates.role) !== String(before.role)) {
+    await recordAudit(req, {
+      action: 'employee.role_change',
+      resourceType: 'Employee',
+      resourceId: employee._id,
+      summary: `Changed ${employee.name}'s role to "${employee.role?.name}"`,
+    });
+  } else if (updates.isActive !== undefined && updates.isActive !== before.isActive) {
+    await recordAudit(req, {
+      action: updates.isActive ? 'employee.activate' : 'employee.deactivate',
+      resourceType: 'Employee',
+      resourceId: employee._id,
+      summary: `${updates.isActive ? 'Activated' : 'Deactivated'} ${employee.name}`,
+    });
+  } else {
+    await recordAudit(req, {
+      action: 'employee.update',
+      resourceType: 'Employee',
+      resourceId: employee._id,
+      summary: `Updated employee ${employee.name} (${employee.employeeId})`,
+    });
+  }
+
   res.json({ employee: sanitize(employee) });
 };
 
@@ -151,8 +218,16 @@ exports.resetPassword = async (req, res) => {
     req.params.id,
     { passwordHash, $inc: { tokenVersion: 1 } },
     { new: true },
-  );
+  ).populate('role', 'name');
   if (!employee) return res.status(404).json({ message: 'Employee not found.' });
+
+  await recordAudit(req, {
+    action: 'employee.reset_password',
+    resourceType: 'Employee',
+    resourceId: employee._id,
+    summary: `Reset password for ${employee.name} (${employee.employeeId})`,
+  });
+
   res.json({ employee: sanitize(employee), generatedPassword: password });
 };
 

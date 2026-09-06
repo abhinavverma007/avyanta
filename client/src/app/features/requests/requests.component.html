@@ -1,26 +1,30 @@
 <div class="page fade-in">
   <div class="page-header">
     <h1 class="page-title">Requests</h1>
-    <p class="page-sub">Apply for leave, submit an expense claim, or request an attendance correction</p>
+    <p class="page-sub">Apply for leave, submit an expense claim, request an attendance correction, or ask for a salary advance</p>
   </div>
 
   <div class="section-switcher">
-    <button class="section-tab" [class.active]="section() === 'leave'" (click)="setSection('leave')">
-      Leave
-    </button>
-    <button class="section-tab" [class.active]="section() === 'reimbursement'" (click)="setSection('reimbursement')">
-      Reimbursement
-    </button>
-    <button class="section-tab" [class.active]="section() === 'regularization'" (click)="setSection('regularization')">
-      Regularization
-    </button>
+    @for (opt of sectionOptions; track opt.value) {
+      <button class="section-tab" [class.active]="section() === opt.value" (click)="setSection(opt.value)">
+        {{ opt.label }}
+      </button>
+    }
   </div>
+
+  <select class="form-control section-select" [ngModel]="section()" (ngModelChange)="setSection($event)" aria-label="Request type">
+    @for (opt of sectionOptions; track opt.value) {
+      <option [ngValue]="opt.value">{{ opt.label }}</option>
+    }
+  </select>
 
   @if (section() === 'leave') {
     <app-leave />
   } @else if (section() === 'reimbursement') {
     <app-reimbursements />
-  } @else {
+  } @else if (section() === 'regularization') {
     <app-regularization />
+  } @else {
+    <app-salary-advance />
   }
 </div>

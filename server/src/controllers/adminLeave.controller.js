@@ -1,5 +1,6 @@
 const Leave = require('../models/Leave');
 const { sanitize } = require('./leave.controller');
+const { recordAudit } = require('../utils/audit');
 
 function monthRange(year, month) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -50,6 +51,13 @@ exports.review = (status) => async (req, res) => {
   leave.reviewNote = req.body.reviewNote || '';
   leave.reviewedAt = new Date();
   await leave.save();
+
+  await recordAudit(req, {
+    action: status === 'approved' ? 'leave.approve' : 'leave.reject',
+    resourceType: 'Leave',
+    resourceId: leave._id,
+    summary: `${status === 'approved' ? 'Approved' : 'Rejected'} ${leave.employee?.name}'s leave for ${leave.date}`,
+  });
 
   res.json({ leave: withEmployee(leave) });
 };

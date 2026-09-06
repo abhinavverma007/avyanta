@@ -2,18 +2,18 @@
   <header class="sa-topbar">
     <div class="sa-brand">
       <span class="brand-sun">SUN</span><span class="brand-desh">देश</span>
-      <span class="sa-tag">Superadmin</span>
+      <span class="sa-tag">{{ isTrueAdmin() ? 'Superadmin' : 'Management' }}</span>
     </div>
 
     <nav class="sa-nav">
-      @for (item of navItems; track item.path) {
+      @for (item of navItems(); track item.path) {
         <a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
       }
     </nav>
 
-    <div class="sa-account">
+    <div class="sa-account" #accountArea>
       <button class="avatar-btn" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" aria-haspopup="true">
-        <div class="avatar">{{ getInitials(admin()?.name ?? 'A') }}</div>
+        <div class="avatar">{{ getInitials(identityName() ?? 'A') }}</div>
         <svg class="chevron" [class.open]="menuOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="6 9 12 15 18 9"/>
         </svg>
@@ -22,10 +22,22 @@
       @if (menuOpen()) {
         <div class="account-dropdown fade-in" role="menu">
           <div class="account-info">
-            <div class="account-name">{{ admin()?.name }}</div>
-            <div class="account-email">{{ admin()?.email }}</div>
+            <div class="account-name">{{ identityName() }}</div>
+            <div class="account-email">{{ identitySubtitle() }}</div>
           </div>
           <div class="dropdown-divider"></div>
+          @if (isTrueAdmin()) {
+            <a class="dropdown-item" routerLink="/superadmin/roles" routerLinkActive="active" (click)="closeMenu()" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+              Roles & Permissions
+            </a>
+            <a class="dropdown-item" routerLink="/superadmin/audit-log" routerLinkActive="active" (click)="closeMenu()" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+              Audit Log
+            </a>
+
+            <div class="dropdown-divider"></div>
+          }
           <button class="dropdown-item" (click)="toggleChangePassword()" role="menuitem">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Change Password
@@ -114,7 +126,7 @@
 
   <!-- Bottom tab bar (mobile) -->
   <nav class="sa-bottom-bar" aria-label="Superadmin navigation">
-    @for (item of navItems; track item.path) {
+    @for (item of navItems(); track item.path) {
       <a [routerLink]="item.path" routerLinkActive="active" class="sa-bottom-tab">
         <span class="tab-icon" [innerHTML]="getIconSvg(item.icon)"></span>
         <span class="tab-label">{{ item.label }}</span>

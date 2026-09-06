@@ -1,0 +1,6 @@
+@if (notice.message(); as msg) {
+  <div class="global-notice fade-in" role="status">
+    <span class="global-notice-text">{{ msg }}</span>
+    <button type="button" class="global-notice-close" (click)="notice.dismiss()" aria-label="Dismiss">✕</button>
+  </div>
+}

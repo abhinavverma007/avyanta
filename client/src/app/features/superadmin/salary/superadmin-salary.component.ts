@@ -6,8 +6,10 @@ import { SalaryService } from '../../../core/services/salary.service';
 import { SalaryDetail, SalaryRow } from '../../../core/models/reimbursement.model';
 
 // Card view (mobile) only — the laptop table shows every matching row with
-// no pagination, unchanged from before.
-const CARD_PAGE_SIZE = 3;
+// no pagination, unchanged from before. Cards only show Name + Payable
+// until tapped (see the template), so 10 fit per page without feeling
+// cramped — higher than this app's usual page size of 3.
+const CARD_PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-superadmin-salary',

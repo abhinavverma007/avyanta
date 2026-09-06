@@ -1,8 +1,10 @@
 const Employee = require('../models/Employee');
 const Reimbursement = require('../models/Reimbursement');
+const SalaryAdvance = require('../models/SalaryAdvance');
 const Payout = require('../models/Payout');
 const { computeMonthlyAttendance } = require('../utils/attendanceStats');
 const { istNow, istDateString } = require('../utils/istDate');
+const { recordAudit } = require('../utils/audit');
 
 const round2 = (n) => Math.round(n * 100) / 100;
 
@@ -13,6 +15,28 @@ function monthRange(year, month) {
     start: `${year}-${pad(month)}-01`,
     end: `${year}-${pad(month)}-${pad(daysInMonth)}`,
   };
+}
+
+function prevMonthOf(year, month) {
+  return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+}
+
+// An advance is disbursed against a *future* month's pay, not the month it
+// was requested in (see SalaryAdvance.js) — so a month's payable is reduced
+// by advances the employee took during the *previous* calendar month, once
+// approved. Approved late (after the target month has already passed)?
+// It still applies retroactively to that same target month — the balance
+// simply nets it against whatever was already paid, same as a late-approved
+// leave/regularization would.
+async function advanceDeductionFor(employeeId, year, month) {
+  const { year: py, month: pm } = prevMonthOf(year, month);
+  const { start, end } = monthRange(py, pm);
+  const advances = await SalaryAdvance.find({
+    employee: employeeId,
+    status: 'approved',
+    requestedDate: { $gte: start, $lte: end },
+  });
+  return { advances, total: round2(advances.reduce((sum, a) => sum + a.amount, 0)) };
 }
 
 // Salary is computed "till date": for the current month, only days up to
@@ -54,7 +78,9 @@ async function computeSalary(employee, year, month) {
   });
   const reimbursementTotal = round2(reimbursements.reduce((sum, r) => sum + r.amount, 0));
 
-  const payable = round2(earnedTillDate + reimbursementTotal);
+  const { total: advanceDeduction, advances } = await advanceDeductionFor(employee._id, year, month);
+
+  const payable = round2(earnedTillDate + reimbursementTotal - advanceDeduction);
 
   // What's actually been paid out for this employee+month so far, vs. what
   // the numbers currently say is owed — a recorded fact, not recomputed.
@@ -86,6 +112,8 @@ async function computeSalary(employee, year, month) {
     earnedTillDate,
     reimbursementTotal,
     reimbursementCount: reimbursements.length,
+    advanceDeduction,
+    advanceCount: advances.length,
     payable,
     paidAmount,
     balance,
@@ -126,6 +154,7 @@ exports.detail = async (req, res) => {
     date: { $gte: start, $lte: end },
   }).sort({ date: 1 });
   const payouts = await Payout.find({ employee: employee._id, year, month }).sort({ paidAt: 1 });
+  const { advances } = await advanceDeductionFor(employee._id, year, month);
 
   res.json({
     ...salary,
@@ -135,6 +164,12 @@ exports.detail = async (req, res) => {
       amount: r.amount,
       description: r.description,
       date: r.date,
+    })),
+    advances: advances.map((a) => ({
+      id: a._id.toString(),
+      amount: a.amount,
+      reason: a.reason,
+      requestedDate: a.requestedDate,
     })),
     payouts: payouts.map((p) => ({
       id: p._id.toString(),
@@ -179,6 +214,14 @@ exports.recordPayout = async (req, res) => {
     amount: amt,
     paidAt: new Date(),
     note: note || '',
+  });
+
+  await recordAudit(req, {
+    action: 'salary.payout_recorded',
+    resourceType: 'Payout',
+    resourceId: payout._id,
+    summary: `Recorded ₹${amt} payout to ${employee.name} for ${m}/${y}`,
+    metadata: { employeeId: employee._id, year: y, month: m, amount: amt },
   });
 
   const updated = await computeSalary(employee, y, m);

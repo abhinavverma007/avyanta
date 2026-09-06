@@ -7,7 +7,9 @@ function sanitize(emp) {
   return {
     id: emp._id.toString(),
     name: emp.name,
-    role: emp.role,
+    role: emp.role && emp.role.name
+      ? { id: emp.role._id.toString(), name: emp.role.name, permissions: emp.role.permissions }
+      : null,
     designation: emp.designation,
     department: emp.department,
     email: emp.email,
@@ -27,7 +29,7 @@ exports.login = async (req, res) => {
     return res.status(400).json({ message: 'Enter a valid email address.' });
   }
 
-  const employee = await Employee.findOne({ email: String(email).toLowerCase().trim() });
+  const employee = await Employee.findOne({ email: String(email).toLowerCase().trim() }).populate('role');
   if (!employee || !employee.isActive) {
     return res.status(401).json({ message: 'Invalid credentials.' });
   }

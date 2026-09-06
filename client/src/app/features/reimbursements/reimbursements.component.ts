@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReimbursementService } from '../../core/services/reimbursement.service';
@@ -44,6 +44,18 @@ export class ReimbursementsComponent implements OnInit {
     return map[category] ?? category;
   }
 
+  // Nudges what's actually useful to write, per category, instead of one
+  // generic placeholder for every claim type.
+  readonly descriptionPlaceholder = computed(() => {
+    const map: Record<ReimbursementCategory, string> = {
+      petrol: 'e.g. Vehicle number — DL01AB1234',
+      food: 'e.g. Dish name eaten',
+      travel: 'e.g. From Sector 12 to Sector 40',
+      other: 'e.g. What was this expense for?',
+    };
+    return map[this.category()];
+  });
+
   onAmountInput(value: string): void {
     const digits = value.replace(/\D/g, '');
     this.amount.set(digits ? Number(digits) : null);
@@ -60,6 +72,10 @@ export class ReimbursementsComponent implements OnInit {
 
     if (!this.amount() || this.amount()! <= 0) {
       this.error.set('Enter an amount greater than 0.');
+      return;
+    }
+    if (!this.description().trim()) {
+      this.error.set('A description is required.');
       return;
     }
 

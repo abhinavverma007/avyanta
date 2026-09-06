@@ -15,7 +15,7 @@
       </div>
 
       <!-- Profile -->
-      <div class="profile-area">
+      <div class="profile-area" #profileArea>
         <button class="avatar-btn" (click)="toggleProfile()" [attr.aria-expanded]="profileOpen()" aria-haspopup="true">
           <div class="avatar">{{ getInitials(user()?.name ?? 'U') }}</div>
           <svg class="chevron" [class.open]="profileOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -25,10 +25,10 @@
 
         @if (profileOpen()) {
           <div class="profile-dropdown fade-in" role="menu">
-            <div class="profile-info">
+            <a class="profile-info" routerLink="/profile" (click)="profileOpen.set(false)" role="menuitem">
               <div class="profile-name">{{ user()?.name }}</div>
               <div class="profile-role">{{ user()?.designation }}</div>
-            </div>
+            </a>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item danger" (click)="logout()" role="menuitem">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -47,7 +47,7 @@
     <!-- Sidebar nav (desktop) -->
     <nav class="sidebar" aria-label="Main navigation">
       <div class="sidebar-inner">
-        @for (item of navItems(); track item.path) {
+        @for (item of navItems; track item.path) {
           <a
             [routerLink]="item.path"
             routerLinkActive="active"
@@ -74,7 +74,7 @@
 
   <!-- Bottom tab bar (mobile) -->
   <nav class="bottom-bar" aria-label="Mobile navigation">
-    @for (item of navItems(); track item.path) {
+    @for (item of navItems; track item.path) {
       <a
         [routerLink]="item.path"
         routerLinkActive="active"

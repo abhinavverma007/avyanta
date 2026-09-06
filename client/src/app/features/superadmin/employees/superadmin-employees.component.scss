@@ -147,23 +147,26 @@
   border-radius: var(--radius);
   background: var(--surface);
   padding: var(--space-4);
+  cursor: pointer;
 }
+.employee-card:hover { background: var(--surface-raised); }
 
 .ec-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-3);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border);
 }
+.ec-expand-arrow { color: var(--text-light); font-size: 0.75rem; flex-shrink: 0; }
 
 .ec-body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: var(--space-3);
   margin-bottom: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
 }
 .ec-row {
   display: flex;

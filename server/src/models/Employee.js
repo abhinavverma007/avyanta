@@ -5,7 +5,10 @@ const employeeSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
-    role: { type: String, enum: ['employee'], default: 'employee' },
+    // Which Role (and therefore which permission set, if any) this employee
+    // has — see Role.js. Only a true Admin can assign/change this (enforced
+    // in adminEmployee.controller.js), never delegable via a permission.
+    role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
     designation: { type: String, default: '' },
     department: { type: String, default: '' },
     phone: { type: String, default: '' },

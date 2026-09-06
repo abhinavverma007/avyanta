@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserRole } from '../../../core/models/user.model';
 import { isValidEmail } from '../../../core/utils/validators';
 
+// Just a cosmetic tab key for this login page's (mostly hidden) multi-portal
+// UI — unrelated to the employee's actual assigned RBAC role (see
+// core/models/role.model.ts). AuthService.login() ignores this entirely.
+type LoginTabKind = 'customer' | 'vendor' | 'employee' | 'director' | 'field_worker';
+
 interface RoleTab {
-  role: UserRole;
+  role: LoginTabKind;
   label: string;
   icon: string;
   tagline: string;
@@ -106,7 +110,7 @@ export class LoginComponent {
     }
   }
 
-  demoLogin(role: UserRole): void {
+  demoLogin(role: LoginTabKind): void {
     const idx = this.roleTabs.findIndex(t => t.role === role);
     if (idx >= 0) this.activeTabIndex.set(idx);
     this.loading.set(true);

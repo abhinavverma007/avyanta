@@ -13,7 +13,7 @@ module.exports = async function auth(req, res, next) {
     if (payload.role !== 'employee') {
       return res.status(403).json({ message: 'Employee access required.' });
     }
-    const employee = await Employee.findById(payload.sub);
+    const employee = await Employee.findById(payload.sub).populate('role');
     if (!employee || !employee.isActive || payload.tokenVersion !== employee.tokenVersion) {
       return res.status(401).json({ message: 'Invalid or expired session.' });
     }

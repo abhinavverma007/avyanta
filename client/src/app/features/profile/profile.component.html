@@ -10,7 +10,7 @@
       <div class="profile-hero-info">
         <h1 class="profile-name">{{ u.name }}</h1>
         <p class="profile-designation">{{ u.designation }}</p>
-        <span class="role-badge">{{ u.role | titlecase }}</span>
+        <span class="role-badge">{{ u.role?.name }}</span>
       </div>
     </div>
 

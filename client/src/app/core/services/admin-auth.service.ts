@@ -47,10 +47,19 @@ export class AdminAuthService {
     localStorage.setItem(ADMIN_KEY, JSON.stringify(res.admin));
   }
 
-  logout(): void {
+  // Clears the session without navigating anywhere — used when the *other*
+  // login (a delegated Employee, at this same /superadmin page) succeeds,
+  // so a leftover Admin session from earlier testing can't silently outrank
+  // it (see AuthService.clearLocalSession and superadmin-login.component.ts,
+  // which does the same in reverse).
+  clearLocalSession(): void {
     this._state.set({ admin: null, isAuthenticated: false });
     localStorage.removeItem(ADMIN_TOKEN_KEY);
     localStorage.removeItem(ADMIN_KEY);
+  }
+
+  logout(): void {
+    this.clearLocalSession();
     this.router.navigate(['/superadmin']);
   }
 }

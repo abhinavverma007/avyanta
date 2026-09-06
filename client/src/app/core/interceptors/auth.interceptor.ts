@@ -3,7 +3,9 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ADMIN_TOKEN_KEY } from '../services/admin-auth.service';
+import { ADMIN_TOKEN_KEY, AdminAuthService } from '../services/admin-auth.service';
+import { AuthService } from '../services/auth.service';
+import { NoticeService } from '../services/notice.service';
 
 const EMPLOYEE_TOKEN_KEY = 'sundesh_token';
 
@@ -19,7 +21,11 @@ const AUTH_ENDPOINTS_WITH_EXPECTED_401 = [
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+  const authService = inject(AuthService);
+  const adminAuthService = inject(AdminAuthService);
+  const noticeService = inject(NoticeService);
   const isAdminRequest = req.url.startsWith(`${environment.apiUrl}/admin/`);
+  const isTeamRequest = req.url.startsWith(`${environment.apiUrl}/team/`);
   const tokenKey = isAdminRequest ? ADMIN_TOKEN_KEY : EMPLOYEE_TOKEN_KEY;
   const token = localStorage.getItem(tokenKey);
 
@@ -31,15 +37,28 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError(err => {
       const isExpectedAuthEndpoint = AUTH_ENDPOINTS_WITH_EXPECTED_401.some(url => req.url.startsWith(url));
       if (err.status === 401 && !isExpectedAuthEndpoint) {
+        // Go through the services' own clear methods, not raw localStorage
+        // writes — otherwise their in-memory isAuthenticated()/user() signals
+        // keep reporting the old (now-invalid) session until a full page
+        // reload, which previously let a stale Admin session silently
+        // outrank a freshly-logged-in Supervisor's API_SCOPE resolution.
         if (isAdminRequest) {
-          localStorage.removeItem(ADMIN_TOKEN_KEY);
-          localStorage.removeItem('sundesh_admin');
+          adminAuthService.clearLocalSession();
           router.navigate(['/superadmin']);
         } else {
-          localStorage.removeItem(EMPLOYEE_TOKEN_KEY);
-          localStorage.removeItem('sundesh_user');
+          authService.clearLocalSession();
           router.navigate(['/login']);
         }
+      } else if (err.status === 403 && isTeamRequest) {
+        // The owner can change a Role's permissions while an employee
+        // holding that role is already logged in — the backend enforces the
+        // change immediately (this 403 is exactly that), but the employee's
+        // cached nav/route-guard state was built at login and won't know
+        // about it on its own. Refresh it in the background, bounce them
+        // somewhere they still have access, and tell them why.
+        authService.refreshUser().catch(() => {});
+        noticeService.show('Your access to this feature was updated by the owner.');
+        router.navigate(['/dashboard']);
       }
       return throwError(() => err);
     }),

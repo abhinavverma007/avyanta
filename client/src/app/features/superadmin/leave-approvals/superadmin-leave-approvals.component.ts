@@ -14,7 +14,7 @@ type Tab = LeaveStatus | 'all';
   styleUrl: './superadmin-leave-approvals.component.scss',
 })
 export class SuperadminLeaveApprovalsComponent implements OnInit {
-  readonly tabs: Tab[] = ['pending', 'approved', 'rejected', 'all'];
+  readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
 
   leaves = signal<AdminLeave[]>([]);
   loading = signal(true);

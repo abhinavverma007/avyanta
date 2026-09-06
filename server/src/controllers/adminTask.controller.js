@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const Employee = require('../models/Employee');
+const { recordAudit } = require('../utils/audit');
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -58,6 +59,14 @@ exports.create = async (req, res) => {
     .populate('employees', 'name employeeId')
     .sort({ date: 1 });
 
+  await recordAudit(req, {
+    action: 'task.create',
+    resourceType: 'Task',
+    resourceId: created[0]?._id,
+    summary: `Assigned "${String(title).trim()}" to ${employees.length} employee(s) across ${uniqueDates.length} day(s)`,
+    metadata: { dates: uniqueDates, employeeIds },
+  });
+
   res.status(201).json({ tasks: populated.map(sanitize) });
 };
 
@@ -90,5 +99,13 @@ exports.list = async (req, res) => {
 exports.remove = async (req, res) => {
   const task = await Task.findByIdAndDelete(req.params.id);
   if (!task) return res.status(404).json({ message: 'Task not found.' });
+
+  await recordAudit(req, {
+    action: 'task.delete',
+    resourceType: 'Task',
+    resourceId: task._id,
+    summary: `Removed task "${task.title}" for ${task.date}`,
+  });
+
   res.json({ success: true });
 };

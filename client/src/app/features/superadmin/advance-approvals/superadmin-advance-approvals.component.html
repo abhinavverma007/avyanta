@@ -1,0 +1,53 @@
+<div class="panel fade-in">
+  <div class="tabs">
+    @for (tab of tabs; track tab) {
+      <button class="tab" [class.active]="activeTab() === tab" (click)="setTab(tab)">
+        {{ tab | titlecase }}
+      </button>
+    }
+  </div>
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">Loading advance requests…</p>
+    } @else if (requests().length === 0) {
+      <p class="empty-note">No advance requests in this view.</p>
+    } @else {
+      <div class="claims-list">
+        @for (request of requests(); track request.id) {
+          <div class="claim-row">
+            <div class="claim-main">
+              <div class="claim-top">
+                <span class="claim-amount font-mono">₹{{ request.amount | number }}</span>
+                <span class="badge" [class]="request.status === 'approved' ? 'badge-success' : request.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
+                  {{ request.status | titlecase }}
+                </span>
+              </div>
+              <p class="claim-employee">{{ request.employee?.name }} · {{ request.employee?.employeeId }} · {{ request.employee?.department }}</p>
+              <p class="claim-desc">{{ request.reason }}</p>
+              <p class="claim-date">Requested {{ formatDate(request.requestedDate) }} — deducted from next month's salary once approved</p>
+              @if (request.reviewNote) {
+                <p class="claim-note">Review note: {{ request.reviewNote }}</p>
+              }
+            </div>
+
+            @if (request.status === 'pending') {
+              <div class="claim-actions">
+                <input
+                  class="form-control note-input"
+                  placeholder="Optional note…"
+                  [value]="noteFor(request.id)"
+                  (input)="setNote(request.id, $any($event.target).value)"
+                />
+                <div class="claim-buttons">
+                  <button class="btn btn-success btn-sm" [disabled]="actingId() === request.id" (click)="approve(request)">Approve</button>
+                  <button class="btn btn-ghost btn-sm" [disabled]="actingId() === request.id" (click)="reject(request)">Reject</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
