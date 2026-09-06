@@ -1,6 +1,7 @@
 const SalaryAdvance = require('../models/SalaryAdvance');
 const { sanitize } = require('./salaryAdvance.controller');
 const { recordAudit } = require('../utils/audit');
+const { rejectSelfReview } = require('../utils/reviewGuard');
 
 function withEmployee(advance) {
   return {
@@ -33,6 +34,7 @@ exports.review = (status) => async (req, res) => {
   if (advance.status !== 'pending') {
     return res.status(409).json({ message: `Request already ${advance.status}.` });
   }
+  if (rejectSelfReview(req, res, advance.employee._id)) return;
 
   advance.status = status;
   advance.reviewNote = req.body.reviewNote || '';

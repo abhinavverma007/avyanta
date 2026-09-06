@@ -51,7 +51,7 @@
         @if (lastPunchTime()) {
           <p class="last-punch">
             Last Punch {{ punchState() === 'out' ? 'Out' : 'In' }}: {{ formatTime(lastPunchTime()!) }} | {{ formatDate(lastPunchTime()!) }}
-            @if (workHours() !== undefined) { — {{ workHours()!.toFixed(1) }}h worked today }
+            @if (workHours() !== undefined) { — {{ formatWorkDuration(workHours()!) }} worked today }
           </p>
 
           @if (!showUnmarkConfirm()) {

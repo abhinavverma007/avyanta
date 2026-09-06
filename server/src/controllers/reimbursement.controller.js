@@ -1,4 +1,5 @@
 const Reimbursement = require('../models/Reimbursement');
+const { recordAudit } = require('../utils/audit');
 
 const CATEGORIES = ['petrol', 'food', 'travel', 'other'];
 
@@ -38,6 +39,14 @@ exports.create = async (req, res) => {
     description: String(description).trim(),
     date,
   });
+
+  await recordAudit(req, {
+    action: 'reimbursement.submit',
+    resourceType: 'Reimbursement',
+    resourceId: claim._id,
+    summary: `${req.employee.name} submitted a ${category} claim of ₹${claim.amount}`,
+  });
+
   res.status(201).json({ claim: sanitize(claim) });
 };
 

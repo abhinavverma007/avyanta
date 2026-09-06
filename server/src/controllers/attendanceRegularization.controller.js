@@ -2,6 +2,7 @@ const AttendanceRegularization = require('../models/AttendanceRegularization');
 const Attendance = require('../models/Attendance');
 const Leave = require('../models/Leave');
 const { istDateString } = require('../utils/istDate');
+const { recordAudit } = require('../utils/audit');
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -92,6 +93,13 @@ exports.create = async (req, res) => {
     },
     { upsert: true, new: true },
   );
+
+  await recordAudit(req, {
+    action: 'regularization.apply',
+    resourceType: 'AttendanceRegularization',
+    resourceId: record._id,
+    summary: `${req.employee.name} requested an attendance fix for ${date}`,
+  });
 
   res.status(201).json({ request: sanitize(record) });
 };

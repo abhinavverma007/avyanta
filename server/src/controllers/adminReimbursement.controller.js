@@ -1,6 +1,7 @@
 const Reimbursement = require('../models/Reimbursement');
 const { sanitize } = require('./reimbursement.controller');
 const { recordAudit } = require('../utils/audit');
+const { rejectSelfReview } = require('../utils/reviewGuard');
 
 function monthRange(year, month) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -46,6 +47,7 @@ exports.review = (status) => async (req, res) => {
   if (claim.status !== 'pending') {
     return res.status(409).json({ message: `Claim already ${claim.status}.` });
   }
+  if (rejectSelfReview(req, res, claim.employee._id)) return;
 
   claim.status = status;
   claim.reviewNote = req.body.reviewNote || '';

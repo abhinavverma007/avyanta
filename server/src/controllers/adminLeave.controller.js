@@ -1,6 +1,7 @@
 const Leave = require('../models/Leave');
 const { sanitize } = require('./leave.controller');
 const { recordAudit } = require('../utils/audit');
+const { rejectSelfReview } = require('../utils/reviewGuard');
 
 function monthRange(year, month) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -46,6 +47,7 @@ exports.review = (status) => async (req, res) => {
   if (leave.status !== 'pending') {
     return res.status(409).json({ message: `Leave request already ${leave.status}.` });
   }
+  if (rejectSelfReview(req, res, leave.employee._id)) return;
 
   leave.status = status;
   leave.reviewNote = req.body.reviewNote || '';

@@ -1,6 +1,7 @@
 const Attendance = require('../models/Attendance');
 const { istNow, istDateString, istMinutesSinceMidnight, istHHMM } = require('../utils/istDate');
 const { computeMonthlyAttendance, toDayAttendance, summarizeSessions } = require('../utils/attendanceStats');
+const { recordAudit } = require('../utils/audit');
 
 function shiftStartMinutes(shiftStart) {
   const [h, m] = (shiftStart || '09:30').split(':').map(Number);
@@ -26,6 +27,12 @@ exports.punch = async (req, res) => {
       sessions: [{ checkIn: now }],
       lateBy,
     });
+    await recordAudit(req, {
+      action: 'attendance.punch_in',
+      resourceType: 'Attendance',
+      resourceId: record._id,
+      summary: `${employee.name} punched in at ${istHHMM(now)}`,
+    });
     return res.status(201).json({ type: 'in', lastPunchAt: istHHMM(now), record: toDayAttendance(record) });
   }
 
@@ -33,11 +40,23 @@ exports.punch = async (req, res) => {
   if (!last || last.checkOut) {
     record.sessions.push({ checkIn: now });
     await record.save();
+    await recordAudit(req, {
+      action: 'attendance.punch_in',
+      resourceType: 'Attendance',
+      resourceId: record._id,
+      summary: `${employee.name} punched in at ${istHHMM(now)}`,
+    });
     return res.status(201).json({ type: 'in', lastPunchAt: istHHMM(now), record: toDayAttendance(record) });
   }
 
   last.checkOut = now;
   await record.save();
+  await recordAudit(req, {
+    action: 'attendance.punch_out',
+    resourceType: 'Attendance',
+    resourceId: record._id,
+    summary: `${employee.name} punched out at ${istHHMM(now)}`,
+  });
   return res.json({ type: 'out', lastPunchAt: istHHMM(now), record: toDayAttendance(record) });
 };
 
@@ -64,6 +83,12 @@ exports.today = async (req, res) => {
 exports.unmarkToday = async (req, res) => {
   const today = istDateString();
   await Attendance.deleteOne({ employee: req.employee._id, date: today });
+  await recordAudit(req, {
+    action: 'attendance.unmark',
+    resourceType: 'Attendance',
+    summary: `${req.employee.name} cleared their own attendance for ${today}`,
+    metadata: { date: today },
+  });
   res.json({ date: today, status: 'absent', punchState: 'out' });
 };
 

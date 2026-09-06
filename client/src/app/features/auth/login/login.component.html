@@ -7,8 +7,9 @@
       <div class="brand-logo">
         <span class="brand-sun">SUN</span><span class="brand-desh">देश</span>
       </div>
+      <p class="hero-greeting">{{ greeting }}.</p>
       <p class="hero-tagline">Empowering India<br>with Solar Energy.</p>
-      <p class="hero-sub">Login to your dedicated portal.</p>
+      <p class="hero-sub">One login for your whole team — laborers, supervisors, managers and the owner.</p>
     </div>
     <div class="solar-panels-bg"></div>
   </div>
@@ -17,44 +18,18 @@
   <div class="form-panel">
     <div class="form-inner fade-in">
 
-      <!-- Role tab selector -->
-      <div class="role-tabs" role="tablist" aria-label="Select portal">
-        @for (tab of roleTabs; track tab.role; let i = $index) {
-          <button
-            class="role-tab"
-            [class.active]="activeTabIndex() === i"
-            [style.display]="tab.role === 'employee' ? null : 'none'"
-            (click)="setTab(i)"
-            role="tab"
-            [attr.aria-selected]="activeTabIndex() === i">
-            <span class="tab-icon">{{ tab.icon }}</span>
-            <span class="tab-label">{{ tab.label }}</span>
-          </button>
-        }
+      <!-- Mobile-only brand mark — the hero panel (which normally carries
+           this) is hidden below 900px, so the card would otherwise float
+           on the background with no branding at all. -->
+      <div class="mobile-brand">
+        <span class="brand-sun">SUN</span><span class="brand-desh">देश</span>
       </div>
 
       <!-- Form header -->
       <div class="form-header">
-        <h1 class="form-title">
-          @if (activeTab.role === 'customer') { Welcome, Customer! }
-          @else if (activeTab.role === 'vendor') { Welcome back! }
-          @else if (activeTab.role === 'employee') { Employee Login! }
-          @else { Director Login }
-        </h1>
-        <p class="form-subtitle">Log in to SUN<strong>दे</strong>श</p>
+        <h1 class="form-title">Welcome back</h1>
+        <p class="form-subtitle">Sign in to SUN<strong>दे</strong>श</p>
       </div>
-
-      <!-- Login method toggle (for roles that have it) -->
-      @if (activeTab.loginMethods.length > 1 && activeTab.role !== 'director') {
-        <div class="method-tabs">
-          <button class="method-tab" [class.active]="loginMethod() === 'email'" (click)="loginMethod.set('email')">
-            Login via Email/Password
-          </button>
-          <button class="method-tab" [class.active]="loginMethod() === 'otp'" (click)="loginMethod.set('otp')">
-            {{ activeTab.role === 'customer' ? 'Login with Social' : 'Login via Mobile/OTP' }}
-          </button>
-        </div>
-      }
 
       <!-- Login form -->
       <form class="login-form" (ngSubmit)="onSubmit()" novalidate>
@@ -69,7 +44,7 @@
             <input
               type="email"
               class="form-control"
-              [placeholder]="activeTab.emailPlaceholder"
+              placeholder="you@sundesh.in"
               [value]="email()"
               (input)="email.set($any($event.target).value)"
               autocomplete="email"
@@ -77,61 +52,30 @@
           </div>
         </div>
 
-        @if (loginMethod() === 'email') {
-          @if (activeTab.role !== 'customer') {
-            <div class="form-group">
-              <label class="form-label">
-                @if (activeTab.role === 'director') { Biometric Login / Secure Token }
-                @else { Password }
-              </label>
-              <div class="input-icon-wrap password-wrap">
-                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <input
-                  [type]="showPassword() ? 'text' : 'password'"
-                  class="form-control"
-                  placeholder="••••••••••"
-                  [value]="password()"
-                  (input)="password.set($any($event.target).value)"
-                  autocomplete="current-password"
-                />
-                <button type="button" class="toggle-pw" (click)="showPassword.set(!showPassword())" aria-label="Toggle password visibility">
-                  @if (showPassword()) {
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  } @else {
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  }
-                </button>
-              </div>
-            </div>
-          }
-
-          @if (activeTab.role !== 'customer' && activeTab.role !== 'employee') {
-            <div class="form-row-between">
-              <label class="checkbox-label">
-                <input type="checkbox" [checked]="rememberMe()" (change)="rememberMe.set($any($event.target).checked)" />
-                <span>Remember me</span>
-              </label>
-              <a href="#" class="forgot-link">
-                @if (activeTab.role === 'director') { Secure Access Recovery }
-                @else { Forgot Password? }
-              </a>
-            </div>
-          }
-        } @else {
-          <div class="form-group">
-            <label class="form-label">Mobile Number</label>
-            <div class="input-icon-wrap">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-              </svg>
-              <input type="tel" class="form-control" placeholder="+91 XXXXX XXXXX" autocomplete="tel" />
-            </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-icon-wrap password-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              class="form-control"
+              placeholder="••••••••••"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+              autocomplete="current-password"
+            />
+            <button type="button" class="toggle-pw" (click)="showPassword.set(!showPassword())" aria-label="Toggle password visibility">
+              @if (showPassword()) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
           </div>
-          <button type="button" class="btn btn-ghost btn-full">Send OTP</button>
-        }
+        </div>
 
         @if (error()) {
           <p class="error-msg" role="alert">{{ error() }}</p>
@@ -139,30 +83,14 @@
 
         <button type="submit" class="btn btn-blue btn-full btn-lg login-btn" [disabled]="loading()">
           @if (loading()) {
-            <span class="spinner"></span> Authenticating…
+            <span class="spinner"></span> Signing in…
           } @else {
-            @if (activeTab.role === 'employee') { Employee Login }
-            @else { LOGIN to SUN<strong>दे</strong>श }
+            Sign In
           }
         </button>
 
-        @if (activeTab.role === 'customer') {
-          <p class="register-link">{{ activeTab.footerNote }}</p>
-        } @else {
-          <p class="footer-note">{{ activeTab.footerNote }}</p>
-        }
+        <p class="footer-note">Trouble signing in? Ask the owner to reset your password.</p>
       </form>
-
-      <!-- Quick demo access (disabled now that login is backed by real employee accounts) -->
-      <div class="demo-section" style="display: none;">
-        <p class="demo-label">Quick demo — pick a role</p>
-        <div class="demo-btns">
-          <button class="btn btn-ghost btn-sm" (click)="demoLogin('employee')">Employee</button>
-          <button class="btn btn-ghost btn-sm" style="display: none;" (click)="demoLogin('field_worker')">Field Worker</button>
-          <button class="btn btn-ghost btn-sm" style="display: none;" (click)="demoLogin('director')">Director</button>
-          <button class="btn btn-ghost btn-sm" style="display: none;" (click)="demoLogin('customer')">Customer</button>
-        </div>
-      </div>
 
     </div>
   </div>

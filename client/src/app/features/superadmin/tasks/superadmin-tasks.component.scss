@@ -2,17 +2,14 @@
   @media (max-width: 640px) { padding: 0 2px; }
 }
 
-.page-header {
+.page-header { margin-bottom: var(--space-5); }
+// The "+ Assign Task" button always stays beside the heading, even on
+// mobile — only the subtitle below wraps to its own line.
+.page-header-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  gap: var(--space-3);
 }
 .page-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 700; color: var(--text); }
 .page-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }

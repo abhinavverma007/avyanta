@@ -1,6 +1,7 @@
 const Leave = require('../models/Leave');
 const Attendance = require('../models/Attendance');
 const { istNow } = require('../utils/istDate');
+const { recordAudit } = require('../utils/audit');
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -142,6 +143,14 @@ exports.create = async (req, res) => {
     );
     results.push(rec);
   }
+
+  await recordAudit(req, {
+    action: 'leave.apply',
+    resourceType: 'Leave',
+    resourceId: results[0]?._id,
+    summary: `${req.employee.name} applied for leave on ${uniqueDates.length} day(s): ${uniqueDates.join(', ')}`,
+    metadata: { dates: uniqueDates, reason: trimmedReason },
+  });
 
   res.status(201).json({ leaves: results.map(sanitize) });
 };

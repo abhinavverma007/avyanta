@@ -31,18 +31,22 @@
             </div>
 
             @if (leave.status === 'pending') {
-              <div class="claim-actions">
-                <input
-                  class="form-control note-input"
-                  placeholder="Optional note…"
-                  [value]="noteFor(leave.id)"
-                  (input)="setNote(leave.id, $any($event.target).value)"
-                />
-                <div class="claim-buttons">
-                  <button class="btn btn-success btn-sm" [disabled]="actingId() === leave.id" (click)="approve(leave)">Approve</button>
-                  <button class="btn btn-ghost btn-sm" [disabled]="actingId() === leave.id" (click)="reject(leave)">Reject</button>
+              @if (isOwnRequest(leave.employee?.id)) {
+                <p class="own-request-note">Only the owner can review your own request.</p>
+              } @else {
+                <div class="claim-actions">
+                  <input
+                    class="form-control note-input"
+                    placeholder="Optional note…"
+                    [value]="noteFor(leave.id)"
+                    (input)="setNote(leave.id, $any($event.target).value)"
+                  />
+                  <div class="claim-buttons">
+                    <button class="btn btn-success btn-sm" [disabled]="actingId() === leave.id" (click)="approve(leave)">Approve</button>
+                    <button class="btn btn-ghost btn-sm" [disabled]="actingId() === leave.id" (click)="reject(leave)">Reject</button>
+                  </div>
                 </div>
-              </div>
+              }
             }
           </div>
         }

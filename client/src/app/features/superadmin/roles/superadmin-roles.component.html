@@ -1,10 +1,10 @@
 <div class="page fade-in">
   <div class="page-header">
-    <div>
+    <div class="page-header-row">
       <h1 class="page-title">Roles & Permissions</h1>
-      <p class="page-sub">Define what a Supervisor/Manager (or any custom role) can see and do — assign roles from the Add Employee form.</p>
+      <button class="btn btn-blue" (click)="openCreateForm()">+ Add Role</button>
     </div>
-    <button class="btn btn-blue" (click)="openCreateForm()">+ Add Role</button>
+    <p class="page-sub">Define what a Supervisor/Manager (or any custom role) can see and do — assign roles from the Add Employee form.</p>
   </div>
 
   @if (showCreateForm()) {

@@ -1,8 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminLeaveService } from '../../../core/services/admin-leave.service';
 import { AdminLeave, LeaveStatus } from '../../../core/models/leave.model';
+import { API_SCOPE } from '../../../core/tokens/api-scope';
+import { AuthService } from '../../../core/services/auth.service';
 
 type Tab = LeaveStatus | 'all';
 
@@ -22,7 +24,18 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
   actingId = signal<string | null>(null);
   reviewNotes = signal<Record<string, string>>({});
 
+  private readonly isAdminScope = inject(API_SCOPE) === 'admin';
+  private readonly authService = inject(AuthService);
+
   constructor(private leaveService: AdminLeaveService) {}
+
+  // A delegated Supervisor/Manager can't approve/reject their own leave
+  // request — only the true owner can (enforced again server-side, see
+  // reviewGuard.js — this is purely about not showing buttons that would
+  // just 403 anyway).
+  isOwnRequest(employeeId?: string): boolean {
+    return !this.isAdminScope && !!employeeId && employeeId === this.authService.user()?.id;
+  }
 
   ngOnInit(): void {
     this.load();
