@@ -12,8 +12,9 @@ import { PermissionKey } from '../models/role.model';
 // which does the exact same thing) — a delegated employee only gets through
 // if their Role actually grants the specific permission being checked.
 
-// Also used by superadmin-login.component.ts to decide, right after an
-// Employee login there, whether this account has anything to offload at all.
+// Also used by shell.component.ts to decide whether to show a "Switch to
+// management view" control in the header at all — logging in itself never
+// checks this; every Employee session always lands on the plain dashboard.
 export const MANAGEABLE_PERMISSIONS: PermissionKey[] = [
   'employees', 'tasks', 'approvalsReimbursements', 'approvalsLeave',
   'approvalsRegularization', 'approvalsAdvance', 'salary',
@@ -33,7 +34,7 @@ export const superadminShellGuard: CanActivateFn = () => {
   const router = inject(Router);
   if (adminAuth.isAuthenticated()) return true;
   if (auth.isAuthenticated() && hasAnyManageablePermission(auth)) return true;
-  return router.createUrlTree(['/superadmin']);
+  return router.createUrlTree(['/login']);
 };
 
 // A Supervisor/Manager lacking this one permission still has a normal

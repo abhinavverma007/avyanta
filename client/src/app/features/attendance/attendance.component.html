@@ -111,7 +111,7 @@
               </div>
               <div class="dd-stat">
                 <span class="dd-label">Total Working Hours</span>
-                <span class="dd-val font-mono">{{ (day.workHours ?? 0).toFixed(1) }} h</span>
+                <span class="dd-val font-mono">{{ formatWorkDuration(day.workHours ?? 0) }}</span>
               </div>
             </div>
           } @else if (day.status === 'absent') {

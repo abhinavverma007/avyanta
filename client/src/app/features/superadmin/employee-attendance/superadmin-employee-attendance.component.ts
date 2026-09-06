@@ -3,6 +3,7 @@ import { CommonModule, SlicePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminAttendanceService } from '../../../core/services/admin-attendance.service';
 import { AdminMonthlyAttendance, DayAttendance } from '../../../core/models/attendance.model';
+import { formatWorkDuration } from '../../../core/utils/format-duration';
 
 @Component({
   selector: 'app-superadmin-employee-attendance',
@@ -14,6 +15,7 @@ import { AdminMonthlyAttendance, DayAttendance } from '../../../core/models/atte
 export class SuperadminEmployeeAttendanceComponent implements OnInit {
   readonly DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   readonly today = new Date();
+  readonly formatWorkDuration = formatWorkDuration;
 
   employeeId = '';
   viewYear = signal(new Date().getFullYear());

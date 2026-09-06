@@ -33,18 +33,22 @@
             </div>
 
             @if (claim.status === 'pending') {
-              <div class="claim-actions">
-                <input
-                  class="form-control note-input"
-                  placeholder="Optional note…"
-                  [value]="noteFor(claim.id)"
-                  (input)="setNote(claim.id, $any($event.target).value)"
-                />
-                <div class="claim-buttons">
-                  <button class="btn btn-success btn-sm" [disabled]="actingId() === claim.id" (click)="approve(claim)">Approve</button>
-                  <button class="btn btn-ghost btn-sm" [disabled]="actingId() === claim.id" (click)="reject(claim)">Reject</button>
+              @if (isOwnRequest(claim.employee?.id)) {
+                <p class="own-request-note">Only the owner can review your own request.</p>
+              } @else {
+                <div class="claim-actions">
+                  <input
+                    class="form-control note-input"
+                    placeholder="Optional note…"
+                    [value]="noteFor(claim.id)"
+                    (input)="setNote(claim.id, $any($event.target).value)"
+                  />
+                  <div class="claim-buttons">
+                    <button class="btn btn-success btn-sm" [disabled]="actingId() === claim.id" (click)="approve(claim)">Approve</button>
+                    <button class="btn btn-ghost btn-sm" [disabled]="actingId() === claim.id" (click)="reject(claim)">Reject</button>
+                  </div>
                 </div>
-              </div>
+              }
             }
           </div>
         }

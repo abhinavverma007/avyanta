@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const Admin = require('../models/Admin');
 const { signToken } = require('../utils/jwt');
 const { isValidEmail } = require('../utils/validators');
+const { recordAudit } = require('../utils/audit');
 
 function sanitize(admin) {
   return { id: admin._id.toString(), name: admin.name, email: admin.email };
@@ -55,6 +56,13 @@ exports.changePassword = async (req, res) => {
   // the frontend still forces a logout+re-login as a deliberate UX choice.
   admin.tokenVersion += 1;
   await admin.save();
+
+  await recordAudit(req, {
+    action: 'admin.change_own_password',
+    resourceType: 'Admin',
+    resourceId: admin._id,
+    summary: `${admin.name} changed their own password`,
+  });
 
   const token = signToken({ sub: admin._id.toString(), role: 'admin', tokenVersion: admin.tokenVersion });
   res.json({ token, admin: sanitize(admin) });

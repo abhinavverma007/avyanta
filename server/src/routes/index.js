@@ -17,16 +17,29 @@ const adminRegularizationRoutes = require('./adminAttendanceRegularization.route
 const adminSalaryAdvanceRoutes = require('./adminSalaryAdvance.routes');
 const adminRoleRoutes = require('./adminRole.routes');
 const adminAuditLogRoutes = require('./adminAuditLog.routes');
-const bootstrapRoutes = require('./bootstrap.routes');
 
 const router = express.Router();
 
 router.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-// TEMPORARY — no auth, one-time post-deploy use only. See
-// bootstrap.controller.js. Remove this line (and the route/controller
-// files) once production has been migrated.
-router.use('/bootstrap', bootstrapRoutes);
+// TEMPORARY, no-auth, one-off maintenance route — ask Claude to remove this
+// once you've hit it in production. Re-syncs the system "Employee" role's
+// permissions to all-false, same fix seedRoles.js now does automatically;
+// this exists only because the DB predates that fix and won't self-correct.
+router.get('/maintenance/fix-employee-role', async (req, res) => {
+  const Role = require('../models/Role');
+  const { PERMISSION_KEYS } = require('../utils/permissions');
+  const allFalse = Object.fromEntries(PERMISSION_KEYS.map((k) => [k, false]));
+
+  const role = await Role.findOne({ name: 'Employee' });
+  if (!role) return res.status(404).json({ message: 'No "Employee" role found.' });
+
+  const before = role.permissions.toObject();
+  role.permissions = { ...before, ...allFalse };
+  await role.save();
+
+  res.json({ message: 'Employee role permissions re-synced to all-false.', before, after: role.permissions.toObject() });
+});
 
 // Employee-facing
 router.use('/auth', authRoutes);

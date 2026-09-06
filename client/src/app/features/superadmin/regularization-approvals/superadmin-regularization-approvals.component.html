@@ -32,18 +32,22 @@
             </div>
 
             @if (request.status === 'pending') {
-              <div class="claim-actions">
-                <input
-                  class="form-control note-input"
-                  placeholder="Optional note…"
-                  [value]="noteFor(request.id)"
-                  (input)="setNote(request.id, $any($event.target).value)"
-                />
-                <div class="claim-buttons">
-                  <button class="btn btn-success btn-sm" [disabled]="actingId() === request.id" (click)="approve(request)">Approve</button>
-                  <button class="btn btn-ghost btn-sm" [disabled]="actingId() === request.id" (click)="reject(request)">Reject</button>
+              @if (isOwnRequest(request.employee?.id)) {
+                <p class="own-request-note">Only the owner can review your own request.</p>
+              } @else {
+                <div class="claim-actions">
+                  <input
+                    class="form-control note-input"
+                    placeholder="Optional note…"
+                    [value]="noteFor(request.id)"
+                    (input)="setNote(request.id, $any($event.target).value)"
+                  />
+                  <div class="claim-buttons">
+                    <button class="btn btn-success btn-sm" [disabled]="actingId() === request.id" (click)="approve(request)">Approve</button>
+                    <button class="btn btn-ghost btn-sm" [disabled]="actingId() === request.id" (click)="reject(request)">Reject</button>
+                  </div>
                 </div>
-              </div>
+              }
             }
           </div>
         }

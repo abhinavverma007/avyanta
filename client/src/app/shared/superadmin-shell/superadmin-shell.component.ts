@@ -1,7 +1,7 @@
-import { Component, ElementRef, HostListener, ViewChild, computed, signal } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -41,21 +41,9 @@ export class SuperadminShellComponent {
 
   menuOpen = signal(false);
 
-  @ViewChild('accountArea') accountAreaRef?: ElementRef<HTMLElement>;
-
-  // The dropdown otherwise only ever closes via its own buttons — clicking
-  // anywhere else on the page (the nav, the content, elsewhere on the
-  // header) left it stuck open.
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.menuOpen()) return;
-    if (!this.accountAreaRef?.nativeElement.contains(event.target as Node)) {
-      this.closeMenu();
-    }
-  }
-
-  // Used both by the outside-click handler above and by the Roles/Audit Log
-  // links, so navigating there doesn't leave the dropdown stuck open.
+  // Used both by the backdrop's click handler (see the template) and by the
+  // Roles/Audit Log links, so navigating there doesn't leave the dropdown
+  // stuck open.
   closeMenu(): void {
     this.menuOpen.set(false);
     this.resetChangePasswordForm();
@@ -108,8 +96,15 @@ export class SuperadminShellComponent {
     private adminAuth: AdminAuthService,
     private auth: AuthService,
     private sanitizer: DomSanitizer,
-    private router: Router,
-  ) {}
+  ) {
+    // Unlike the plain employee shell, this one scrolls the whole document
+    // (no internal overflow container) — so locking the menu's background
+    // means locking body scroll directly. Runs for every place menuOpen can
+    // change (toggle, backdrop click, Roles/Audit Log links), not just one.
+    effect(() => {
+      document.body.style.overflow = this.menuOpen() ? 'hidden' : '';
+    });
+  }
 
   toggleMenu(): void {
     this.menuOpen.update(v => !v);
@@ -167,17 +162,19 @@ export class SuperadminShellComponent {
     }
   }
 
-  // AuthService.logout() always sends a *plain* employee back to /login —
-  // right for the ordinary employee shell, wrong here: a Supervisor/Manager
-  // who's logged into this console should land back on /superadmin (where
-  // they came in), not the plain employee login page.
   logout(): void {
     if (this.isTrueAdmin()) {
       this.adminAuth.logout();
     } else {
-      this.auth.clearLocalSession();
-      this.router.navigate(['/superadmin']);
+      this.auth.logout();
     }
+  }
+
+  // A hard navigation, not router.navigate() — guarantees a fully fresh app
+  // bootstrap, same reasoning as shell.component.ts's switchToManagementView
+  // (the other direction).
+  switchToEmployeeView(): void {
+    window.location.href = '/dashboard';
   }
 
   getInitials(name: string): string {

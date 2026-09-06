@@ -20,7 +20,13 @@ const allFalse = Object.fromEntries(PERMISSION_KEYS.map((k) => [k, false]));
     employeeRole = await Role.create({ name: 'Employee', isSystem: true, permissions: allFalse });
     console.log('Created system role "Employee" (isSystem, all permissions false).');
   } else {
-    console.log('Role "Employee" already exists — left as-is.');
+    // A permission key added to PERMISSION_KEYS after this role was first
+    // seeded is absent from the stored document, so Mongoose hydrates it
+    // with the schema default (true) instead of the intended false — force
+    // every known key back to false on every run so this can't drift again.
+    employeeRole.permissions = { ...employeeRole.permissions.toObject(), ...allFalse };
+    await employeeRole.save();
+    console.log('Role "Employee" already exists — permissions re-synced to all-false.');
   }
 
   // Seeded examples — all-true by design (easier to dial a few back per

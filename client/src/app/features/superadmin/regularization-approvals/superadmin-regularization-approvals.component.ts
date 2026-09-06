@@ -1,8 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminAttendanceRegularizationService } from '../../../core/services/admin-attendance-regularization.service';
 import { AdminRegularization, RegularizationStatus } from '../../../core/models/attendance-regularization.model';
+import { API_SCOPE } from '../../../core/tokens/api-scope';
+import { AuthService } from '../../../core/services/auth.service';
 
 type Tab = RegularizationStatus | 'all';
 
@@ -22,7 +24,18 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
   actingId = signal<string | null>(null);
   reviewNotes = signal<Record<string, string>>({});
 
+  private readonly isAdminScope = inject(API_SCOPE) === 'admin';
+  private readonly authService = inject(AuthService);
+
   constructor(private regularizationService: AdminAttendanceRegularizationService) {}
+
+  // A delegated Supervisor/Manager can't approve/reject their own request —
+  // only the true owner can (enforced again server-side, see
+  // reviewGuard.js — this is purely about not showing buttons that would
+  // just 403 anyway).
+  isOwnRequest(employeeId?: string): boolean {
+    return !this.isAdminScope && !!employeeId && employeeId === this.authService.user()?.id;
+  }
 
   ngOnInit(): void {
     this.load();

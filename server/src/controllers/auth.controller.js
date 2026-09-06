@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const Employee = require('../models/Employee');
 const { signToken } = require('../utils/jwt');
 const { isValidEmail } = require('../utils/validators');
+const { recordAudit } = require('../utils/audit');
 
 function sanitize(emp) {
   return {
@@ -67,6 +68,13 @@ exports.changePassword = async (req, res) => {
   // we hand back a freshly signed token below so this session stays logged in.
   employee.tokenVersion += 1;
   await employee.save();
+
+  await recordAudit(req, {
+    action: 'employee.change_own_password',
+    resourceType: 'Employee',
+    resourceId: employee._id,
+    summary: `${employee.name} changed their own password`,
+  });
 
   const token = signToken({ sub: employee._id.toString(), role: 'employee', tokenVersion: employee.tokenVersion });
   res.json({ token, user: sanitize(employee) });

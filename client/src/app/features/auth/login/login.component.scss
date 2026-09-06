@@ -1,6 +1,33 @@
 .login-root {
   display: flex;
   min-height: 100dvh;
+
+  // Below 900px the hero panel (and its gradient/texture) disappears
+  // entirely — without this, mobile users saw a plain white card on a flat
+  // page. Layering the same gradient + solar-panel texture directly on the
+  // root, plus some breathing room around the card, turns that back into a
+  // proper "card floating on a scene" look instead.
+  @media (max-width: 899px) {
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 40px),
+      repeating-linear-gradient(-45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 40px),
+      linear-gradient(145deg, #0D2B6E 0%, #1B4FD8 45%, #F7700A 100%);
+  }
+}
+
+.mobile-brand {
+  display: none;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 24px;
+
+  @media (max-width: 899px) { display: block; }
 }
 
 /* ─── Hero panel ─────────────────────────────────────────────────── */
@@ -82,7 +109,16 @@
   letter-spacing: -0.02em;
 }
 .brand-sun  { color: #F7700A; }
-.brand-desh { color: #fff; }
+.brand-desh { color: black; }
+
+.hero-greeting {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #93C5FD;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
 
 .hero-tagline {
   font-family: var(--font-display);
@@ -96,6 +132,7 @@
 .hero-sub {
   font-size: 0.9375rem;
   color: rgba(255,255,255,0.7);
+  max-width: 380px;
 }
 
 /* ─── Form panel ─────────────────────────────────────────────────── */
@@ -104,99 +141,51 @@
   max-width: 480px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   background: var(--surface);
   overflow-y: auto;
+  margin: 0 auto;
 
   @media (min-width: 900px) {
     box-shadow: -4px 0 32px rgba(13,27,42,0.1);
   }
+
+  // On its own against the gradient (see .login-root), the card needs its
+  // own edges and lift instead of running flush to the screen.
+  @media (max-width: 899px) {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-height: calc(100dvh - 64px);
+  }
 }
 
 .form-inner {
-  flex: 1;
-  padding: 40px 36px 24px;
+  padding: 40px 36px;
 
-  @media (max-width: 480px) { padding: 28px 20px 20px; }
-}
-
-/* ─── Role tabs ──────────────────────────────────────────────────── */
-.role-tabs {
-  display: flex;
-  gap: 4px;
-  background: var(--ground);
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  margin-bottom: 28px;
-}
-
-.role-tab {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 8px 4px;
-  border-radius: 5px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  transition: all var(--transition);
-  font-family: var(--font-display);
-}
-
-.role-tab .tab-icon { font-size: 1.125rem; line-height: 1; }
-.role-tab .tab-label { letter-spacing: 0.02em; }
-
-.role-tab.active {
-  background: var(--surface);
-  color: var(--accent-2);
-  box-shadow: var(--shadow-sm);
+  @media (max-width: 480px) { padding: 28px 20px; }
 }
 
 /* ─── Form header ────────────────────────────────────────────────── */
-.form-header { margin-bottom: 24px; }
+.form-header { margin-bottom: 28px; }
 
 .form-title {
-  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .form-subtitle {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--text-muted);
-}
-
-/* ─── Method tabs ────────────────────────────────────────────────── */
-.method-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 20px;
-}
-
-.method-tab {
-  padding: 8px 12px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: all var(--transition);
-  white-space: nowrap;
-}
-
-.method-tab.active {
-  color: var(--accent-2);
-  border-bottom-color: var(--accent-2);
 }
 
 /* ─── Login form ─────────────────────────────────────────────────── */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .password-wrap .form-control { padding-right: 44px; }
@@ -211,29 +200,6 @@
 }
 .toggle-pw:hover { color: var(--text); }
 
-.form-row-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.forgot-link {
-  font-size: 0.8125rem;
-  color: var(--accent-2);
-  font-weight: 500;
-}
-.forgot-link:hover { text-decoration: underline; }
-
 .error-msg {
   font-size: 0.8125rem;
   color: var(--danger);
@@ -247,14 +213,13 @@
   letter-spacing: 0.04em;
 }
 
-.register-link, .footer-note {
-  font-size: 0.75rem;
+.footer-note {
+  font-size: 0.8125rem;
   color: var(--text-muted);
   text-align: center;
   line-height: 1.5;
+  margin-top: 4px;
 }
-
-.register-link { color: var(--accent-2); }
 
 /* ─── Spinner ────────────────────────────────────────────────────── */
 .spinner {
@@ -268,27 +233,3 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ─── Demo section ───────────────────────────────────────────────── */
-.demo-section {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-
-.demo-label {
-  font-size: 0.75rem;
-  color: var(--text-light);
-  text-align: center;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 500;
-}
-
-.demo-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-}

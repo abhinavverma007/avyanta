@@ -1,10 +1,10 @@
 <div class="page fade-in">
   <div class="page-header">
-    <div>
+    <div class="page-header-row">
       <h1 class="page-title">Tasks</h1>
-      <p class="page-sub">Assign work to one or more employees, for a single day or a date range</p>
+      <button class="btn btn-blue" (click)="openForm()">+ Assign Task</button>
     </div>
-    <button class="btn btn-blue" (click)="openForm()">+ Assign Task</button>
+    <p class="page-sub">Assign work to one or more employees, for a single day or a date range</p>
   </div>
 
   @if (showForm()) {

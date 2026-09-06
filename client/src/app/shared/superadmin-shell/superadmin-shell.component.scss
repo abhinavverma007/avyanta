@@ -103,6 +103,16 @@
 }
 .chevron.open { transform: rotate(180deg); }
 
+// Invisible, full-viewport — sits above the nav/content but below the
+// dropdown itself, so any click meant for the page underneath lands on
+// this instead and just closes the menu.
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: transparent;
+}
+
 .account-dropdown {
   position: absolute;
   top: calc(100% + 8px);

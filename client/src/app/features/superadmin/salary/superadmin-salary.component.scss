@@ -126,8 +126,9 @@
   gap: var(--space-3);
 }
 
+.sc-header-actions { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
 .sc-amount { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.sc-expand-arrow { color: var(--text-light); font-size: 0.75rem; flex-shrink: 0; }
+.sc-expand-arrow { color: var(--text-light); font-size: 1.125rem; flex-shrink: 0; }
 
 .sc-body {
   display: flex;

@@ -6,6 +6,7 @@ import { AttendanceService } from '../../core/services/attendance.service';
 import { LeaveService } from '../../core/services/leave.service';
 import { MonthlyAttendance } from '../../core/models/attendance.model';
 import { LeaveSummary } from '../../core/models/leave.model';
+import { formatWorkDuration } from '../../core/utils/format-duration';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,6 +21,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly lastPunchTime = computed(() => this.attendance.lastPunchTime());
   readonly workHours = computed(() => this.attendance.workHours());
   readonly punching = computed(() => this.attendance.punching());
+  readonly formatWorkDuration = formatWorkDuration;
 
   currentTime = signal(new Date());
   monthlyData = signal<MonthlyAttendance | null>(null);

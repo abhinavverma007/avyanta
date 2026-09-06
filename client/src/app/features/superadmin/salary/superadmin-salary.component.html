@@ -170,13 +170,15 @@
                 <div class="emp-name">{{ row.name }}</div>
                 <div class="emp-sub">{{ row.employeeCode }} · {{ row.department || '—' }}</div>
               </div>
-              <div class="sc-amount">
-                <span class="font-mono payable">₹{{ row.balance | number }}</span>
-                @if (row.paidAmount > 0) {
-                  <span class="paid-note">{{ row.balance <= 0 ? '✓ paid' : ('₹' + (row.paidAmount | number) + ' paid') }}</span>
-                }
+              <div class="sc-header-actions">
+                <div class="sc-amount">
+                  <span class="font-mono payable">₹{{ row.balance | number }}</span>
+                  @if (row.paidAmount > 0) {
+                    <span class="paid-note">{{ row.balance <= 0 ? '✓ paid' : ('₹' + (row.paidAmount | number) + ' paid') }}</span>
+                  }
+                </div>
+                <span class="sc-expand-arrow">{{ expandedId() === row.employeeId ? '▲' : '▼' }}</span>
               </div>
-              <span class="sc-expand-arrow">{{ expandedId() === row.employeeId ? '▲' : '▼' }}</span>
             </div>
 
             @if (expandedId() === row.employeeId) {

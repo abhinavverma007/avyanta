@@ -3,6 +3,7 @@ const Attendance = require('../models/Attendance');
 const { sanitize } = require('./attendanceRegularization.controller');
 const { istToDate } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
+const { rejectSelfReview } = require('../utils/reviewGuard');
 
 function shiftStartMinutes(shiftStart) {
   const [h, m] = (shiftStart || '09:30').split(':').map(Number);
@@ -40,6 +41,7 @@ exports.review = (status) => async (req, res) => {
   if (request.status !== 'pending') {
     return res.status(409).json({ message: `Request already ${request.status}.` });
   }
+  if (rejectSelfReview(req, res, request.employee._id)) return;
 
   if (status === 'approved') {
     const checkIn = istToDate(request.date, request.requestedCheckIn);

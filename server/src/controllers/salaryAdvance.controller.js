@@ -1,5 +1,6 @@
 const SalaryAdvance = require('../models/SalaryAdvance');
 const { istDateString } = require('../utils/istDate');
+const { recordAudit } = require('../utils/audit');
 
 function sanitize(a) {
   return {
@@ -42,6 +43,14 @@ exports.create = async (req, res) => {
     reason: String(reason).trim(),
     requestedDate: istDateString(),
   });
+
+  await recordAudit(req, {
+    action: 'advance.apply',
+    resourceType: 'SalaryAdvance',
+    resourceId: advance._id,
+    summary: `${req.employee.name} requested an advance of ₹${advance.amount}`,
+  });
+
   res.status(201).json({ request: sanitize(advance) });
 };
 

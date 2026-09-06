@@ -5,6 +5,7 @@ import { AttendanceService } from '../../core/services/attendance.service';
 import { AttendanceRegularizationService } from '../../core/services/attendance-regularization.service';
 import { MonthlyAttendance, DayAttendance } from '../../core/models/attendance.model';
 import { RegularizationRecord } from '../../core/models/attendance-regularization.model';
+import { formatWorkDuration } from '../../core/utils/format-duration';
 
 @Component({
   selector: 'app-attendance',
@@ -16,6 +17,7 @@ import { RegularizationRecord } from '../../core/models/attendance-regularizatio
 export class AttendanceComponent implements OnInit {
   readonly DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   readonly today = new Date();
+  readonly formatWorkDuration = formatWorkDuration;
 
   viewYear = signal(new Date().getFullYear());
   viewMonth = signal(new Date().getMonth() + 1);

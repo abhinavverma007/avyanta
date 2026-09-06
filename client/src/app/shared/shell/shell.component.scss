@@ -75,6 +75,16 @@
 }
 .chevron.open { transform: rotate(180deg); }
 
+// Invisible, full-viewport — sits above the sidebar/bottom-bar/page content
+// but below the dropdown itself, so any click meant for the page underneath
+// lands on this instead and just closes the menu.
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: transparent;
+}
+
 .profile-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -135,6 +145,13 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  // Flex items default to min-height: auto, which refuses to shrink below
+  // its content's natural height — that silently defeats .main-content's
+  // own overflow-y: auto below (it just grows instead of scrolling), and
+  // this overflow: hidden then clips whatever doesn't fit instead of the
+  // expected scrollbar appearing. This is what made some pages (anything
+  // long enough to overflow) unscrollable with no visible scrollbar at all.
+  min-height: 0;
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────────────── */
@@ -209,11 +226,18 @@
 /* ─── Main content ───────────────────────────────────────────────── */
 .main-content {
   flex: 1;
+  min-height: 0; // same flex-shrink issue as .shell-body above — this is the element whose own overflow-y needs it
   overflow-y: auto;
   padding-bottom: 80px; /* bottom bar clearance on mobile */
 
   @media (min-width: 769px) { padding-bottom: 24px; }
 }
+// This is the only element that actually scrolls in this shell (the shell
+// itself is height-locked to the viewport) — while the profile menu is
+// open, locking this stops the page scrolling out from under a menu that
+// stays fixed in the header, which otherwise just floated in place while
+// the content behind it moved.
+.main-content.no-scroll { overflow: hidden; }
 
 /* ─── Bottom bar (mobile) ────────────────────────────────────────── */
 .bottom-bar {

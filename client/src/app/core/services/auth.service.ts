@@ -59,10 +59,11 @@ export class AuthService {
     localStorage.setItem(USER_KEY, JSON.stringify(res.user));
   }
 
-  // Clears the session without navigating anywhere — used when a login
-  // attempt succeeds at the identity level but turns out not to belong here
-  // (see superadmin-login.component.ts, which needs to show its own error
-  // in place rather than being redirected to /login).
+  // Clears the session without navigating anywhere — used when the *other*
+  // login (Admin, at this same unified /login page) succeeds, so a leftover
+  // Employee session from earlier testing can't linger (see
+  // AdminAuthService.clearLocalSession and login.component.ts, which does
+  // the same in reverse).
   clearLocalSession(): void {
     this._state.set({ user: null, isAuthenticated: false });
     localStorage.removeItem(TOKEN_KEY);

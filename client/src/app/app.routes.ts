@@ -83,92 +83,85 @@ export const routes: Routes = [
       },
     ],
   },
+  // ── Management console — the true owner and a delegated Supervisor/
+  // Manager both end up here, but never by logging in directly to it —
+  // /login is the single entry point for everyone now (see
+  // login.component.ts). A Supervisor/Manager instead switches into this
+  // from a control in their dashboard's header (see shell.component.ts),
+  // and can switch back the same way (see superadmin-shell.component.ts).
+  // Same shell, same Superadmin*Components either way; API_SCOPE decides
+  // which backend routes get called (/admin/* for a real Admin session,
+  // /team/* — permission-gated — for an Employee session), and each child
+  // route below gates on the specific permission it needs (a true Admin
+  // bypasses all of them; see superadmin-area.guard.ts). Roles and the
+  // Audit Log stay strictly adminAuthGuard-only — never reachable by a
+  // delegated session, matching the backend's hard invariant in
+  // requirePermission.js.
   {
     path: 'superadmin',
+    loadComponent: () =>
+      import('./shared/superadmin-shell/superadmin-shell.component').then(m => m.SuperadminShellComponent),
+    canActivate: [superadminShellGuard],
     children: [
       {
         path: '',
+        redirectTo: 'employees',
         pathMatch: 'full',
-        loadComponent: () =>
-          import('./features/superadmin/login/superadmin-login.component').then(m => m.SuperadminLoginComponent),
       },
-      // ── Management console — shared by the true owner AND a delegated
-      // Supervisor/Manager, both logging in right here at /superadmin ────
-      // Same shell, same Superadmin*Components either way; API_SCOPE
-      // decides which backend routes get called (/admin/* for a real
-      // Admin session, /team/* — permission-gated — for an Employee
-      // session), and each child route below gates on the specific
-      // permission it needs (a true Admin bypasses all of them; see
-      // superadmin-area.guard.ts). Roles and the Audit Log stay strictly
-      // adminAuthGuard-only — never reachable by a delegated session,
-      // matching the backend's hard invariant in requirePermission.js.
       {
-        path: '',
+        path: 'employees',
+        providers: [apiScopeProvider, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('employees')],
         loadComponent: () =>
-          import('./shared/superadmin-shell/superadmin-shell.component').then(m => m.SuperadminShellComponent),
-        canActivate: [superadminShellGuard],
-        children: [
-          {
-            path: '',
-            redirectTo: 'employees',
-            pathMatch: 'full',
-          },
-          {
-            path: 'employees',
-            providers: [apiScopeProvider, AdminEmployeeService],
-            canActivate: [superadminAreaGuard('employees')],
-            loadComponent: () =>
-              import('./features/superadmin/employees/superadmin-employees.component').then(m => m.SuperadminEmployeesComponent),
-          },
-          {
-            path: 'employees/:id/attendance',
-            providers: [apiScopeProvider, AdminAttendanceService],
-            canActivate: [superadminAreaGuard('employees')],
-            loadComponent: () =>
-              import('./features/superadmin/employee-attendance/superadmin-employee-attendance.component').then(m => m.SuperadminEmployeeAttendanceComponent),
-          },
-          {
-            path: 'tasks',
-            // AdminEmployeeService too — the "Assign Task" form's employee
-            // picker (superadmin-tasks.component.ts) uses it directly.
-            providers: [apiScopeProvider, AdminTaskService, AdminEmployeeService],
-            canActivate: [superadminAreaGuard('tasks')],
-            loadComponent: () =>
-              import('./features/superadmin/tasks/superadmin-tasks.component').then(m => m.SuperadminTasksComponent),
-          },
-          {
-            path: 'approvals',
-            providers: [
-              apiScopeProvider,
-              AdminReimbursementService,
-              AdminLeaveService,
-              AdminAttendanceRegularizationService,
-              AdminSalaryAdvanceService,
-            ],
-            canActivate: [anySuperadminAreaGuard(['approvalsReimbursements', 'approvalsLeave', 'approvalsRegularization', 'approvalsAdvance'])],
-            loadComponent: () =>
-              import('./features/superadmin/approvals/superadmin-approvals.component').then(m => m.SuperadminApprovalsComponent),
-          },
-          {
-            path: 'salary',
-            providers: [apiScopeProvider, SalaryService],
-            canActivate: [superadminAreaGuard('salary')],
-            loadComponent: () =>
-              import('./features/superadmin/salary/superadmin-salary.component').then(m => m.SuperadminSalaryComponent),
-          },
-          {
-            path: 'roles',
-            canActivate: [adminAuthGuard],
-            loadComponent: () =>
-              import('./features/superadmin/roles/superadmin-roles.component').then(m => m.SuperadminRolesComponent),
-          },
-          {
-            path: 'audit-log',
-            canActivate: [adminAuthGuard],
-            loadComponent: () =>
-              import('./features/superadmin/audit-log/superadmin-audit-log.component').then(m => m.SuperadminAuditLogComponent),
-          },
+          import('./features/superadmin/employees/superadmin-employees.component').then(m => m.SuperadminEmployeesComponent),
+      },
+      {
+        path: 'employees/:id/attendance',
+        providers: [apiScopeProvider, AdminAttendanceService],
+        canActivate: [superadminAreaGuard('employees')],
+        loadComponent: () =>
+          import('./features/superadmin/employee-attendance/superadmin-employee-attendance.component').then(m => m.SuperadminEmployeeAttendanceComponent),
+      },
+      {
+        path: 'tasks',
+        // AdminEmployeeService too — the "Assign Task" form's employee
+        // picker (superadmin-tasks.component.ts) uses it directly.
+        providers: [apiScopeProvider, AdminTaskService, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('tasks')],
+        loadComponent: () =>
+          import('./features/superadmin/tasks/superadmin-tasks.component').then(m => m.SuperadminTasksComponent),
+      },
+      {
+        path: 'approvals',
+        providers: [
+          apiScopeProvider,
+          AdminReimbursementService,
+          AdminLeaveService,
+          AdminAttendanceRegularizationService,
+          AdminSalaryAdvanceService,
         ],
+        canActivate: [anySuperadminAreaGuard(['approvalsReimbursements', 'approvalsLeave', 'approvalsRegularization', 'approvalsAdvance'])],
+        loadComponent: () =>
+          import('./features/superadmin/approvals/superadmin-approvals.component').then(m => m.SuperadminApprovalsComponent),
+      },
+      {
+        path: 'salary',
+        providers: [apiScopeProvider, SalaryService],
+        canActivate: [superadminAreaGuard('salary')],
+        loadComponent: () =>
+          import('./features/superadmin/salary/superadmin-salary.component').then(m => m.SuperadminSalaryComponent),
+      },
+      {
+        path: 'roles',
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/roles/superadmin-roles.component').then(m => m.SuperadminRolesComponent),
+      },
+      {
+        path: 'audit-log',
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/audit-log/superadmin-audit-log.component').then(m => m.SuperadminAuditLogComponent),
       },
     ],
   },

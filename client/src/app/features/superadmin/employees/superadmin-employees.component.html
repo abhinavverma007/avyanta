@@ -1,12 +1,12 @@
 <div class="page fade-in">
   <div class="page-header">
-    <div>
+    <div class="page-header-row">
       <h1 class="page-title">Employees</h1>
-      <p class="page-sub">Manage your master employee list, salaries and leave allowances</p>
+      @if (isAdminScope) {
+        <button class="btn btn-blue" (click)="openCreateForm()">+ Add</button>
+      }
     </div>
-    @if (isAdminScope) {
-      <button class="btn btn-blue" (click)="openCreateForm()">+ Add Employee</button>
-    }
+    <p class="page-sub">Manage your master employee list, salaries and leave allowances</p>
   </div>
 
   <div class="search-row">
@@ -230,10 +230,12 @@
                 <div class="emp-name">{{ emp.name }}</div>
                 <div class="emp-sub font-mono">{{ emp.employeeId }}</div>
               </div>
-              <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
-                {{ emp.isActive ? 'Active' : 'Inactive' }}
-              </span>
-              <span class="ec-expand-arrow">{{ expandedId() === emp.id ? '▲' : '▼' }}</span>
+              <div class="ec-header-actions">
+                <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
+                  {{ emp.isActive ? 'Active' : 'Inactive' }}
+                </span>
+                <span class="ec-expand-arrow">{{ expandedId() === emp.id ? '▲' : '▼' }}</span>
+              </div>
             </div>
 
             @if (expandedId() === emp.id) {
