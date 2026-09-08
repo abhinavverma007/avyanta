@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReimbursementService } from '../../core/services/reimbursement.service';
 import { Reimbursement, ReimbursementCategory } from '../../core/models/reimbursement.model';
+import { istDateString } from '../../shared/utils/ist-date';
 
 @Component({
   selector: 'app-reimbursements',
@@ -20,7 +21,10 @@ export class ReimbursementsComponent implements OnInit {
   category = signal<ReimbursementCategory>('petrol');
   amount = signal<number | null>(null);
   description = signal('');
-  date = signal(new Date().toISOString().slice(0, 10));
+  // Matches the backend's IST-based "today" (server/src/utils/istDate.js) —
+  // a browser-local/UTC date sits a full calendar day behind IST for part
+  // of the night, which would otherwise default this to yesterday.
+  date = signal(istDateString());
   submitting = signal(false);
   error = signal('');
   success = signal('');

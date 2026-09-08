@@ -17,6 +17,7 @@ const adminRegularizationRoutes = require('./adminAttendanceRegularization.route
 const adminSalaryAdvanceRoutes = require('./adminSalaryAdvance.routes');
 const adminRoleRoutes = require('./adminRole.routes');
 const adminAuditLogRoutes = require('./adminAuditLog.routes');
+const pushRoutes = require('./push.routes');
 
 const router = express.Router();
 
@@ -41,6 +42,13 @@ router.get('/maintenance/fix-employee-role', async (req, res) => {
   res.json({ message: 'Employee role permissions re-synced to all-false.', before, after: role.permissions.toObject() });
 });
 
+// Public — the VAPID public key is meant to be handed to any client, same
+// as the concept of a public key implies; must be registered before the
+// authenticated /push router below since it shares that prefix.
+router.get('/push/vapid-public-key', (req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || '' });
+});
+
 // Employee-facing
 router.use('/auth', authRoutes);
 router.use('/attendance', attendanceRoutes);
@@ -49,6 +57,7 @@ router.use('/reimbursements', reimbursementRoutes);
 router.use('/tasks', tasksRoutes);
 router.use('/regularizations', regularizationRoutes);
 router.use('/advances', salaryAdvanceRoutes);
+router.use('/push', pushRoutes);
 
 // Superadmin-only — never mounted under /team/*, no permission can grant
 // these (role management and the audit trail of what was done "on the

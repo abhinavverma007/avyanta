@@ -3,9 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LeaveService } from '../../core/services/leave.service';
 import { LeaveRecord, LeaveSummary } from '../../core/models/leave.model';
+import { istDateString } from '../../shared/utils/ist-date';
 
+// Matches the backend's IST-based "today" (server/src/utils/istDate.js) —
+// a browser-local/UTC date sits a full calendar day behind IST for part of
+// the night, which would otherwise default this to yesterday.
 function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
+  return istDateString();
 }
 
 function datesInRange(from: string, to: string): string[] {

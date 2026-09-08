@@ -4,17 +4,31 @@
     <p class="page-sub">{{ formatTodayHeader() }}</p>
   </div>
 
+  @if (showPushBanner()) {
+    <div class="push-banner">
+      <span>🔔 Get notified the moment a new task is assigned to you.</span>
+      <div class="push-banner-actions">
+        <button class="btn btn-blue btn-sm" [disabled]="enablingPush()" (click)="enablePush()">
+          {{ enablingPush() ? 'Enabling…' : 'Enable' }}
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="dismissPushBanner()">Not now</button>
+      </div>
+    </div>
+  }
+
   <div class="section-switcher">
-    <button class="section-tab" [class.active]="range() === 'past'" (click)="setRange('past')">
-      Past Work
-    </button>
-    <button class="section-tab" [class.active]="range() === 'today'" (click)="setRange('today')">
-      Today's Work
-    </button>
-    <button class="section-tab" [class.active]="range() === 'upcoming'" (click)="setRange('upcoming')">
-      Upcoming Work
-    </button>
+    @for (opt of rangeOptions; track opt.value) {
+      <button class="section-tab" [class.active]="range() === opt.value" (click)="setRange(opt.value)">
+        {{ opt.label }}
+      </button>
+    }
   </div>
+
+  <select class="form-control section-select" [ngModel]="range()" (ngModelChange)="setRange($event)" aria-label="Work range">
+    @for (opt of rangeOptions; track opt.value) {
+      <option [ngValue]="opt.value">{{ opt.label }}</option>
+    }
+  </select>
 
   <div class="card">
     @if (loading()) {
@@ -29,14 +43,67 @@
               <p class="task-date">{{ formatDate(task.date) }}</p>
             }
             <h3 class="task-title">{{ task.title }}</h3>
+            <div class="status-row">
+              <span class="badge" [class]="statusBadgeClass(task.status)">{{ statusLabel(task.status) }}</span>
+              @if (canUpdateStatus(task)) {
+                @if (task.status === 'pending') {
+                  <button class="btn btn-ghost btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'in_progress')">▶ Start Work</button>
+                } @else if (task.status === 'in_progress') {
+                  <button class="btn btn-blue btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'completed')">✅ Mark Complete</button>
+                } @else {
+                  <button class="btn btn-ghost btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'pending')">↩ Reopen</button>
+                }
+              }
+            </div>
             @if (task.site) {
               <p class="task-site">📍 {{ task.site }}</p>
+            }
+            @if (task.siteLocation) {
+              <app-location-picker class="task-map" [location]="task.siteLocation" [editable]="false" />
+              <a class="maps-link" [href]="directionsUrl(task)" target="_blank" rel="noopener">🧭 Open in Google Maps</a>
             }
             @if (task.description) {
               <p class="task-desc">{{ task.description }}</p>
             }
             @if (task.coworkers.length > 0) {
               <p class="task-coworkers">Working with: {{ coworkerNames(task) }}</p>
+            }
+
+            @if (task.notes.length > 0) {
+              <div class="notes-list">
+                @for (note of task.notes; track note.id) {
+                  <div class="note">
+                    <div class="note-meta">
+                      <span class="note-author">{{ note.authorName }}</span>
+                      <span class="note-time">{{ formatNoteTime(note.createdAt) }}</span>
+                    </div>
+                    <p class="note-text">{{ note.text }}</p>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (task.status !== 'completed') {
+              @if (isComposingNote(task.id)) {
+                <div class="note-composer">
+                  <textarea
+                    class="form-control"
+                    rows="2"
+                    placeholder="e.g. Material nahi mila, kal continue karunga"
+                    [value]="noteDraftText()"
+                    (input)="noteDraftText.set($any($event.target).value)"
+                  ></textarea>
+                  @if (noteError()) { <p class="error-msg">{{ noteError() }}</p> }
+                  <div class="note-composer-actions">
+                    <button class="btn btn-ghost btn-sm" (click)="cancelNoteComposer()">Cancel</button>
+                    <button class="btn btn-blue btn-sm" [disabled]="submittingNote()" (click)="submitNote(task)">
+                      {{ submittingNote() ? 'Sending…' : 'Send' }}
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <button class="btn btn-ghost btn-sm note-toggle" (click)="openNoteComposer(task)">💬 Add Note</button>
+              }
             }
           </div>
         }

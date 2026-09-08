@@ -3,9 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceRegularizationService } from '../../core/services/attendance-regularization.service';
 import { RegularizationRecord } from '../../core/models/attendance-regularization.model';
+import { istDateString } from '../../shared/utils/ist-date';
 
+// Matches the backend's IST-based "today" (server/src/utils/istDate.js) —
+// a browser-local/UTC date sits a full calendar day behind IST for part of
+// the night, which would otherwise wrongly allow/default a future-looking
+// date near midnight.
 function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
+  return istDateString();
 }
 
 const PAGE_SIZE = 3;
