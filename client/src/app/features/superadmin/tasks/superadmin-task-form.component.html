@@ -1,0 +1,122 @@
+<div class="page fade-in">
+  <button type="button" class="btn btn-ghost btn-sm back-btn" (click)="goBack()">← Back to Tasks</button>
+
+  <div class="page-header">
+    <h1 class="page-title">{{ isEditMode() ? 'Edit Task' : 'Assign Task' }}</h1>
+    <p class="page-sub">{{ isEditMode() ? 'Update this task\'s details, site or assigned employees.' : 'Assign work to one or more employees, for a single day or a date range.' }}</p>
+  </div>
+
+  @if (loadingTask()) {
+    <div class="card card-padded"><p class="empty-note">Loading task…</p></div>
+  } @else if (loadError()) {
+    <div class="card card-padded"><p class="error-msg">{{ loadError() }}</p></div>
+  } @else {
+    <div class="card card-padded form-panel fade-in">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label class="form-label">Title</label>
+          <input class="form-control" placeholder="e.g. Panel installation" [value]="title()" (input)="title.set($any($event.target).value)" />
+        </div>
+        @if (isEditMode()) {
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input class="form-control" type="date" [value]="editDate()" (input)="editDate.set($any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-control" [value]="status()" (change)="status.set($any($event.target).value)">
+              @for (opt of statusOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+        } @else {
+          <div class="form-group">
+            <label class="form-label">From</label>
+            <input class="form-control" type="date" [value]="fromDate()" (input)="fromDate.set($any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">To</label>
+            <input class="form-control" type="date" [value]="toDate()" (input)="toDate.set($any($event.target).value)" />
+          </div>
+        }
+        <div class="form-group span-2">
+          <label class="form-label">Site / Location</label>
+          <input class="form-control" placeholder="e.g. YWCA Lucknow" [value]="site()" (input)="onSiteInput($any($event.target).value)" />
+          @if (geocoding()) {
+            <p class="map-hint">Finding it on the map…</p>
+          } @else if (geocodeNote()) {
+            <p class="map-hint">{{ geocodeNote() }}</p>
+          }
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">Description</label>
+          <input class="form-control" placeholder="Optional details" [value]="description()" (input)="description.set($any($event.target).value)" />
+        </div>
+        <div class="form-group span-2">
+          <div class="map-label-row">
+            <label class="form-label">Map (auto-found from Site / Location above — click to fine-tune)</label>
+            <div class="map-label-actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="picker.useMyLocation()">📍 Use my location</button>
+              @if (siteLocation()) {
+                <button type="button" class="btn btn-ghost btn-sm" (click)="clearMapLocation()">Clear pin</button>
+              }
+            </div>
+          </div>
+          <app-location-picker #picker [location]="siteLocation()" [editable]="true" (locationChange)="onMapLocation($event)" />
+          <p class="map-hint">Click anywhere on the map to drop a pin, or drag it to adjust.</p>
+        </div>
+      </div>
+
+      @if (!isEditMode()) {
+        <p class="days-count">{{ selectedDates().length }} day{{ selectedDates().length === 1 ? '' : 's' }} selected</p>
+      }
+
+      <div class="employee-picker">
+        <p class="form-label">Assign to</p>
+
+        @if (selectedEmployeeList().length > 0) {
+          <div class="selected-chips">
+            @for (emp of selectedEmployeeList(); track emp.id) {
+              <span class="chip">
+                {{ emp.name }}
+                <button type="button" class="chip-remove" (click)="removeSelectedEmployee(emp.id)" aria-label="Remove">×</button>
+              </span>
+            }
+          </div>
+        }
+
+        <input
+          class="form-control"
+          placeholder="Search by name, employee ID or department…"
+          [value]="employeeSearch()"
+          (input)="onEmployeeSearchInput($any($event.target).value)"
+        />
+
+        <div class="employee-checklist">
+          @if (employeeSearchLoading()) {
+            <p class="picker-note">Searching…</p>
+          } @else if (employeeResults().length === 0) {
+            <p class="picker-note">No matching employees.</p>
+          } @else {
+            @for (emp of employeeResults(); track emp.id) {
+              <label class="employee-check">
+                <input type="checkbox" [checked]="isSelected(emp.id)" (change)="toggleEmployee(emp)" />
+                <span>{{ emp.name }} <span class="emp-code">({{ emp.employeeId }})</span></span>
+              </label>
+            }
+          }
+        </div>
+      </div>
+
+      @if (formError()) { <p class="error-msg">{{ formError() }}</p> }
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" (click)="goBack()">Cancel</button>
+        <button class="btn btn-blue" [disabled]="saving()" (click)="submitForm()">
+          {{ isEditMode() ? (saving() ? 'Saving…' : 'Save Changes') : (saving() ? 'Assigning…' : 'Assign Task') }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

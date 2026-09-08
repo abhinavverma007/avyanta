@@ -124,12 +124,28 @@ export const routes: Routes = [
       },
       {
         path: 'tasks',
-        // AdminEmployeeService too — the "Assign Task" form's employee
-        // picker (superadmin-tasks.component.ts) uses it directly.
+        // AdminEmployeeService too — the employee filter on the Tasks
+        // history list (superadmin-tasks.component.ts) searches it directly.
         providers: [apiScopeProvider, AdminTaskService, AdminEmployeeService],
         canActivate: [superadminAreaGuard('tasks')],
         loadComponent: () =>
           import('./features/superadmin/tasks/superadmin-tasks.component').then(m => m.SuperadminTasksComponent),
+      },
+      {
+        path: 'tasks/new',
+        // AdminEmployeeService too — the Assign Task form's employee
+        // picker (superadmin-task-form.component.ts) uses it directly.
+        providers: [apiScopeProvider, AdminTaskService, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('tasks')],
+        loadComponent: () =>
+          import('./features/superadmin/tasks/superadmin-task-form.component').then(m => m.SuperadminTaskFormComponent),
+      },
+      {
+        path: 'tasks/:id/edit',
+        providers: [apiScopeProvider, AdminTaskService, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('tasks')],
+        loadComponent: () =>
+          import('./features/superadmin/tasks/superadmin-task-form.component').then(m => m.SuperadminTaskFormComponent),
       },
       {
         path: 'approvals',

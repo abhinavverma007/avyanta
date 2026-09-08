@@ -1,33 +1,20 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AdminTaskService } from '../../../core/services/admin-task.service';
 import { AdminEmployeeService } from '../../../core/services/admin-employee.service';
-import { AdminTask } from '../../../core/models/admin-task.model';
+import { AdminTask, TaskStatus } from '../../../core/models/admin-task.model';
 import { AdminEmployee } from '../../../core/models/admin.model';
-
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function datesInRange(from: string, to: string): string[] {
-  const dates: string[] = [];
-  const start = new Date(from);
-  const end = new Date(to);
-  if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return dates;
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    dates.push(d.toISOString().slice(0, 10));
-  }
-  return dates;
-}
+import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { googleMapsDirectionsUrl } from '../../../shared/utils/maps-link';
 
 const PAGE_SIZE = 10;
-const EMPLOYEE_SEARCH_LIMIT = 20;
+const EMPLOYEE_SEARCH_LIMIT = 8;
 
 @Component({
   selector: 'app-superadmin-tasks',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, LocationPickerComponent],
   templateUrl: './superadmin-tasks.component.html',
   styleUrl: './superadmin-tasks.component.scss',
 })
@@ -39,33 +26,34 @@ export class SuperadminTasksComponent implements OnInit {
   totalPages = signal(1);
   total = signal(0);
   filterDate = signal('');
+  filterStatus = signal<TaskStatus | ''>('');
+  filterSearch = signal('');
+  filterEmployee = signal<AdminEmployee | null>(null);
 
-  showForm = signal(false);
-  title = signal('');
-  description = signal('');
-  site = signal('');
-  fromDate = signal(todayStr());
-  toDate = signal(todayStr());
-  saving = signal(false);
-  formError = signal('');
-  formSuccess = signal('');
+  readonly hasActiveFilters = computed(
+    () => !!(this.filterDate() || this.filterStatus() || this.filterSearch() || this.filterEmployee()),
+  );
 
-  // Employee picker — search-driven so this stays usable with hundreds of
-  // employees: only a small filtered page is ever loaded, and selections
-  // (kept as full records, not just ids) are shown as chips so they stay
-  // visible even after the search results change.
-  employeeSearch = signal('');
-  employeeResults = signal<AdminEmployee[]>([]);
-  employeeSearchLoading = signal(false);
-  selectedEmployees = signal<Map<string, AdminEmployee>>(new Map());
-  private employeeSearchDebounce?: ReturnType<typeof setTimeout>;
+  readonly statusOptions: { value: TaskStatus; label: string }[] = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'in_progress', label: 'In Progress' },
+    { value: 'completed', label: 'Completed' },
+  ];
 
-  readonly selectedDates = computed(() => datesInRange(this.fromDate(), this.toDate()));
-  readonly selectedEmployeeList = computed(() => Array.from(this.selectedEmployees().values()));
+  // Employee filter — search-driven so this stays usable with hundreds of
+  // employees, same pattern as the Assign Task employee picker, but
+  // single-select since it's a filter, not an assignment list.
+  employeeFilterQuery = signal('');
+  employeeFilterResults = signal<AdminEmployee[]>([]);
+  employeeFilterLoading = signal(false);
+  showEmployeeFilterResults = signal(false);
+  private employeeFilterDebounce?: ReturnType<typeof setTimeout>;
+  private filterSearchDebounce?: ReturnType<typeof setTimeout>;
 
   constructor(
     private taskService: AdminTaskService,
     private employeeService: AdminEmployeeService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -75,7 +63,14 @@ export class SuperadminTasksComponent implements OnInit {
   loadTasks(): void {
     this.loading.set(true);
     this.taskService
-      .list({ date: this.filterDate() || undefined, page: this.page(), limit: PAGE_SIZE })
+      .list({
+        date: this.filterDate() || undefined,
+        status: this.filterStatus() || undefined,
+        search: this.filterSearch() || undefined,
+        employeeId: this.filterEmployee()?.id || undefined,
+        page: this.page(),
+        limit: PAGE_SIZE,
+      })
       .then(res => {
         this.tasks.set(res.tasks);
         this.total.set(res.total);
@@ -90,10 +85,69 @@ export class SuperadminTasksComponent implements OnInit {
     this.loadTasks();
   }
 
+  onFilterSearchInput(value: string): void {
+    this.filterSearch.set(value);
+    clearTimeout(this.filterSearchDebounce);
+    this.filterSearchDebounce = setTimeout(() => {
+      this.page.set(1);
+      this.loadTasks();
+    }, 300);
+  }
+
   clearFilter(): void {
+    clearTimeout(this.filterSearchDebounce);
     this.filterDate.set('');
+    this.filterStatus.set('');
+    this.filterSearch.set('');
+    this.filterEmployee.set(null);
+    this.employeeFilterQuery.set('');
     this.page.set(1);
     this.loadTasks();
+  }
+
+  onFilterStatusChange(value: TaskStatus | ''): void {
+    this.filterStatus.set(value);
+    this.page.set(1);
+    this.loadTasks();
+  }
+
+  onEmployeeFilterInput(value: string): void {
+    this.employeeFilterQuery.set(value);
+    this.showEmployeeFilterResults.set(true);
+    clearTimeout(this.employeeFilterDebounce);
+    this.employeeFilterLoading.set(true);
+    this.employeeFilterDebounce = setTimeout(() => {
+      this.employeeService.list({ search: value, limit: EMPLOYEE_SEARCH_LIMIT }).then(res => {
+        this.employeeFilterResults.set(res.employees);
+        this.employeeFilterLoading.set(false);
+      });
+    }, 300);
+  }
+
+  selectEmployeeFilter(emp: AdminEmployee): void {
+    this.filterEmployee.set(emp);
+    this.employeeFilterQuery.set('');
+    this.showEmployeeFilterResults.set(false);
+    this.page.set(1);
+    this.loadTasks();
+  }
+
+  clearEmployeeFilter(): void {
+    this.filterEmployee.set(null);
+    this.page.set(1);
+    this.loadTasks();
+  }
+
+  statusLabel(status: TaskStatus): string {
+    if (status === 'completed') return 'Completed';
+    if (status === 'in_progress') return 'In Progress';
+    return 'Pending';
+  }
+
+  statusBadgeClass(status: TaskStatus): string {
+    if (status === 'completed') return 'badge-success';
+    if (status === 'in_progress') return 'badge-info';
+    return 'badge-warning';
   }
 
   prevPage(): void {
@@ -109,96 +163,25 @@ export class SuperadminTasksComponent implements OnInit {
   }
 
   openForm(): void {
-    this.showForm.set(true);
-    this.title.set('');
-    this.description.set('');
-    this.site.set('');
-    this.fromDate.set(todayStr());
-    this.toDate.set(todayStr());
-    this.selectedEmployees.set(new Map());
-    this.employeeSearch.set('');
-    this.formError.set('');
-    this.formSuccess.set('');
-    this.searchEmployees('');
+    this.router.navigate(['/superadmin/tasks/new']);
   }
 
-  closeForm(): void {
-    this.showForm.set(false);
+  openEditForm(task: AdminTask): void {
+    this.router.navigate(['/superadmin/tasks', task.id, 'edit']);
   }
 
-  onEmployeeSearchInput(value: string): void {
-    this.employeeSearch.set(value);
-    clearTimeout(this.employeeSearchDebounce);
-    this.employeeSearchLoading.set(true);
-    this.employeeSearchDebounce = setTimeout(() => this.searchEmployees(value), 300);
+  directionsUrl(task: AdminTask): string {
+    return task.siteLocation ? googleMapsDirectionsUrl(task.siteLocation) : '';
   }
 
-  private searchEmployees(search: string): void {
-    this.employeeService.list({ search, limit: EMPLOYEE_SEARCH_LIMIT }).then(res => {
-      this.employeeResults.set(res.employees.filter(e => e.isActive));
-      this.employeeSearchLoading.set(false);
-    });
+  expandedNotesTaskId = signal<string | null>(null);
+
+  toggleNotes(taskId: string): void {
+    this.expandedNotesTaskId.update(current => (current === taskId ? null : taskId));
   }
 
-  toggleEmployee(emp: AdminEmployee): void {
-    this.selectedEmployees.update(map => {
-      const next = new Map(map);
-      if (next.has(emp.id)) next.delete(emp.id);
-      else next.set(emp.id, emp);
-      return next;
-    });
-  }
-
-  removeSelectedEmployee(id: string): void {
-    this.selectedEmployees.update(map => {
-      const next = new Map(map);
-      next.delete(id);
-      return next;
-    });
-  }
-
-  isSelected(id: string): boolean {
-    return this.selectedEmployees().has(id);
-  }
-
-  async submitForm(): Promise<void> {
-    this.formError.set('');
-    this.formSuccess.set('');
-
-    if (!this.title().trim()) {
-      this.formError.set('Title is required.');
-      return;
-    }
-    const dates = this.selectedDates();
-    if (dates.length === 0) {
-      this.formError.set('Pick a valid date range.');
-      return;
-    }
-    const employeeIds = Array.from(this.selectedEmployees().keys());
-    if (employeeIds.length === 0) {
-      this.formError.set('Select at least one employee.');
-      return;
-    }
-
-    this.saving.set(true);
-    try {
-      await this.taskService.create({
-        title: this.title(),
-        description: this.description(),
-        site: this.site(),
-        dates,
-        employeeIds,
-      });
-      this.formSuccess.set(
-        `Assigned for ${dates.length} day${dates.length === 1 ? '' : 's'} to ${employeeIds.length} employee${employeeIds.length === 1 ? '' : 's'}.`,
-      );
-      this.page.set(1);
-      this.loadTasks();
-    } catch (err: any) {
-      this.formError.set(err?.error?.message ?? 'Could not assign task. Please try again.');
-    } finally {
-      this.saving.set(false);
-    }
+  formatNoteTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit' });
   }
 
   async deleteTask(task: AdminTask): Promise<void> {
