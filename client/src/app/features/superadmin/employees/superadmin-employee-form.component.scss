@@ -16,6 +16,24 @@
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--space-4);
 }
+.phone-input-row { display: flex; align-items: stretch; }
+.phone-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  user-select: none;
+  flex-shrink: 0;
+}
+.phone-input-row .form-control { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.field-error { font-size: 0.75rem; color: var(--danger); margin-top: 4px; }
+
 .password-row {
   display: flex;
   gap: 8px;

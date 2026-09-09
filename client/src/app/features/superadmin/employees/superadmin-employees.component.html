@@ -28,7 +28,7 @@
         <div class="cb-row">
           <span class="cb-label">Password</span>
           <span class="font-mono cb-password">{{ cred.password }}</span>
-          <button class="btn btn-ghost btn-sm" (click)="copyPassword(cred.password)">Copy</button>
+          <button class="btn btn-ghost btn-sm" (click)="copyCredentials(cred.email, cred.password)">Copy</button>
         </div>
       </div>
       <button class="close-btn" (click)="dismissBanner()" aria-label="Dismiss">

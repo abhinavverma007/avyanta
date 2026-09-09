@@ -23,6 +23,23 @@ function normalizeAadhaar(value) {
   return digits;
 }
 
+// Canonical stored form is "+91" + exactly 10 digits. Only ever called for a
+// genuinely new or actively-changed value — see update()'s "unchanged from
+// stored" check below, which is what keeps pre-existing employees (created
+// before this validation existed, possibly with no phone or some other
+// format) from being blocked just because an unrelated field on the same
+// form got saved.
+function normalizePhone(value) {
+  if (value === undefined || value === null || value === '') return '';
+  const digits = String(value).replace(/\D/g, '');
+  if (digits.length !== 10) {
+    const err = new Error('Phone number must be +91 followed by exactly 10 digits.');
+    err.status = 400;
+    throw err;
+  }
+  return `+91${digits}`;
+}
+
 function sanitize(emp) {
   return {
     id: emp._id.toString(),
@@ -122,7 +139,7 @@ exports.create = async (req, res) => {
     employeeId,
     designation: req.body.designation || '',
     department: req.body.department || '',
-    phone: req.body.phone || '',
+    phone: normalizePhone(req.body.phone),
     joinDate,
     location: req.body.location || '',
     aadhaarNumber: normalizeAadhaar(req.body.aadhaarNumber),
@@ -150,13 +167,25 @@ exports.create = async (req, res) => {
 // a second line of defense even though the frontend already hides those
 // controls outside admin scope.
 exports.update = async (req, res) => {
+  const before = await Employee.findById(req.params.id);
+  if (!before) return res.status(404).json({ message: 'Employee not found.' });
+
   const allowed = [
-    'name', 'designation', 'department', 'phone', 'location',
+    'name', 'designation', 'department', 'location',
     'salaryMonthly', 'paidLeavesPerMonth', 'shiftStart',
   ];
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  if (req.body.phone !== undefined) {
+    const incoming = String(req.body.phone).trim();
+    // Validate the format only when the value is actually changing — an
+    // employee saved before this validation existed (possibly blank or in
+    // some other phone format) must never get blocked just because the
+    // owner edited an unrelated field on the same form and phone was
+    // resent unchanged.
+    updates.phone = incoming === (before.phone || '') ? incoming : normalizePhone(incoming);
   }
   if (req.body.aadhaarNumber !== undefined) {
     updates.aadhaarNumber = normalizeAadhaar(req.body.aadhaarNumber);
@@ -175,9 +204,6 @@ exports.update = async (req, res) => {
   } else if (req.body.isActive !== undefined || req.body.role !== undefined) {
     return res.status(403).json({ message: 'Only the owner can change an employee\'s active status or role.' });
   }
-
-  const before = await Employee.findById(req.params.id);
-  if (!before) return res.status(404).json({ message: 'Employee not found.' });
 
   const employee = await Employee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
     .populate('role', 'name');

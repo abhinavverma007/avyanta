@@ -129,11 +129,11 @@ export class SuperadminEmployeesComponent implements OnInit {
     return ['/superadmin/employees', employeeId, 'attendance'];
   }
 
-  async copyPassword(password: string): Promise<void> {
+  async copyCredentials(email: string, password: string): Promise<void> {
     try {
-      await navigator.clipboard.writeText(password);
+      await navigator.clipboard.writeText(`Email:${email},Password:${password}`);
     } catch {
-      // clipboard access can be blocked; password is still visible on screen to copy manually
+      // clipboard access can be blocked; both values are still visible on screen to copy manually
     }
   }
 }

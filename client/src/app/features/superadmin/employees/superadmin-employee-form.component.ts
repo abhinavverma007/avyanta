@@ -35,6 +35,18 @@ function formatAadhaar(raw: string): string {
   return digits.match(/.{1,4}/g)?.join('-') ?? digits;
 }
 
+// Best-effort digit extraction for *displaying* an existing employee's
+// stored phone number, which may predate the +91-prefixed format (blank, no
+// country code, formatted with spaces/hyphens, etc.) — this is only for
+// showing something reasonable in the field; what actually gets submitted
+// if the owner never touches it is the untouched original (see
+// submitForm()), not a reconstruction of this.
+function extractPhoneDigits(raw: string): string {
+  const digits = (raw || '').replace(/\D/g, '');
+  if (digits.length > 10 && digits.startsWith('91')) return digits.slice(2, 12);
+  return digits.slice(-10);
+}
+
 @Component({
   selector: 'app-superadmin-employee-form',
   standalone: true,
@@ -51,6 +63,14 @@ export class SuperadminEmployeeFormComponent implements OnInit {
   editingEmail = signal(''); // display-only, existing employee's email in edit mode
   editingEmployeeId = signal(''); // display-only
   form = signal<EmployeeForm>({ ...EMPTY_FORM });
+  // The exact raw value as loaded from the server (edit mode only) — sent
+  // through unchanged on submit unless phoneTouched is true, so a legacy
+  // number in some other format is never rejected just because the owner
+  // saved an unrelated field. form().phone only ever holds the 10-digit
+  // remainder (the +91 prefix is fixed UI, never part of the input value).
+  private originalPhone = '';
+  phoneTouched = signal(false);
+  phoneError = signal(''); // shown immediately on blur, not just at final submit
   emailPreview = signal(''); // create mode: server-computed live preview of the auto-generated email
   emailPreviewLoading = signal(false);
   private emailPreviewDebounce?: ReturnType<typeof setTimeout>;
@@ -90,13 +110,14 @@ export class SuperadminEmployeeFormComponent implements OnInit {
       .then(emp => {
         this.editingEmail.set(emp.email);
         this.editingEmployeeId.set(emp.employeeId);
+        this.originalPhone = emp.phone ?? '';
         this.form.set({
           name: emp.name,
           password: '',
           roleId: emp.role?.id ?? '',
           designation: emp.designation,
           department: emp.department,
-          phone: emp.phone,
+          phone: extractPhoneDigits(emp.phone ?? ''),
           joinDate: emp.joinDate,
           location: emp.location,
           aadhaarNumber: formatAadhaar(emp.aadhaarNumber ?? ''),
@@ -171,6 +192,26 @@ export class SuperadminEmployeeFormComponent implements OnInit {
     setTimeout(() => input.setSelectionRange(newCaret, newCaret));
   }
 
+  // Takes the Event (not just the value) and writes the stripped digits
+  // straight back onto the DOM element — Angular's [value] binding only
+  // re-renders when the *bound* value changes from what it last set, so if
+  // typing a letter into an empty field still computes to '' (no change
+  // from Angular's point of view), it never overwrites the native input's
+  // own DOM value, leaving the typed letter visibly stuck on screen.
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 10);
+    input.value = digits;
+    this.phoneTouched.set(true);
+    this.phoneError.set('');
+    this.updateField('phone', digits);
+  }
+
+  onPhoneBlur(): void {
+    const len = this.form().phone.length;
+    this.phoneError.set(len > 0 && len < 10 ? 'Phone number must be exactly 10 digits.' : '');
+  }
+
   onSalaryInput(value: string): void {
     const digits = value.replace(/\D/g, '');
     this.updateField('salaryMonthly', digits ? Number(digits) : null);
@@ -202,6 +243,22 @@ export class SuperadminEmployeeFormComponent implements OnInit {
       return;
     }
 
+    // Untouched in edit mode — pass the original stored value straight
+    // through, whatever format it happens to be in, rather than force a
+    // pre-existing employee's phone into this format just because some
+    // other field on the same form was edited.
+    let phoneToSend: string;
+    if (this.isEditMode() && !this.phoneTouched()) {
+      phoneToSend = this.originalPhone;
+    } else {
+      if (f.phone && f.phone.length !== 10) {
+        this.phoneError.set('Phone number must be exactly 10 digits.');
+        this.formError.set('Phone number must be exactly 10 digits.');
+        return;
+      }
+      phoneToSend = f.phone ? `+91${f.phone}` : '';
+    }
+
     this.saving.set(true);
     try {
       if (this.isEditMode()) {
@@ -211,7 +268,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
           role: this.isAdminScope ? (f.roleId || undefined) : undefined,
           designation: f.designation,
           department: f.department,
-          phone: f.phone,
+          phone: phoneToSend,
           location: f.location,
           aadhaarNumber: aadhaarDigits,
           upiId: f.upiId,
@@ -226,7 +283,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
           role: this.isAdminScope ? (f.roleId || undefined) : undefined,
           designation: f.designation,
           department: f.department,
-          phone: f.phone,
+          phone: phoneToSend,
           joinDate: f.joinDate,
           location: f.location,
           aadhaarNumber: aadhaarDigits || undefined,
