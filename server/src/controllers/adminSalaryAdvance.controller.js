@@ -24,7 +24,8 @@ exports.list = async (req, res) => {
 
   const requests = await SalaryAdvance.find(filter)
     .populate('employee', 'name employeeId department')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
   res.json({ requests: requests.map(withEmployee) });
 };

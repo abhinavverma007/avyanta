@@ -53,6 +53,10 @@ export class SuperadminEmployeeProfileComponent implements OnInit {
 
   tab = signal<ProfileTab | null>(null);
   loading = signal(false);
+  // One employee's history doesn't change while the owner is sitting on
+  // this page bouncing between tabs to compare them — no need to hit the
+  // server again for a tab already fetched this session.
+  private loadedTabs = new Set<ProfileTab>();
 
   leaves = signal<AdminLeave[]>([]);
   reimbursements = signal<AdminReimbursement[]>([]);
@@ -87,27 +91,31 @@ export class SuperadminEmployeeProfileComponent implements OnInit {
 
   load(): void {
     const tab = this.tab();
-    if (!tab) return;
+    if (!tab || this.loadedTabs.has(tab)) return;
     this.loading.set(true);
 
     if (tab === 'leave') {
       this.leaveService.list(undefined, this.employeeId).then(rows => {
         this.leaves.set(rows);
+        this.loadedTabs.add(tab);
         this.loading.set(false);
       });
     } else if (tab === 'reimbursement') {
       this.reimbursementService.list(undefined, this.employeeId).then(rows => {
         this.reimbursements.set(rows);
+        this.loadedTabs.add(tab);
         this.loading.set(false);
       });
     } else if (tab === 'advance') {
       this.advanceService.list(undefined, this.employeeId).then(rows => {
         this.advances.set(rows);
+        this.loadedTabs.add(tab);
         this.loading.set(false);
       });
     } else if (tab === 'tasks') {
       this.taskService.list({ employeeId: this.employeeId, limit: 100 }).then(res => {
         this.tasks.set(res.tasks);
+        this.loadedTabs.add(tab);
         this.loading.set(false);
       });
     }

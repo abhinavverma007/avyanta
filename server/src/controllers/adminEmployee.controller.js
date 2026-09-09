@@ -70,13 +70,16 @@ function sanitize(emp, { mask = false } = {}) {
     location: emp.location,
     aadhaarNumber: mask ? maskAadhaar(emp.aadhaarNumber) : emp.aadhaarNumber,
     upiId: mask ? maskUpi(emp.upiId) : emp.upiId,
-    shiftStart: emp.shiftStart,
+    shiftStart: emp.shiftStart || '09:30',
     // Withheld entirely (not just masked — there's no natural partial
     // reveal for a pay figure the way there is for Aadhaar/UPI) for anyone
     // short of the true owner, same as Aadhaar/UPI above.
-    salaryMonthly: mask ? null : emp.salaryMonthly,
-    paidLeavesPerMonth: emp.paidLeavesPerMonth,
-    isActive: emp.isActive,
+    // Explicit fallbacks, not just the schema default — list()/get() use
+    // .lean() below (skips Mongoose hydration entirely), so a document
+    // missing one of these fields would otherwise come back as undefined.
+    salaryMonthly: mask ? null : (emp.salaryMonthly ?? 0),
+    paidLeavesPerMonth: emp.paidLeavesPerMonth ?? 0,
+    isActive: emp.isActive ?? true,
     createdAt: emp.createdAt,
   };
 }
@@ -98,7 +101,7 @@ exports.list = async (req, res) => {
     : {};
 
   const [employees, total] = await Promise.all([
-    Employee.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('role', 'name'),
+    Employee.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('role', 'name').lean(),
     Employee.countDocuments(filter),
   ]);
 
@@ -112,7 +115,7 @@ exports.list = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
-  const employee = await Employee.findById(req.params.id).populate('role', 'name');
+  const employee = await Employee.findById(req.params.id).populate('role', 'name').lean();
   if (!employee) return res.status(404).json({ message: 'Employee not found.' });
   res.json({ employee: sanitize(employee, { mask: !req.admin }) });
 };
@@ -186,7 +189,9 @@ exports.create = async (req, res) => {
 // a second line of defense even though the frontend already hides those
 // controls outside admin scope.
 exports.update = async (req, res) => {
-  const before = await Employee.findById(req.params.id);
+  // Read-only — never saved directly, only compared against and used to
+  // decide what changed, so .lean() is safe here (no hydration needed).
+  const before = await Employee.findById(req.params.id).lean();
   if (!before) return res.status(404).json({ message: 'Employee not found.' });
 
   // A Supervisor/Manager is themselves an Employee document — without this,
@@ -238,7 +243,8 @@ exports.update = async (req, res) => {
   }
 
   const employee = await Employee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
-    .populate('role', 'name');
+    .populate('role', 'name')
+    .lean();
 
   if (updates.role !== undefined && String(updates.role) !== String(before.role)) {
     await recordAudit(req, {
@@ -276,7 +282,7 @@ exports.resetPassword = async (req, res) => {
     req.params.id,
     { passwordHash, $inc: { tokenVersion: 1 } },
     { new: true },
-  ).populate('role', 'name');
+  ).populate('role', 'name').lean();
   if (!employee) return res.status(404).json({ message: 'Employee not found.' });
 
   await recordAudit(req, {

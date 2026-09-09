@@ -37,7 +37,8 @@ exports.list = async (req, res) => {
 
   const leaves = await Leave.find(filter)
     .populate('employee', 'name employeeId department')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
   res.json({ leaves: leaves.map(withEmployee) });
 };

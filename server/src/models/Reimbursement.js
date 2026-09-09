@@ -14,4 +14,9 @@ const reimbursementSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Matches SalaryAdvance's index — supports both the general Approvals list
+// (sorted newest-first) and the per-employee Profile page filter, neither of
+// which had any index to use here before.
+reimbursementSchema.index({ employee: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Reimbursement', reimbursementSchema);

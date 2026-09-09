@@ -37,7 +37,8 @@ exports.list = async (req, res) => {
 
   const claims = await Reimbursement.find(filter)
     .populate('employee', 'name employeeId department')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
   res.json({ claims: claims.map(withEmployee) });
 };

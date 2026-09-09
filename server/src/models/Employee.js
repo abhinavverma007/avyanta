@@ -26,4 +26,8 @@ const employeeSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Supports the owner's Employees list, which always sorts newest-first with
+// no other filter when there's no search term.
+employeeSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Employee', employeeSchema);
