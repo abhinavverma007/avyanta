@@ -15,9 +15,10 @@ export class AdminSalaryAdvanceService {
 
   constructor(private http: HttpClient) {}
 
-  list(status?: AdvanceStatus): Promise<AdminSalaryAdvance[]> {
+  list(status?: AdvanceStatus, employeeId?: string): Promise<AdminSalaryAdvance[]> {
     const params: Record<string, string> = {};
     if (status) params['status'] = status;
+    if (employeeId) params['employeeId'] = employeeId;
     return firstValueFrom(
       this.http.get<{ requests: AdminSalaryAdvance[] }>(this.base, { params }),
     ).then(r => r.requests);

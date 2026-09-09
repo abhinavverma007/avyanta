@@ -1,0 +1,121 @@
+<div class="page fade-in">
+  <a class="back-link" [routerLink]="['/superadmin/employees']">← Back to Employees</a>
+
+  <div class="page-header">
+    @if (employee(); as emp) {
+      <h1 class="page-title">
+        {{ emp.name }}
+        <span class="emp-code">{{ emp.employeeId }}</span>
+      </h1>
+      <p class="page-sub">{{ emp.designation || 'Employee' }}{{ emp.department ? ' · ' + emp.department : '' }}</p>
+    } @else if (!loadingEmployee()) {
+      <h1 class="page-title">Employee Profile</h1>
+    }
+    <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', employeeId, 'attendance']">See Attendance History</a>
+  </div>
+
+  @if (loadingEmployee()) {
+    <div class="card card-padded"><p class="empty-note">Loading…</p></div>
+  } @else if (tabOptions.length === 0) {
+    <div class="card card-padded"><p class="empty-note">You don't have permission to view this employee's request history.</p></div>
+  } @else {
+    <div class="section-switcher">
+      @for (opt of tabOptions; track opt.value) {
+        <button class="section-tab" [class.active]="tab() === opt.value" (click)="setTab(opt.value)">
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+
+    <select class="form-control section-select" [ngModel]="tab()" (ngModelChange)="setTab($event)" aria-label="Section">
+      @for (opt of tabOptions; track opt.value) {
+        <option [ngValue]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+
+    <div class="card table-card">
+      @if (loading()) {
+        <p class="empty-note">Loading…</p>
+      } @else if (tab() === 'leave') {
+        @if (leaves().length === 0) {
+          <p class="empty-note">No leave requests on record.</p>
+        } @else {
+          <div class="history-list">
+            @for (l of leaves(); track l.id) {
+              <div class="history-row">
+                <div class="history-main">
+                  <div class="history-top">
+                    <span class="history-date font-mono">{{ l.date }}</span>
+                    <span class="badge" [class]="approvalBadgeClass(l.status)">{{ l.status }}</span>
+                  </div>
+                  <p class="history-desc">{{ l.reason }}</p>
+                  @if (l.reviewNote) { <p class="history-note">Note: {{ l.reviewNote }}</p> }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      } @else if (tab() === 'reimbursement') {
+        @if (reimbursements().length === 0) {
+          <p class="empty-note">No reimbursement claims on record.</p>
+        } @else {
+          <div class="history-list">
+            @for (r of reimbursements(); track r.id) {
+              <div class="history-row">
+                <div class="history-main">
+                  <div class="history-top">
+                    <span class="history-date font-mono">{{ r.date }}</span>
+                    <span class="history-amount">₹{{ r.amount | number }}</span>
+                    <span class="badge badge-info">{{ r.category }}</span>
+                    <span class="badge" [class]="approvalBadgeClass(r.status)">{{ r.status }}</span>
+                  </div>
+                  @if (r.description) { <p class="history-desc">{{ r.description }}</p> }
+                  @if (r.reviewNote) { <p class="history-note">Note: {{ r.reviewNote }}</p> }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      } @else if (tab() === 'advance') {
+        @if (advances().length === 0) {
+          <p class="empty-note">No salary advance requests on record.</p>
+        } @else {
+          <div class="history-list">
+            @for (a of advances(); track a.id) {
+              <div class="history-row">
+                <div class="history-main">
+                  <div class="history-top">
+                    <span class="history-date font-mono">{{ a.requestedDate }}</span>
+                    <span class="history-amount">₹{{ a.amount | number }}</span>
+                    <span class="badge" [class]="approvalBadgeClass(a.status)">{{ a.status }}</span>
+                  </div>
+                  <p class="history-desc">{{ a.reason }}</p>
+                  @if (a.reviewNote) { <p class="history-note">Note: {{ a.reviewNote }}</p> }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      } @else if (tab() === 'tasks') {
+        @if (tasks().length === 0) {
+          <p class="empty-note">No tasks assigned yet.</p>
+        } @else {
+          <div class="history-list">
+            @for (t of tasks(); track t.id) {
+              <div class="history-row">
+                <div class="history-main">
+                  <div class="history-top">
+                    <span class="history-date font-mono">{{ t.date }}</span>
+                    <span class="history-title">{{ t.title }}</span>
+                    <span class="badge" [class]="taskBadgeClass(t.status)">{{ t.status.replace('_', ' ') }}</span>
+                  </div>
+                  @if (t.site) { <p class="history-desc">📍 {{ t.site }}</p> }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

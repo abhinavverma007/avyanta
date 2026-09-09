@@ -15,9 +15,10 @@ export class AdminReimbursementService {
 
   constructor(private http: HttpClient) {}
 
-  list(status?: ReimbursementStatus): Promise<AdminReimbursement[]> {
+  list(status?: ReimbursementStatus, employeeId?: string): Promise<AdminReimbursement[]> {
     const params: Record<string, string> = {};
     if (status) params['status'] = status;
+    if (employeeId) params['employeeId'] = employeeId;
     return firstValueFrom(
       this.http.get<{ claims: AdminReimbursement[] }>(this.base, { params }),
     ).then(r => r.claims);

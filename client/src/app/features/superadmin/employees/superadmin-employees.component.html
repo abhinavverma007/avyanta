@@ -56,7 +56,7 @@
               <th>Salary</th>
               <th>Leaves/mo</th>
               <th>Status</th>
-              <th>Attendance</th>
+              <th>Profile</th>
               <th></th>
             </tr>
           </thead>
@@ -79,7 +79,7 @@
                   </span>
                 </td>
                 <td>
-                  <a class="btn btn-ghost btn-sm" [routerLink]="attendanceHistoryPath(emp.id)">See Attendance History</a>
+                  <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">View Profile</a>
                 </td>
                 <td class="row-actions">
                   @if (!isOwnRow(emp)) {
@@ -127,7 +127,7 @@
                 <div class="ec-row"><span class="ec-label">Leaves/mo</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
               </div>
               <div class="ec-actions" (click)="$event.stopPropagation()">
-                <a class="btn btn-ghost btn-sm" [routerLink]="attendanceHistoryPath(emp.id)">Attendance History</a>
+                <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">View Profile</a>
                 @if (!isOwnRow(emp)) {
                   <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
                 }
