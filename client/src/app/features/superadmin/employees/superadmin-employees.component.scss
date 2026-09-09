@@ -49,50 +49,6 @@
 .close-btn { color: var(--text-muted); flex-shrink: 0; }
 .close-btn:hover { color: var(--text); }
 
-.form-panel { margin-bottom: var(--space-5); }
-.form-panel-title { font-family: var(--font-display); margin-bottom: var(--space-4); }
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--space-4);
-}
-.password-row {
-  display: flex;
-  gap: 8px;
-
-  @media (max-width: 480px) { flex-wrap: wrap; }
-}
-.password-wrap { position: relative; flex: 1; min-width: 0; }
-.password-wrap .form-control { width: 100%; padding-right: 44px; }
-.toggle-pw {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  padding: 4px;
-}
-.toggle-pw:hover { color: var(--text); }
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-
-  @media (max-width: 480px) {
-    flex-direction: column-reverse;
-    .btn { width: 100%; }
-  }
-}
-.error-msg {
-  font-size: 0.8125rem;
-  color: var(--danger);
-  padding: 8px 12px;
-  background: var(--danger-bg);
-  border-radius: var(--radius-sm);
-  margin-top: var(--space-4);
-}
-
 .table-card { overflow: hidden; }
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .empty-note { padding: var(--space-8); text-align: center; color: var(--text-muted); }

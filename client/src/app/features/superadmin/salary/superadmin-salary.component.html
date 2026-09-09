@@ -213,7 +213,7 @@
               } @else {
                 <div class="upi-missing-row" (click)="$event.stopPropagation()">
                   <p class="pay-now-note">No UPI ID on file for this employee.</p>
-                  <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees']" [queryParams]="{ edit: row.employeeId }">
+                  <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', row.employeeId, 'edit']" [queryParams]="{ focus: 'upi' }">
                     Add UPI ID
                   </a>
                 </div>

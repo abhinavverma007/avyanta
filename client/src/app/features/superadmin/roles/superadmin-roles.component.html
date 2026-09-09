@@ -49,8 +49,8 @@
               <div class="role-summary-actions">
                 <a
                   class="btn btn-ghost btn-sm"
-                  [routerLink]="['/superadmin/employees']"
-                  [queryParams]="{ addRole: role.id }"
+                  [routerLink]="['/superadmin/employees/new']"
+                  [queryParams]="{ role: role.id }"
                   (click)="$event.stopPropagation()">
                   + Add
                 </a>

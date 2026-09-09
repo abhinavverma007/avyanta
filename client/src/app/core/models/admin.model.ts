@@ -23,7 +23,7 @@ export interface AdminEmployee {
   aadhaarNumber: string; // 12 digits, no hyphens
   upiId: string;
   shiftStart: string;
-  salaryMonthly: number;
+  salaryMonthly: number | null; // null for a delegated (non-admin) viewer — withheld, not just masked
   paidLeavesPerMonth: number;
   isActive: boolean;
   createdAt: string;

@@ -15,9 +15,10 @@ export class AdminLeaveService {
 
   constructor(private http: HttpClient) {}
 
-  list(status?: LeaveStatus): Promise<AdminLeave[]> {
+  list(status?: LeaveStatus, employeeId?: string): Promise<AdminLeave[]> {
     const params: Record<string, string> = {};
     if (status) params['status'] = status;
+    if (employeeId) params['employeeId'] = employeeId;
     return firstValueFrom(
       this.http.get<{ leaves: AdminLeave[] }>(this.base, { params }),
     ).then(r => r.leaves);

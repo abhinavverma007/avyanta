@@ -20,10 +20,12 @@ function withEmployee(advance) {
 exports.list = async (req, res) => {
   const filter = {};
   if (req.query.status) filter.status = req.query.status;
+  if (req.query.employeeId) filter.employee = req.query.employeeId;
 
   const requests = await SalaryAdvance.find(filter)
     .populate('employee', 'name employeeId department')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
   res.json({ requests: requests.map(withEmployee) });
 };

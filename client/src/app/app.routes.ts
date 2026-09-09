@@ -116,11 +116,42 @@ export const routes: Routes = [
           import('./features/superadmin/employees/superadmin-employees.component').then(m => m.SuperadminEmployeesComponent),
       },
       {
+        path: 'employees/new',
+        providers: [apiScopeProvider, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('employees')],
+        loadComponent: () =>
+          import('./features/superadmin/employees/superadmin-employee-form.component').then(m => m.SuperadminEmployeeFormComponent),
+      },
+      {
+        path: 'employees/:id/edit',
+        providers: [apiScopeProvider, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('employees')],
+        loadComponent: () =>
+          import('./features/superadmin/employees/superadmin-employee-form.component').then(m => m.SuperadminEmployeeFormComponent),
+      },
+      {
         path: 'employees/:id/attendance',
         providers: [apiScopeProvider, AdminAttendanceService],
         canActivate: [superadminAreaGuard('employees')],
         loadComponent: () =>
           import('./features/superadmin/employee-attendance/superadmin-employee-attendance.component').then(m => m.SuperadminEmployeeAttendanceComponent),
+      },
+      {
+        path: 'employees/:id/profile',
+        // Reaching the page needs "employees"; each tab inside it additionally
+        // checks its own specific permission (see the component) before
+        // showing that category's data to a delegated session.
+        providers: [
+          apiScopeProvider,
+          AdminEmployeeService,
+          AdminLeaveService,
+          AdminReimbursementService,
+          AdminSalaryAdvanceService,
+          AdminTaskService,
+        ],
+        canActivate: [superadminAreaGuard('employees')],
+        loadComponent: () =>
+          import('./features/superadmin/employee-profile/superadmin-employee-profile.component').then(m => m.SuperadminEmployeeProfileComponent),
       },
       {
         path: 'tasks',

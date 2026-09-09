@@ -23,7 +23,40 @@ function normalizeAadhaar(value) {
   return digits;
 }
 
-function sanitize(emp) {
+// Canonical stored form is "+91" + exactly 10 digits. Only ever called for a
+// genuinely new or actively-changed value — see update()'s "unchanged from
+// stored" check below, which is what keeps pre-existing employees (created
+// before this validation existed, possibly with no phone or some other
+// format) from being blocked just because an unrelated field on the same
+// form got saved.
+function normalizePhone(value) {
+  if (value === undefined || value === null || value === '') return '';
+  const digits = String(value).replace(/\D/g, '');
+  if (digits.length !== 10) {
+    const err = new Error('Phone number must be +91 followed by exactly 10 digits.');
+    err.status = 400;
+    throw err;
+  }
+  return `+91${digits}`;
+}
+
+// Aadhaar/UPI are sensitive PII — a delegated Supervisor/Manager (anyone
+// short of the true owner) only ever sees a masked form, never the raw
+// value, regardless of whether their role has "employees" permission.
+function maskAadhaar(value) {
+  if (!value) return '';
+  const digits = String(value).replace(/\D/g, '');
+  if (digits.length < 4) return '••••';
+  return `XXXX-XXXX-${digits.slice(-4)}`;
+}
+function maskUpi(value) {
+  if (!value) return '';
+  const at = value.indexOf('@');
+  if (at <= 0) return '••••';
+  return `••••${value.slice(at)}`;
+}
+
+function sanitize(emp, { mask = false } = {}) {
   return {
     id: emp._id.toString(),
     name: emp.name,
@@ -35,12 +68,18 @@ function sanitize(emp) {
     employeeId: emp.employeeId,
     joinDate: emp.joinDate,
     location: emp.location,
-    aadhaarNumber: emp.aadhaarNumber,
-    upiId: emp.upiId,
-    shiftStart: emp.shiftStart,
-    salaryMonthly: emp.salaryMonthly,
-    paidLeavesPerMonth: emp.paidLeavesPerMonth,
-    isActive: emp.isActive,
+    aadhaarNumber: mask ? maskAadhaar(emp.aadhaarNumber) : emp.aadhaarNumber,
+    upiId: mask ? maskUpi(emp.upiId) : emp.upiId,
+    shiftStart: emp.shiftStart || '09:30',
+    // Withheld entirely (not just masked — there's no natural partial
+    // reveal for a pay figure the way there is for Aadhaar/UPI) for anyone
+    // short of the true owner, same as Aadhaar/UPI above.
+    // Explicit fallbacks, not just the schema default — list()/get() use
+    // .lean() below (skips Mongoose hydration entirely), so a document
+    // missing one of these fields would otherwise come back as undefined.
+    salaryMonthly: mask ? null : (emp.salaryMonthly ?? 0),
+    paidLeavesPerMonth: emp.paidLeavesPerMonth ?? 0,
+    isActive: emp.isActive ?? true,
     createdAt: emp.createdAt,
   };
 }
@@ -62,12 +101,12 @@ exports.list = async (req, res) => {
     : {};
 
   const [employees, total] = await Promise.all([
-    Employee.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('role', 'name'),
+    Employee.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('role', 'name').lean(),
     Employee.countDocuments(filter),
   ]);
 
   res.json({
-    employees: employees.map(sanitize),
+    employees: employees.map((e) => sanitize(e, { mask: !req.admin })),
     total,
     page,
     limit,
@@ -76,9 +115,9 @@ exports.list = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
-  const employee = await Employee.findById(req.params.id).populate('role', 'name');
+  const employee = await Employee.findById(req.params.id).populate('role', 'name').lean();
   if (!employee) return res.status(404).json({ message: 'Employee not found.' });
-  res.json({ employee: sanitize(employee) });
+  res.json({ employee: sanitize(employee, { mask: !req.admin }) });
 };
 
 // Live preview for the "Add Employee" form — shows what email would be
@@ -122,7 +161,7 @@ exports.create = async (req, res) => {
     employeeId,
     designation: req.body.designation || '',
     department: req.body.department || '',
-    phone: req.body.phone || '',
+    phone: normalizePhone(req.body.phone),
     joinDate,
     location: req.body.location || '',
     aadhaarNumber: normalizeAadhaar(req.body.aadhaarNumber),
@@ -150,21 +189,40 @@ exports.create = async (req, res) => {
 // a second line of defense even though the frontend already hides those
 // controls outside admin scope.
 exports.update = async (req, res) => {
-  const allowed = [
-    'name', 'designation', 'department', 'phone', 'location',
-    'salaryMonthly', 'paidLeavesPerMonth', 'shiftStart',
-  ];
+  // Read-only — never saved directly, only compared against and used to
+  // decide what changed, so .lean() is safe here (no hydration needed).
+  const before = await Employee.findById(req.params.id).lean();
+  if (!before) return res.status(404).json({ message: 'Employee not found.' });
+
+  // A Supervisor/Manager is themselves an Employee document — without this,
+  // "employees" permission would let them edit their own salary, role, etc.
+  // through this very feature, the same conflict-of-interest gap the
+  // self-approval guard (reviewGuard.js) closes for Leave/Reimbursement/
+  // Advance/Regularization requests.
+  if (!req.admin && req.employee && String(before._id) === String(req.employee._id)) {
+    return res.status(403).json({ message: 'You cannot edit your own employee record — ask the owner to make this change.' });
+  }
+
+  const allowed = ['name', 'designation', 'department', 'location', 'shiftStart'];
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
   }
-  if (req.body.aadhaarNumber !== undefined) {
-    updates.aadhaarNumber = normalizeAadhaar(req.body.aadhaarNumber);
-  }
-  if (req.body.upiId !== undefined) {
-    updates.upiId = String(req.body.upiId).trim();
+  if (req.body.phone !== undefined) {
+    const incoming = String(req.body.phone).trim();
+    // Validate the format only when the value is actually changing — an
+    // employee saved before this validation existed (possibly blank or in
+    // some other phone format) must never get blocked just because the
+    // owner edited an unrelated field on the same form and phone was
+    // resent unchanged.
+    updates.phone = incoming === (before.phone || '') ? incoming : normalizePhone(incoming);
   }
 
+  // Salary, paid-leave allowance, Aadhaar, and UPI are owner-only to change
+  // — financially/PII-sensitive enough that they shouldn't ride along with
+  // the general "employees" permission a Supervisor/Manager might have.
+  // (The frontend also simply never sends these fields outside admin
+  // scope — this is the enforcing layer, not just a UI convenience.)
   if (req.admin) {
     if (req.body.isActive !== undefined) updates.isActive = req.body.isActive;
     if (req.body.role !== undefined) {
@@ -172,15 +230,21 @@ exports.update = async (req, res) => {
       if (!role) return res.status(400).json({ message: 'Selected role was not found.' });
       updates.role = role._id;
     }
-  } else if (req.body.isActive !== undefined || req.body.role !== undefined) {
-    return res.status(403).json({ message: 'Only the owner can change an employee\'s active status or role.' });
+    if (req.body.salaryMonthly !== undefined) updates.salaryMonthly = req.body.salaryMonthly;
+    if (req.body.paidLeavesPerMonth !== undefined) updates.paidLeavesPerMonth = req.body.paidLeavesPerMonth;
+    if (req.body.aadhaarNumber !== undefined) updates.aadhaarNumber = normalizeAadhaar(req.body.aadhaarNumber);
+    if (req.body.upiId !== undefined) updates.upiId = String(req.body.upiId).trim();
+  } else if (
+    req.body.isActive !== undefined || req.body.role !== undefined ||
+    req.body.salaryMonthly !== undefined || req.body.paidLeavesPerMonth !== undefined ||
+    req.body.aadhaarNumber !== undefined || req.body.upiId !== undefined
+  ) {
+    return res.status(403).json({ message: 'Only the owner can change salary, paid leaves, Aadhaar, UPI ID, active status, or role.' });
   }
 
-  const before = await Employee.findById(req.params.id);
-  if (!before) return res.status(404).json({ message: 'Employee not found.' });
-
   const employee = await Employee.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
-    .populate('role', 'name');
+    .populate('role', 'name')
+    .lean();
 
   if (updates.role !== undefined && String(updates.role) !== String(before.role)) {
     await recordAudit(req, {
@@ -205,7 +269,7 @@ exports.update = async (req, res) => {
     });
   }
 
-  res.json({ employee: sanitize(employee) });
+  res.json({ employee: sanitize(employee, { mask: !req.admin }) });
 };
 
 exports.resetPassword = async (req, res) => {
@@ -218,7 +282,7 @@ exports.resetPassword = async (req, res) => {
     req.params.id,
     { passwordHash, $inc: { tokenVersion: 1 } },
     { new: true },
-  ).populate('role', 'name');
+  ).populate('role', 'name').lean();
   if (!employee) return res.status(404).json({ message: 'Employee not found.' });
 
   await recordAudit(req, {
