@@ -116,6 +116,20 @@ export const routes: Routes = [
           import('./features/superadmin/employees/superadmin-employees.component').then(m => m.SuperadminEmployeesComponent),
       },
       {
+        path: 'employees/new',
+        providers: [apiScopeProvider, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('employees')],
+        loadComponent: () =>
+          import('./features/superadmin/employees/superadmin-employee-form.component').then(m => m.SuperadminEmployeeFormComponent),
+      },
+      {
+        path: 'employees/:id/edit',
+        providers: [apiScopeProvider, AdminEmployeeService],
+        canActivate: [superadminAreaGuard('employees')],
+        loadComponent: () =>
+          import('./features/superadmin/employees/superadmin-employee-form.component').then(m => m.SuperadminEmployeeFormComponent),
+      },
+      {
         path: 'employees/:id/attendance',
         providers: [apiScopeProvider, AdminAttendanceService],
         canActivate: [superadminAreaGuard('employees')],
