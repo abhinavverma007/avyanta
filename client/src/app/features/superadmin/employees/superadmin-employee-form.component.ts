@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AdminEmployeeService } from '../../../core/services/admin-employee.service';
 import { AdminRoleService } from '../../../core/services/admin-role.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Role } from '../../../core/models/role.model';
 import { generatePassword } from '../../../core/utils/generate-password';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
@@ -79,6 +80,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
   formError = signal('');
 
   readonly isAdminScope = inject(API_SCOPE) === 'admin';
+  private readonly authService = inject(AuthService);
   roles = signal<Role[]>([]);
 
   @ViewChild('upiIdInput') upiIdInputRef?: ElementRef<HTMLInputElement>;
@@ -104,6 +106,16 @@ export class SuperadminEmployeeFormComponent implements OnInit {
     }
 
     this.employeeId.set(id);
+
+    // A Supervisor/Manager is themselves an Employee document — without
+    // this, "employees" permission would let them open (and, at the
+    // controller layer, attempt to submit) their own record, the same
+    // conflict-of-interest gap already closed for approvals.
+    if (!this.isAdminScope && id === this.authService.user()?.id) {
+      this.loadError.set('You cannot edit your own employee record — ask the owner to make this change.');
+      return;
+    }
+
     this.loadingEmployee.set(true);
     this.employeeService
       .get(id)
@@ -120,10 +132,14 @@ export class SuperadminEmployeeFormComponent implements OnInit {
           phone: extractPhoneDigits(emp.phone ?? ''),
           joinDate: emp.joinDate,
           location: emp.location,
-          aadhaarNumber: formatAadhaar(emp.aadhaarNumber ?? ''),
-          upiId: emp.upiId ?? '',
-          salaryMonthly: emp.salaryMonthly,
-          paidLeavesPerMonth: emp.paidLeavesPerMonth,
+          // Masked/withheld entirely outside admin scope (see
+          // adminEmployee.controller.js) — never populated here for a
+          // delegated session, since they're never sent back on submit
+          // either (salary/Aadhaar/UPI are owner-only to change).
+          aadhaarNumber: this.isAdminScope ? formatAadhaar(emp.aadhaarNumber ?? '') : '',
+          upiId: this.isAdminScope ? (emp.upiId ?? '') : '',
+          salaryMonthly: this.isAdminScope ? emp.salaryMonthly : null,
+          paidLeavesPerMonth: this.isAdminScope ? emp.paidLeavesPerMonth : null,
         });
 
         // Deep-linked from the Salary page's "Add UPI ID" prompt.
@@ -238,7 +254,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
     }
 
     const aadhaarDigits = f.aadhaarNumber.replace(/-/g, '');
-    if (aadhaarDigits && aadhaarDigits.length !== 12) {
+    if (this.isAdminScope && aadhaarDigits && aadhaarDigits.length !== 12) {
       this.formError.set('Aadhaar number must be 12 digits.');
       return;
     }
@@ -270,10 +286,13 @@ export class SuperadminEmployeeFormComponent implements OnInit {
           department: f.department,
           phone: phoneToSend,
           location: f.location,
-          aadhaarNumber: aadhaarDigits,
-          upiId: f.upiId,
-          salaryMonthly: f.salaryMonthly ?? 0,
-          paidLeavesPerMonth: f.paidLeavesPerMonth ?? 0,
+          // Owner-only fields — never sent outside admin scope, matching
+          // what the form doesn't even render for a delegated session (see
+          // the template) and what the backend enforces regardless.
+          aadhaarNumber: this.isAdminScope ? aadhaarDigits : undefined,
+          upiId: this.isAdminScope ? f.upiId : undefined,
+          salaryMonthly: this.isAdminScope ? (f.salaryMonthly ?? 0) : undefined,
+          paidLeavesPerMonth: this.isAdminScope ? (f.paidLeavesPerMonth ?? 0) : undefined,
         });
         this.router.navigate(['/superadmin/employees']);
       } else {

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { AdminEmployeeService } from '../../../core/services/admin-employee.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
 
@@ -43,6 +44,7 @@ export class SuperadminEmployeesComponent implements OnInit {
   // enforces this too, see adminEmployees.routes.js — this is purely about
   // not showing controls that would just 403 anyway).
   readonly isAdminScope = inject(API_SCOPE) === 'admin';
+  private readonly authService = inject(AuthService);
 
   constructor(
     private employeeService: AdminEmployeeService,
@@ -103,6 +105,14 @@ export class SuperadminEmployeesComponent implements OnInit {
     this.router.navigate(['/superadmin/employees', emp.id, 'edit']);
   }
 
+  // A Supervisor/Manager is themselves an Employee document — this hides the
+  // Edit button on their own row so they don't hit a dead-end 403 after
+  // filling out the form (see superadmin-employee-form.component.ts for the
+  // actual enforcement). Never restricted for a true admin.
+  isOwnRow(emp: AdminEmployee): boolean {
+    return !this.isAdminScope && emp.id === this.authService.user()?.id;
+  }
+
   async resetPassword(emp: AdminEmployee): Promise<void> {
     this.resettingId.set(emp.id);
     try {
@@ -120,6 +130,12 @@ export class SuperadminEmployeesComponent implements OnInit {
 
   dismissBanner(): void {
     this.credentialBanner.set(null);
+  }
+
+  // null means the server withheld it (a delegated Supervisor/Manager, not
+  // the true owner) — see adminEmployee.controller.js's sanitize().
+  salaryDisplay(emp: AdminEmployee): string {
+    return emp.salaryMonthly === null ? 'Hidden' : `₹${emp.salaryMonthly.toLocaleString('en-IN')}`;
   }
 
   // Same route serves both a true Admin and a delegated Supervisor/Manager

@@ -71,7 +71,7 @@
                 <td>{{ emp.role?.name || '—' }}</td>
                 <td>{{ emp.department || '—' }}</td>
                 <td class="font-mono">{{ emp.email }}</td>
-                <td class="font-mono">₹{{ emp.salaryMonthly | number }}</td>
+                <td class="font-mono">{{ salaryDisplay(emp) }}</td>
                 <td>{{ emp.paidLeavesPerMonth }}</td>
                 <td>
                   <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
@@ -82,7 +82,9 @@
                   <a class="btn btn-ghost btn-sm" [routerLink]="attendanceHistoryPath(emp.id)">See Attendance History</a>
                 </td>
                 <td class="row-actions">
-                  <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                  @if (!isOwnRow(emp)) {
+                    <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                  }
                   @if (isAdminScope) {
                     <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
                       {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
@@ -121,12 +123,14 @@
                 <div class="ec-row"><span class="ec-label">Role</span><span>{{ emp.role?.name || '—' }}</span></div>
                 <div class="ec-row"><span class="ec-label">Department</span><span>{{ emp.department || '—' }}</span></div>
                 <div class="ec-row"><span class="ec-label">Email</span><span class="font-mono">{{ emp.email }}</span></div>
-                <div class="ec-row"><span class="ec-label">Salary</span><span class="font-mono">₹{{ emp.salaryMonthly | number }}</span></div>
+                <div class="ec-row"><span class="ec-label">Salary</span><span class="font-mono">{{ salaryDisplay(emp) }}</span></div>
                 <div class="ec-row"><span class="ec-label">Leaves/mo</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
               </div>
               <div class="ec-actions" (click)="$event.stopPropagation()">
                 <a class="btn btn-ghost btn-sm" [routerLink]="attendanceHistoryPath(emp.id)">Attendance History</a>
-                <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                @if (!isOwnRow(emp)) {
+                  <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                }
                 @if (isAdminScope) {
                   <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
                     {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
