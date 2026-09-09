@@ -176,4 +176,4 @@ Updated as features ship:
 
 ## Author
 
-**Abhinav Verma**
+[Abhinav Verma](https://in.linkedin.com/in/abhinavverma2)
