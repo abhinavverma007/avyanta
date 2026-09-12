@@ -2,6 +2,7 @@ const Reimbursement = require('../models/Reimbursement');
 const { sanitize } = require('./reimbursement.controller');
 const { recordAudit } = require('../utils/audit');
 const { rejectSelfReview } = require('../utils/reviewGuard');
+const { notifyEmployee } = require('../utils/notify');
 
 function monthRange(year, month) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -61,6 +62,14 @@ exports.review = (status) => async (req, res) => {
     resourceType: 'Reimbursement',
     resourceId: claim._id,
     summary: `${status === 'approved' ? 'Approved' : 'Rejected'} ${claim.employee?.name}'s ${claim.category} claim of ₹${claim.amount}`,
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyEmployee(claim.employee._id, {
+    type: status === 'approved' ? 'reimbursement.approved' : 'reimbursement.rejected',
+    title: `Your ${claim.category} claim of ₹${claim.amount} was ${status}`,
+    body: claim.reviewNote || '',
+    link: '/requests',
   });
 
   res.json({ claim: withEmployee(claim) });

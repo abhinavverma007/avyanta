@@ -2,6 +2,7 @@ const Leave = require('../models/Leave');
 const { sanitize } = require('./leave.controller');
 const { recordAudit } = require('../utils/audit');
 const { rejectSelfReview } = require('../utils/reviewGuard');
+const { notifyEmployee } = require('../utils/notify');
 
 function monthRange(year, month) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -61,6 +62,14 @@ exports.review = (status) => async (req, res) => {
     resourceType: 'Leave',
     resourceId: leave._id,
     summary: `${status === 'approved' ? 'Approved' : 'Rejected'} ${leave.employee?.name}'s leave for ${leave.date}`,
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyEmployee(leave.employee._id, {
+    type: status === 'approved' ? 'leave.approved' : 'leave.rejected',
+    title: `Your leave for ${leave.date} was ${status}`,
+    body: leave.reviewNote || '',
+    link: '/requests',
   });
 
   res.json({ leave: withEmployee(leave) });

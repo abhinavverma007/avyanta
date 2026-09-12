@@ -5,6 +5,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../core/services/auth.service';
 import { MANAGEABLE_PERMISSIONS } from '../../core/guards/superadmin-area.guard';
 import { ICONS } from '../icons';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 interface NavItem {
   path: string;
@@ -20,7 +21,7 @@ interface NavItem {
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive, NotificationBellComponent],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })

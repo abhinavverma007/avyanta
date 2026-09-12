@@ -18,6 +18,8 @@ const adminSalaryAdvanceRoutes = require('./adminSalaryAdvance.routes');
 const adminRoleRoutes = require('./adminRole.routes');
 const adminAuditLogRoutes = require('./adminAuditLog.routes');
 const salarySelfRoutes = require('./salary.self.routes');
+const notificationsRoutes = require('./notifications.routes');
+const adminNotificationsRoutes = require('./adminNotifications.routes');
 const pushRoutes = require('./push.routes');
 
 const router = express.Router();
@@ -59,6 +61,7 @@ router.use('/tasks', tasksRoutes);
 router.use('/regularizations', regularizationRoutes);
 router.use('/advances', salaryAdvanceRoutes);
 router.use('/salary', salarySelfRoutes);
+router.use('/notifications', notificationsRoutes);
 router.use('/push', pushRoutes);
 
 // Superadmin-only — never mounted under /team/*, no permission can grant
@@ -67,6 +70,7 @@ router.use('/push', pushRoutes);
 router.use('/admin/auth', adminAuthRoutes);
 router.use('/admin/roles', adminRoleRoutes);
 router.use('/admin/audit-logs', adminAuditLogRoutes);
+router.use('/admin/notifications', adminNotificationsRoutes);
 
 // Dual-mounted — each of these routers is internally gated by
 // requirePermission(key) (or, for adminEmployeesRoutes, a per-route mix of

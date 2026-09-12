@@ -2,6 +2,7 @@ const Leave = require('../models/Leave');
 const Attendance = require('../models/Attendance');
 const { istNow } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
+const { notifyReviewers } = require('../utils/notify');
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -150,6 +151,16 @@ exports.create = async (req, res) => {
     resourceId: results[0]?._id,
     summary: `${req.employee.name} applied for leave on ${uniqueDates.length} day(s): ${uniqueDates.join(', ')}`,
     metadata: { dates: uniqueDates, reason: trimmedReason },
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyReviewers({
+    permissionKey: 'approvalsLeave',
+    excludeEmployeeId: req.employee._id,
+    type: 'leave.submitted',
+    title: `${req.employee.name} requested leave`,
+    body: `${uniqueDates.length} day(s): ${uniqueDates.join(', ')}`,
+    link: `/superadmin/approvals?section=leave&employee=${req.employee.employeeId}`,
   });
 
   res.status(201).json({ leaves: results.map(sanitize) });

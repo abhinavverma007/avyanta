@@ -66,13 +66,18 @@
 .sa-nav a:hover { background: var(--surface-raised); color: var(--text); }
 .sa-nav a.active { background: var(--accent-2); color: #fff; }
 
-/* ─── Account dropdown ("mat-menu"-style) ───────────────────────── */
-.sa-account {
-  position: relative;
+/* ─── Header actions (notifications + account dropdown) ─────────── */
+.sa-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-left: auto;
 
   @media (min-width: 769px) { margin-left: 0; }
 }
+
+/* ─── Account dropdown ("mat-menu"-style) ───────────────────────── */
+.sa-account { position: relative; }
 
 .avatar-btn {
   display: flex;
