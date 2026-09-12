@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminLeaveService } from '../../../core/services/admin-leave.service';
 import { AdminLeave, LeaveStatus } from '../../../core/models/leave.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
 import { AuthService } from '../../../core/services/auth.service';
+import { ApprovalListController, SortOption } from '../../../shared/utils/approval-list-controller';
 
 type Tab = LeaveStatus | 'all';
 
@@ -17,12 +18,29 @@ type Tab = LeaveStatus | 'all';
 })
 export class SuperadminLeaveApprovalsComponent implements OnInit {
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
+  readonly sortOptions: SortOption[] = [
+    { key: 'date', label: 'Date' },
+    { key: 'employee', label: 'Employee' },
+  ];
 
   leaves = signal<AdminLeave[]>([]);
   loading = signal(true);
   activeTab = signal<Tab>('pending');
   actingId = signal<string | null>(null);
   reviewNotes = signal<Record<string, string>>({});
+
+  bulkNote = signal('');
+  bulkActing = signal(false);
+
+  readonly list = new ApprovalListController<AdminLeave>(
+    this.leaves,
+    leave => `${leave.employee?.name ?? ''} ${leave.employee?.employeeId ?? ''} ${leave.employee?.department ?? ''} ${leave.reason}`,
+    (leave, key) => (key === 'employee' ? leave.employee?.name ?? '' : leave.date),
+    'date',
+  );
+
+  // Count of leave-day requests currently in view (post search, pre pagination).
+  readonly viewCount = computed(() => this.list.filtered().length);
 
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
   private readonly authService = inject(AuthService);
@@ -43,6 +61,7 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+    this.list.clearSelection();
     this.load();
   }
 
@@ -81,6 +100,31 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
       this.load();
     } finally {
       this.actingId.set(null);
+    }
+  }
+
+  async bulkApprove(): Promise<void> {
+    await this.bulkReview('approved');
+  }
+
+  async bulkReject(): Promise<void> {
+    await this.bulkReview('rejected');
+  }
+
+  private async bulkReview(status: 'approved' | 'rejected'): Promise<void> {
+    const ids = [...this.list.selectedIds()];
+    if (ids.length === 0) return;
+    this.bulkActing.set(true);
+    try {
+      const note = this.bulkNote();
+      await Promise.allSettled(
+        ids.map(id => (status === 'approved' ? this.leaveService.approve(id, note) : this.leaveService.reject(id, note))),
+      );
+      this.bulkNote.set('');
+      this.list.clearSelection();
+      this.load();
+    } finally {
+      this.bulkActing.set(false);
     }
   }
 

@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminSalaryAdvanceService } from '../../../core/services/admin-salary-advance.service';
 import { AdminSalaryAdvance, AdvanceStatus } from '../../../core/models/salary-advance.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
 import { AuthService } from '../../../core/services/auth.service';
+import { ApprovalListController, SortOption } from '../../../shared/utils/approval-list-controller';
 
 type Tab = AdvanceStatus | 'all';
 
@@ -17,12 +18,35 @@ type Tab = AdvanceStatus | 'all';
 })
 export class SuperadminAdvanceApprovalsComponent implements OnInit {
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
+  readonly sortOptions: SortOption[] = [
+    { key: 'date', label: 'Date' },
+    { key: 'amount', label: 'Amount' },
+    { key: 'employee', label: 'Employee' },
+  ];
 
   requests = signal<AdminSalaryAdvance[]>([]);
   loading = signal(true);
   activeTab = signal<Tab>('pending');
   actingId = signal<string | null>(null);
   reviewNotes = signal<Record<string, string>>({});
+
+  bulkNote = signal('');
+  bulkActing = signal(false);
+
+  readonly list = new ApprovalListController<AdminSalaryAdvance>(
+    this.requests,
+    request => `${request.employee?.name ?? ''} ${request.employee?.employeeId ?? ''} ${request.employee?.department ?? ''} ${request.reason}`,
+    (request, key) => {
+      if (key === 'employee') return request.employee?.name ?? '';
+      if (key === 'amount') return request.amount;
+      return request.requestedDate;
+    },
+    'date',
+  );
+
+  // Count + amount total for the advance requests currently in view (post search, pre pagination).
+  readonly viewCount = computed(() => this.list.filtered().length);
+  readonly viewTotal = computed(() => this.list.filtered().reduce((sum, r) => sum + r.amount, 0));
 
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
   private readonly authService = inject(AuthService);
@@ -43,6 +67,7 @@ export class SuperadminAdvanceApprovalsComponent implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+    this.list.clearSelection();
     this.load();
   }
 
@@ -81,6 +106,31 @@ export class SuperadminAdvanceApprovalsComponent implements OnInit {
       this.load();
     } finally {
       this.actingId.set(null);
+    }
+  }
+
+  async bulkApprove(): Promise<void> {
+    await this.bulkReview('approved');
+  }
+
+  async bulkReject(): Promise<void> {
+    await this.bulkReview('rejected');
+  }
+
+  private async bulkReview(status: 'approved' | 'rejected'): Promise<void> {
+    const ids = [...this.list.selectedIds()];
+    if (ids.length === 0) return;
+    this.bulkActing.set(true);
+    try {
+      const note = this.bulkNote();
+      await Promise.allSettled(
+        ids.map(id => (status === 'approved' ? this.advanceService.approve(id, note) : this.advanceService.reject(id, note))),
+      );
+      this.bulkNote.set('');
+      this.list.clearSelection();
+      this.load();
+    } finally {
+      this.bulkActing.set(false);
     }
   }
 

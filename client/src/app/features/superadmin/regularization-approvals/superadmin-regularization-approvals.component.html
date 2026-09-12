@@ -7,15 +7,63 @@
     }
   </div>
 
+  <div class="toolbar">
+    <input
+      class="form-control search-input"
+      placeholder="Search by employee, department or reason…"
+      [value]="list.search()"
+      (input)="list.setSearch($any($event.target).value)"
+    />
+    <div class="sort-group">
+      <span class="sort-label">Sort:</span>
+      @for (opt of sortOptions; track opt.key) {
+        <button class="sort-btn" [class.active]="list.sortKey() === opt.key" (click)="list.setSort(opt.key)">
+          {{ opt.label }} @if (list.sortKey() === opt.key) { {{ list.sortDir() === 'asc' ? '↑' : '↓' }} }
+        </button>
+      }
+    </div>
+    <span class="summary-note">{{ viewCount() }} request{{ viewCount() === 1 ? '' : 's' }} in view</span>
+  </div>
+
+  @if (activeTab() === 'pending' && list.pendingIdsInView().length > 0) {
+    <div class="bulk-bar">
+      <label class="select-all">
+        <input type="checkbox" [checked]="list.allPendingSelected()" (change)="list.toggleSelectAllPending()" />
+        Select all pending
+      </label>
+      @if (list.selectedCount() > 0) {
+        <span class="bulk-count">{{ list.selectedCount() }} selected</span>
+        <input
+          class="form-control note-input bulk-note-input"
+          placeholder="Optional note for all selected…"
+          [value]="bulkNote()"
+          (input)="bulkNote.set($any($event.target).value)"
+        />
+        <div class="bulk-buttons">
+          <button class="btn btn-success btn-sm" [disabled]="bulkActing()" (click)="bulkApprove()">Approve selected</button>
+          <button class="btn btn-ghost btn-sm" [disabled]="bulkActing()" (click)="bulkReject()">Reject selected</button>
+        </div>
+      }
+    </div>
+  }
+
   <div class="card table-card">
     @if (loading()) {
       <p class="empty-note">Loading attendance fix requests…</p>
-    } @else if (requests().length === 0) {
+    } @else if (list.paged().length === 0) {
       <p class="empty-note">No attendance fix requests in this view.</p>
     } @else {
       <div class="claims-list">
-        @for (request of requests(); track request.id) {
+        @for (request of list.paged(); track request.id) {
           <div class="claim-row">
+            @if (activeTab() === 'pending' && request.status === 'pending' && !isOwnRequest(request.employee?.id)) {
+              <input
+                type="checkbox"
+                class="row-checkbox"
+                [checked]="list.isSelected(request.id)"
+                (change)="list.toggleSelect(request.id)"
+              />
+            }
             <div class="claim-main">
               <div class="claim-top">
                 <span class="claim-amount font-mono">{{ formatDate(request.date) }}</span>
@@ -52,6 +100,14 @@
           </div>
         }
       </div>
+
+      @if (list.totalPages() > 1) {
+        <div class="pagination">
+          <button class="btn btn-ghost btn-sm" [disabled]="list.currentPage() === 1" (click)="list.goToPage(list.currentPage() - 1)">Prev</button>
+          <span class="page-info">Page {{ list.currentPage() }} of {{ list.totalPages() }}</span>
+          <button class="btn btn-ghost btn-sm" [disabled]="list.currentPage() === list.totalPages()" (click)="list.goToPage(list.currentPage() + 1)">Next</button>
+        </div>
+      }
     }
   </div>
 </div>

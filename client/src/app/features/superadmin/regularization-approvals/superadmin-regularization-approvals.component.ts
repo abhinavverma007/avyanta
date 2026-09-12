@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminAttendanceRegularizationService } from '../../../core/services/admin-attendance-regularization.service';
 import { AdminRegularization, RegularizationStatus } from '../../../core/models/attendance-regularization.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
 import { AuthService } from '../../../core/services/auth.service';
+import { ApprovalListController, SortOption } from '../../../shared/utils/approval-list-controller';
 
 type Tab = RegularizationStatus | 'all';
 
@@ -17,12 +18,30 @@ type Tab = RegularizationStatus | 'all';
 })
 export class SuperadminRegularizationApprovalsComponent implements OnInit {
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
+  readonly sortOptions: SortOption[] = [
+    { key: 'date', label: 'Date' },
+    { key: 'employee', label: 'Employee' },
+  ];
 
   requests = signal<AdminRegularization[]>([]);
   loading = signal(true);
   activeTab = signal<Tab>('pending');
   actingId = signal<string | null>(null);
   reviewNotes = signal<Record<string, string>>({});
+
+  bulkNote = signal('');
+  bulkActing = signal(false);
+
+  readonly list = new ApprovalListController<AdminRegularization>(
+    this.requests,
+    request =>
+      `${request.employee?.name ?? ''} ${request.employee?.employeeId ?? ''} ${request.employee?.department ?? ''} ${request.reason}`,
+    (request, key) => (key === 'employee' ? request.employee?.name ?? '' : request.date),
+    'date',
+  );
+
+  // Count of attendance fix requests currently in view (post search, pre pagination).
+  readonly viewCount = computed(() => this.list.filtered().length);
 
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
   private readonly authService = inject(AuthService);
@@ -43,6 +62,7 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+    this.list.clearSelection();
     this.load();
   }
 
@@ -81,6 +101,33 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
       this.load();
     } finally {
       this.actingId.set(null);
+    }
+  }
+
+  async bulkApprove(): Promise<void> {
+    await this.bulkReview('approved');
+  }
+
+  async bulkReject(): Promise<void> {
+    await this.bulkReview('rejected');
+  }
+
+  private async bulkReview(status: 'approved' | 'rejected'): Promise<void> {
+    const ids = [...this.list.selectedIds()];
+    if (ids.length === 0) return;
+    this.bulkActing.set(true);
+    try {
+      const note = this.bulkNote();
+      await Promise.allSettled(
+        ids.map(id =>
+          status === 'approved' ? this.regularizationService.approve(id, note) : this.regularizationService.reject(id, note),
+        ),
+      );
+      this.bulkNote.set('');
+      this.list.clearSelection();
+      this.load();
+    } finally {
+      this.bulkActing.set(false);
     }
   }
 
