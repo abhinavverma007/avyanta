@@ -12,7 +12,9 @@ const PERMISSION_CATALOG = [
   { key: 'approvalsLeave', label: 'Approve Leave', description: 'Review and approve/reject leave requests.' },
   { key: 'approvalsRegularization', label: 'Approve Attendance Fixes', description: 'Review and approve/reject attendance correction requests.' },
   { key: 'approvalsAdvance', label: 'Approve Salary Advances', description: 'Review and approve/reject requests for a cash advance against next month\'s salary.' },
-  { key: 'salary', label: 'View & Pay Salary', description: 'View payable salary and record payouts.' },
+  // Deliberately NOT delegable — compensation data (base salary, payable,
+  // UPI) stays owner-only, same as the Employee create/reset-password/role
+  // fields never in this list. See adminSalary.routes.js.
 ];
 
 const PERMISSION_KEYS = PERMISSION_CATALOG.map((p) => p.key);

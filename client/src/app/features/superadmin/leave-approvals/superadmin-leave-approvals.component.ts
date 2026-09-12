@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminLeaveService } from '../../../core/services/admin-leave.service';
@@ -17,6 +17,11 @@ type Tab = LeaveStatus | 'all';
   styleUrl: './superadmin-leave-approvals.component.scss',
 })
 export class SuperadminLeaveApprovalsComponent implements OnInit {
+  // Set by the Approvals shell when deep-linked from elsewhere (e.g. the
+  // Salary page's "pending leave" badge) — pre-fills the search box with
+  // the employee's code so their requests are isolated immediately.
+  @Input() initialSearch = '';
+
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
   readonly sortOptions: SortOption[] = [
     { key: 'date', label: 'Date' },
@@ -56,6 +61,9 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.initialSearch) {
+      this.list.setSearch(this.initialSearch);
+    }
     this.load();
   }
 

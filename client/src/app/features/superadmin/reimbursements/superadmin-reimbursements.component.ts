@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminReimbursementService } from '../../../core/services/admin-reimbursement.service';
@@ -17,6 +17,11 @@ type Tab = ReimbursementStatus | 'all';
   styleUrl: './superadmin-reimbursements.component.scss',
 })
 export class SuperadminReimbursementsComponent implements OnInit {
+  // Set by the Approvals shell when deep-linked from elsewhere — pre-fills
+  // the search box with an employee's code so their claims are isolated
+  // immediately.
+  @Input() initialSearch = '';
+
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
   readonly sortOptions: SortOption[] = [
     { key: 'date', label: 'Date' },
@@ -62,6 +67,9 @@ export class SuperadminReimbursementsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.initialSearch) {
+      this.list.setSearch(this.initialSearch);
+    }
     this.load();
   }
 

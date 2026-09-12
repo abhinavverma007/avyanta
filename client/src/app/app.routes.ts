@@ -193,8 +193,8 @@ export const routes: Routes = [
       },
       {
         path: 'salary',
-        providers: [apiScopeProvider, SalaryService],
-        canActivate: [superadminAreaGuard('salary')],
+        providers: [SalaryService],
+        canActivate: [adminAuthGuard],
         loadComponent: () =>
           import('./features/superadmin/salary/superadmin-salary.component').then(m => m.SuperadminSalaryComponent),
       },

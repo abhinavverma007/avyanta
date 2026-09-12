@@ -56,16 +56,16 @@
       <div class="claims-list">
         @for (request of list.paged(); track request.id) {
           <div class="claim-row">
-            @if (activeTab() === 'pending' && request.status === 'pending' && !isOwnRequest(request.employee?.id)) {
-              <input
-                type="checkbox"
-                class="row-checkbox"
-                [checked]="list.isSelected(request.id)"
-                (change)="list.toggleSelect(request.id)"
-              />
-            }
             <div class="claim-main">
               <div class="claim-top">
+                @if (activeTab() === 'pending' && request.status === 'pending' && !isOwnRequest(request.employee?.id)) {
+                  <input
+                    type="checkbox"
+                    class="row-checkbox"
+                    [checked]="list.isSelected(request.id)"
+                    (change)="list.toggleSelect(request.id)"
+                  />
+                }
                 <span class="claim-amount font-mono">₹{{ request.amount | number }}</span>
                 <span class="badge" [class]="request.status === 'approved' ? 'badge-success' : request.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
                   {{ request.status | titlecase }}

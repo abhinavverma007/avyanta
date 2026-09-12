@@ -169,6 +169,22 @@
   cursor: default;
 }
 
+.pay-confirm-bar {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  cursor: default;
+}
+.pay-confirm-question { font-size: 0.8125rem; font-weight: 600; margin-bottom: var(--space-3); }
+.pay-confirm-actions {
+  display: flex;
+  gap: 8px;
+
+  .btn { flex: 1; }
+}
+
 .upi-missing-row {
   display: flex;
   align-items: center;
