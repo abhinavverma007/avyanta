@@ -81,6 +81,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/profile/profile.component').then(m => m.ProfileComponent),
       },
+      {
+        path: 'salary',
+        loadComponent: () =>
+          import('./features/salary/salary.component').then(m => m.SalaryComponent),
+      },
     ],
   },
   // ── Management console — the true owner and a delegated Supervisor/

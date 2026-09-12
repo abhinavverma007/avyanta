@@ -141,11 +141,10 @@ exports.summary = async (req, res) => {
   });
 };
 
-exports.detail = async (req, res) => {
-  const { year, month } = resolveYearMonth(req);
-  const employee = await Employee.findById(req.params.employeeId);
-  if (!employee) return res.status(404).json({ message: 'Employee not found.' });
-
+// Shared by the owner's detail() below and the employee-facing mySalary()
+// in salary.self.routes.js — same breakdown either way, the only
+// difference is which employee document the caller is allowed to pass in.
+async function buildDetail(employee, year, month) {
   const salary = await computeSalary(employee, year, month);
   const { start, end } = monthRange(year, month);
   const reimbursements = await Reimbursement.find({
@@ -156,7 +155,7 @@ exports.detail = async (req, res) => {
   const payouts = await Payout.find({ employee: employee._id, year, month }).sort({ paidAt: 1 });
   const { advances } = await advanceDeductionFor(employee._id, year, month);
 
-  res.json({
+  return {
     ...salary,
     reimbursements: reimbursements.map((r) => ({
       id: r._id.toString(),
@@ -177,7 +176,24 @@ exports.detail = async (req, res) => {
       paidAt: p.paidAt,
       note: p.note,
     })),
-  });
+  };
+}
+
+exports.detail = async (req, res) => {
+  const { year, month } = resolveYearMonth(req);
+  const employee = await Employee.findById(req.params.employeeId);
+  if (!employee) return res.status(404).json({ message: 'Employee not found.' });
+
+  res.json(await buildDetail(employee, year, month));
+};
+
+// Employee-facing, read-only — never takes an :employeeId param, so it's
+// structurally impossible to fetch anyone else's breakdown (see
+// salary.self.routes.js). No payout-recording endpoint exists on this path;
+// that stays owner-only.
+exports.mySalary = async (req, res) => {
+  const { year, month } = resolveYearMonth(req);
+  res.json(await buildDetail(req.employee, year, month));
 };
 
 // Records that the owner paid `amount` to this employee for this month —

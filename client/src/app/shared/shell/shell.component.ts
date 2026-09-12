@@ -25,12 +25,17 @@ interface NavItem {
   styleUrl: './shell.component.scss',
 })
 export class ShellComponent {
+  // Profile lives in the account dropdown (see the template) instead of
+  // here, as "My Profile" — same reasoning as Roles/Audit Log living in the
+  // superadmin shell's dropdown rather than its main nav: an
+  // account/settings-shaped destination, not day-to-day work, so it
+  // shouldn't compete for space in the footer tab bar.
   readonly navItems: NavItem[] = [
     { path: '/dashboard', label: 'Home', icon: 'home' },
     { path: '/attendance', label: 'Attendance', icon: 'calendar' },
     { path: '/requests', label: 'Requests', icon: 'receipt' },
     { path: '/tasks', label: 'Tasks', icon: 'tasks' },
-    { path: '/profile', label: 'Profile', icon: 'user' },
+    { path: '/salary', label: 'Salary', icon: 'wallet' },
   ];
 
   profileOpen = signal(false);

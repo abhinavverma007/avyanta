@@ -59,6 +59,17 @@ export class AuthService {
     localStorage.setItem(USER_KEY, JSON.stringify(res.user));
   }
 
+  // Self-service — no password/token involved, so unlike changePassword this
+  // just refreshes the cached user in place rather than re-establishing the
+  // session.
+  async updateUpi(upiId: string): Promise<void> {
+    const res = await firstValueFrom(
+      this.http.patch<{ user: User }>(`${environment.apiUrl}/auth/upi`, { upiId }),
+    );
+    this._state.update(s => ({ ...s, user: res.user }));
+    localStorage.setItem(USER_KEY, JSON.stringify(res.user));
+  }
+
   // Clears the session without navigating anywhere — used when the *other*
   // login (Admin, at this same unified /login page) succeeds, so a leftover
   // Employee session from earlier testing can't linger (see

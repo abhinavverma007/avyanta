@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const Employee = require('../models/Employee');
 const { signToken } = require('../utils/jwt');
-const { isValidEmail } = require('../utils/validators');
+const { isValidEmail, isValidUpiId } = require('../utils/validators');
 const { recordAudit } = require('../utils/audit');
 
 function sanitize(emp) {
@@ -18,6 +18,10 @@ function sanitize(emp) {
     employeeId: emp.employeeId,
     joinDate: emp.joinDate,
     location: emp.location,
+    // Unmasked — this is always the employee's own record here, never
+    // someone else's (contrast adminEmployee.controller.js's sanitize,
+    // which masks/withholds this for anyone who isn't the true Admin).
+    upiId: emp.upiId,
   };
 }
 
@@ -78,6 +82,36 @@ exports.changePassword = async (req, res) => {
 
   const token = signToken({ sub: employee._id.toString(), role: 'employee', tokenVersion: employee.tokenVersion });
   res.json({ token, user: sanitize(employee) });
+};
+
+// Self-service — an employee can change only their OWN UPI ID, and it
+// takes effect immediately (product decision: simpler/faster than an
+// approval flow, same trust level as changing their own password above).
+// Deliberately a separate, narrower path from adminEmployee.controller.js's
+// update(): that one still requires a true Admin token for anyone editing
+// UPI on someone else's record — a delegated Supervisor/Manager still can't
+// touch another employee's UPI there, this only ever touches req.employee's
+// own document.
+exports.updateUpi = async (req, res) => {
+  const upiId = String(req.body.upiId || '').trim();
+  if (!isValidUpiId(upiId)) {
+    return res.status(400).json({ message: 'Enter a valid UPI ID, e.g. name@okhdfcbank.' });
+  }
+
+  const employee = req.employee;
+  const previousUpiId = employee.upiId;
+  employee.upiId = upiId;
+  await employee.save();
+
+  await recordAudit(req, {
+    action: 'employee.upi_self_update',
+    resourceType: 'Employee',
+    resourceId: employee._id,
+    summary: `${employee.name} updated their own UPI ID`,
+    metadata: { previousUpiId, upiId },
+  });
+
+  res.json({ user: sanitize(employee) });
 };
 
 exports.sanitize = sanitize;
