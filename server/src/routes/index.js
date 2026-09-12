@@ -17,6 +17,7 @@ const adminRegularizationRoutes = require('./adminAttendanceRegularization.route
 const adminSalaryAdvanceRoutes = require('./adminSalaryAdvance.routes');
 const adminRoleRoutes = require('./adminRole.routes');
 const adminAuditLogRoutes = require('./adminAuditLog.routes');
+const salarySelfRoutes = require('./salary.self.routes');
 const pushRoutes = require('./push.routes');
 
 const router = express.Router();
@@ -57,6 +58,7 @@ router.use('/reimbursements', reimbursementRoutes);
 router.use('/tasks', tasksRoutes);
 router.use('/regularizations', regularizationRoutes);
 router.use('/advances', salaryAdvanceRoutes);
+router.use('/salary', salarySelfRoutes);
 router.use('/push', pushRoutes);
 
 // Superadmin-only — never mounted under /team/*, no permission can grant

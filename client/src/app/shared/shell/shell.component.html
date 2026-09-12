@@ -29,9 +29,15 @@
                still let the click's original target fire its own action too. -->
           <div class="menu-backdrop" (click)="profileOpen.set(false)"></div>
           <div class="profile-dropdown fade-in" role="menu">
-            <a class="profile-info" routerLink="/profile" (click)="profileOpen.set(false)" role="menuitem">
+            <div class="profile-info" role="none">
               <div class="profile-name">{{ user()?.name }}</div>
               <div class="profile-role">{{ user()?.designation }}</div>
+            </div>
+
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" routerLink="/profile" (click)="profileOpen.set(false)" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              My Profile
             </a>
             @if (hasManagementAccess()) {
               <div class="dropdown-divider"></div>

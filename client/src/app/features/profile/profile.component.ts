@@ -24,6 +24,12 @@ export class ProfileComponent {
   error = signal('');
   success = signal('');
 
+  showUpiForm = signal(false);
+  upiId = signal('');
+  upiSubmitting = signal(false);
+  upiError = signal('');
+  upiSuccess = signal('');
+
   constructor(private auth: AuthService) {}
 
   getInitials(name: string): string {
@@ -76,5 +82,43 @@ export class ProfileComponent {
 
   logout(): void {
     this.auth.logout();
+  }
+
+  toggleUpiForm(): void {
+    this.showUpiForm.update(v => !v);
+    this.upiError.set('');
+    this.upiSuccess.set('');
+    this.upiId.set(this.user()?.upiId ?? '');
+  }
+
+  private closeUpiForm(): void {
+    this.showUpiForm.set(false);
+    this.upiError.set('');
+    this.upiSuccess.set('');
+  }
+
+  async submitUpi(): Promise<void> {
+    this.upiError.set('');
+    this.upiSuccess.set('');
+
+    const value = this.upiId().trim();
+    if (!value) {
+      this.upiError.set('UPI ID is required.');
+      return;
+    }
+
+    this.upiSubmitting.set(true);
+    try {
+      await this.auth.updateUpi(value);
+      this.upiSuccess.set('UPI ID updated.');
+      // Brief pause so the success message is actually seen before the form
+      // collapses back — the updated value is now visible in Personal
+      // Details above, so there's nothing left to do here once it's read.
+      setTimeout(() => this.closeUpiForm(), 1200);
+    } catch (err: any) {
+      this.upiError.set(err?.error?.message ?? 'Could not update UPI ID. Please try again.');
+    } finally {
+      this.upiSubmitting.set(false);
+    }
   }
 }

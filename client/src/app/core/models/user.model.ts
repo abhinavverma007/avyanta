@@ -18,6 +18,7 @@ export interface User {
   employeeId: string;
   joinDate: string;
   location: string;
+  upiId: string;
 }
 
 export interface AuthState {

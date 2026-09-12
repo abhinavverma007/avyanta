@@ -1,0 +1,83 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My Salary</h1>
+      <p class="page-sub">Earned till date this month — present and approved-leave days are paid, absent and not-yet-approved leave days are withheld, plus approved reimbursements, minus advances taken last month</p>
+    </div>
+
+    <div class="month-picker">
+      <select class="form-control" [ngModel]="month()" (ngModelChange)="setMonth($event)">
+        @for (m of months; track m; let i = $index) {
+          <option [ngValue]="i + 1">{{ m }}</option>
+        }
+      </select>
+      <select class="form-control" [ngModel]="year()" (ngModelChange)="setYear($event)">
+        @for (y of years; track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="card card-padded">
+    @if (loading()) {
+      <p class="empty-note">Calculating…</p>
+    } @else {
+      @if (detail(); as d) {
+      <div class="summary-strip">
+        <div class="summary-stat">
+          <span class="ss-value font-mono">₹{{ d.payable | number }}</span>
+          <span class="ss-label">Earned So Far (Till Today)</span>
+        </div>
+        <div class="summary-stat">
+          <span class="ss-value font-mono" [class.text-danger]="d.balance > 0" [class.text-success]="d.balance <= 0">₹{{ d.balance | number }}</span>
+          <span class="ss-label">{{ d.balance > 0 ? 'Not Yet Paid Out' : 'Paid Up To Date' }}</span>
+        </div>
+      </div>
+
+      <p class="detail-line">Daily rate: <strong class="font-mono">₹{{ d.perDaySalary | number }}</strong> (₹{{ d.baseSalary | number }} ÷ {{ d.calendarDaysInMonth }} days in month)</p>
+      <p class="detail-line">{{ d.elapsedDays }} of {{ d.calendarDaysInMonth }} days elapsed this month — earned till date: <strong class="font-mono">₹{{ d.earnedTillDate | number }}</strong></p>
+      @if (d.pendingLeaveDays > 0) {
+        <p class="detail-line text-warning">{{ d.pendingLeaveDays }} leave day(s) still awaiting the owner's approval — withheld until reviewed.</p>
+      }
+
+      @if (d.reimbursements.length > 0) {
+        <p class="detail-line">Approved reimbursements:</p>
+        <ul class="reimb-list">
+          @for (r of d.reimbursements; track r.id) {
+            <li>{{ r.date }} — {{ r.category | titlecase }} — ₹{{ r.amount | number }} @if (r.description) { — {{ r.description }} }</li>
+          }
+        </ul>
+      } @else {
+        <p class="detail-line text-muted">No approved reimbursements this month.</p>
+      }
+
+      @if (d.advances.length > 0) {
+        <p class="detail-line">Advances deducted (taken last month, approved):</p>
+        <ul class="reimb-list">
+          @for (a of d.advances; track a.id) {
+            <li>{{ a.requestedDate }} — ₹{{ a.amount | number }} — {{ a.reason }}</li>
+          }
+        </ul>
+      }
+
+      <div class="payout-section">
+        @if (d.balance > 0) {
+          <p class="detail-line">Not yet paid out: <strong class="font-mono text-danger">₹{{ d.balance | number }}</strong> ({{ d.paidAmount > 0 ? ('₹' + (d.paidAmount | number) + ' already paid') : 'nothing paid yet' }})</p>
+        } @else if (d.paidAmount > 0) {
+          <p class="detail-line text-success">✓ Paid up to date — ₹{{ d.paidAmount | number }} recorded{{ d.lastPaidAt ? ' (last on ' + (d.lastPaidAt | date:'d MMM y') + ')' : '' }}.</p>
+        }
+
+        @if (d.payouts.length > 0) {
+          <p class="detail-line">Payment history:</p>
+          <ul class="reimb-list">
+            @for (p of d.payouts; track p.id) {
+              <li>{{ p.paidAt | date:'d MMM y, h:mm a' }} — ₹{{ p.amount | number }} @if (p.note) { — {{ p.note }} }</li>
+            }
+          </ul>
+        }
+      </div>
+      }
+    }
+  </div>
+</div>
