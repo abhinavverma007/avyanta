@@ -56,16 +56,16 @@
       <div class="claims-list">
         @for (leave of list.paged(); track leave.id) {
           <div class="claim-row">
-            @if (activeTab() === 'pending' && leave.status === 'pending' && !isOwnRequest(leave.employee?.id)) {
-              <input
-                type="checkbox"
-                class="row-checkbox"
-                [checked]="list.isSelected(leave.id)"
-                (change)="list.toggleSelect(leave.id)"
-              />
-            }
             <div class="claim-main">
               <div class="claim-top">
+                @if (activeTab() === 'pending' && leave.status === 'pending' && !isOwnRequest(leave.employee?.id)) {
+                  <input
+                    type="checkbox"
+                    class="row-checkbox"
+                    [checked]="list.isSelected(leave.id)"
+                    (change)="list.toggleSelect(leave.id)"
+                  />
+                }
                 <span class="claim-amount font-mono">{{ formatDate(leave.date) }}</span>
                 <span class="badge" [class]="leave.status === 'approved' ? 'badge-success' : leave.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
                   {{ leave.status | titlecase }}

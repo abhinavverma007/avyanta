@@ -89,8 +89,10 @@ router.use('/admin/regularizations', adminRegularizationRoutes);
 router.use('/team/regularizations', adminRegularizationRoutes);
 router.use('/admin/advances', adminSalaryAdvanceRoutes);
 router.use('/team/advances', adminSalaryAdvanceRoutes);
+// Admin-only — adminSalaryRoutes is internally gated by strict adminAuth
+// (not requirePermission), so it's never mounted under /team/*, same as
+// role management and the audit log above.
 router.use('/admin/salary', adminSalaryRoutes);
-router.use('/team/salary', adminSalaryRoutes);
 router.use('/admin/attendance', adminAttendanceRoutes);
 router.use('/team/attendance', adminAttendanceRoutes);
 

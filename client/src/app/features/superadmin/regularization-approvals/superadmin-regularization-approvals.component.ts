@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminAttendanceRegularizationService } from '../../../core/services/admin-attendance-regularization.service';
@@ -17,6 +17,11 @@ type Tab = RegularizationStatus | 'all';
   styleUrl: './superadmin-regularization-approvals.component.scss',
 })
 export class SuperadminRegularizationApprovalsComponent implements OnInit {
+  // Set by the Approvals shell when deep-linked from elsewhere — pre-fills
+  // the search box with an employee's code so their requests are isolated
+  // immediately.
+  @Input() initialSearch = '';
+
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
   readonly sortOptions: SortOption[] = [
     { key: 'date', label: 'Date' },
@@ -57,6 +62,9 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.initialSearch) {
+      this.list.setSearch(this.initialSearch);
+    }
     this.load();
   }
 

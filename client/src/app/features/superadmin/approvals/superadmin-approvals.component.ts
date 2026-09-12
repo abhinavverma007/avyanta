@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { SuperadminReimbursementsComponent } from '../reimbursements/superadmin-reimbursements.component';
 import { SuperadminLeaveApprovalsComponent } from '../leave-approvals/superadmin-leave-approvals.component';
 import { SuperadminRegularizationApprovalsComponent } from '../regularization-approvals/superadmin-regularization-approvals.component';
@@ -34,6 +35,7 @@ const SECTION_LABEL: Record<Section, string> = {
 export class SuperadminApprovalsComponent {
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
 
   // A true Admin sees all four tabs; a permission-delegated employee only
   // sees the ones their Role actually grants (anyPermissionGuard already
@@ -49,7 +51,18 @@ export class SuperadminApprovalsComponent {
   // per-tab @if for permission-gating.
   readonly sectionOptions = this.visibleSections.map(s => ({ value: s, label: SECTION_LABEL[s] }));
 
-  section = signal<Section>(this.visibleSections[0] ?? 'reimbursements');
+  // Deep-linked from elsewhere (e.g. the Salary page's "pending leave"
+  // badge) via ?section=leave&employee=<code> — jumps straight to that tab
+  // with the employee's code pre-filled in its own search box, instead of
+  // making the owner manually switch tabs and retype the name/code.
+  private readonly requestedSection = this.route.snapshot.queryParamMap.get('section') as Section | null;
+  readonly employeeFilter = this.route.snapshot.queryParamMap.get('employee') ?? '';
+
+  section = signal<Section>(
+    this.requestedSection && this.visibleSections.includes(this.requestedSection)
+      ? this.requestedSection
+      : (this.visibleSections[0] ?? 'reimbursements'),
+  );
 
   setSection(section: Section): void {
     this.section.set(section);

@@ -34,12 +34,12 @@
   </select>
 
   @if (section() === 'reimbursements') {
-    <app-superadmin-reimbursements />
+    <app-superadmin-reimbursements [initialSearch]="employeeFilter" />
   } @else if (section() === 'leave') {
-    <app-superadmin-leave-approvals />
+    <app-superadmin-leave-approvals [initialSearch]="employeeFilter" />
   } @else if (section() === 'regularization') {
-    <app-superadmin-regularization-approvals />
+    <app-superadmin-regularization-approvals [initialSearch]="employeeFilter" />
   } @else {
-    <app-superadmin-advance-approvals />
+    <app-superadmin-advance-approvals [initialSearch]="employeeFilter" />
   }
 </div>

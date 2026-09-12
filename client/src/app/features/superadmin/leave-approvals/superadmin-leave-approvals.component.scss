@@ -55,7 +55,7 @@
 .bulk-note-input { flex: 1 1 200px; min-width: 0; }
 .bulk-buttons { display: flex; gap: 8px; }
 
-.row-checkbox { margin-top: 4px; flex-shrink: 0; }
+.row-checkbox { flex-shrink: 0; }
 
 .pagination {
   display: flex;

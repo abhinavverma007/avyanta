@@ -11,6 +11,15 @@ import { SalaryDetail, SalaryRow } from '../../../core/models/reimbursement.mode
 // cramped — higher than this app's usual page size of 3.
 const CARD_PAGE_SIZE = 10;
 
+// 'upi' — the owner tapped "Pay Now" and is confirming whether the UPI
+// payment sheet actually went through. 'direct' — the owner tapped
+// "Mark as Paid" straight away (paid by cash/bank transfer/no UPI ID on
+// file) and is confirming that action instead. Both funnel into the same
+// recordPayout call (see confirmMarkPaid) — this just decides which
+// confirmation prompt is showing, so an accidental tap never silently
+// records a payout with no "are you sure" step either way.
+type PayConfirmMode = 'none' | 'upi' | 'direct';
+
 @Component({
   selector: 'app-superadmin-salary',
   standalone: true,
@@ -39,6 +48,13 @@ export class SuperadminSalaryComponent implements OnInit {
 
   payingId = signal<string | null>(null);
   payoutError = signal('');
+
+  // Set the moment either "Pay Now" or "Mark as Paid" is tapped, cleared
+  // once the owner answers the resulting confirmation. Only one card can be
+  // expanded at a time (see toggleDetail), so a single flag — not one keyed
+  // by employeeId — is enough to track "is the currently-expanded row
+  // mid-confirmation".
+  payConfirmMode = signal<PayConfirmMode>('none');
 
   readonly filteredRows = computed(() => {
     const q = this.search().trim().toLowerCase();
@@ -95,6 +111,7 @@ export class SuperadminSalaryComponent implements OnInit {
     this.loading.set(true);
     this.expandedId.set(null);
     this.detail.set(null);
+    this.payConfirmMode.set('none');
     this.salaryService.summary(this.year(), this.month()).then(res => {
       this.rows.set(res.rows);
       this.search.set('');
@@ -104,6 +121,8 @@ export class SuperadminSalaryComponent implements OnInit {
   }
 
   toggleDetail(row: SalaryRow): void {
+    this.payConfirmMode.set('none');
+    this.payoutError.set('');
     if (this.expandedId() === row.employeeId) {
       this.expandedId.set(null);
       this.detail.set(null);
@@ -155,5 +174,38 @@ export class SuperadminSalaryComponent implements OnInit {
     } finally {
       this.payingId.set(null);
     }
+  }
+
+  // "Pay Now" only opens the UPI app's payment sheet — there's no callback
+  // telling this page whether the owner actually completed it there, so
+  // without this, recording the payout was a second, easy-to-forget step
+  // done from memory after switching apps and back. Chaining a "did it go
+  // through?" prompt right onto the same tap closes that gap without
+  // needing any payment-gateway integration.
+  initiatePayment(): void {
+    this.payoutError.set('');
+    this.payConfirmMode.set('upi');
+  }
+
+  // "Mark as Paid" records a real payout with no undo — used for cash/bank
+  // transfers, or whenever there's no UPI ID on file, so it's just as easy
+  // to fat-finger as Pay Now and had no confirmation at all before this.
+  // Same "are you sure" pattern as the UPI flow, just phrased for a payment
+  // that already happened outside the app rather than one about to start.
+  initiateDirectMarkPaid(): void {
+    this.payoutError.set('');
+    this.payConfirmMode.set('direct');
+  }
+
+  async confirmMarkPaid(row: SalaryRow): Promise<void> {
+    await this.markAsPaid(row);
+    if (!this.payoutError()) {
+      this.payConfirmMode.set('none');
+    }
+  }
+
+  cancelPayConfirm(): void {
+    this.payConfirmMode.set('none');
+    this.payoutError.set('');
   }
 }
