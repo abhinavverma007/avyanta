@@ -2,6 +2,7 @@ const Task = require('../models/Task');
 const Employee = require('../models/Employee');
 const { recordAudit } = require('../utils/audit');
 const { sendPushToEmployees } = require('../utils/pushNotify');
+const { notifyEmployees } = require('../utils/notify');
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const STATUSES = ['pending', 'in_progress', 'completed'];
@@ -108,6 +109,12 @@ exports.create = async (req, res) => {
     title: 'New task assigned',
     body: `${String(title).trim()}${uniqueDates.length > 1 ? ` — ${uniqueDates.length} day(s)` : ` on ${uniqueDates[0]}`}`,
     url: '/tasks',
+  });
+  notifyEmployees(employeeIds, {
+    type: 'task.assigned',
+    title: 'New task assigned',
+    body: `${String(title).trim()}${uniqueDates.length > 1 ? ` — ${uniqueDates.length} day(s)` : ` on ${uniqueDates[0]}`}`,
+    link: '/tasks',
   });
 
   res.status(201).json({ tasks: populated.map(sanitize) });
@@ -246,6 +253,12 @@ exports.update = async (req, res) => {
       title: 'New task assigned',
       body: `${populated.title} on ${populated.date}`,
       url: '/tasks',
+    });
+    notifyEmployees(newlyAddedEmployeeIds, {
+      type: 'task.assigned',
+      title: 'New task assigned',
+      body: `${populated.title} on ${populated.date}`,
+      link: '/tasks',
     });
   }
 

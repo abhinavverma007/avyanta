@@ -43,8 +43,15 @@
   @media (max-width: 480px) { display: none; }
 }
 
-/* ─── Profile ─────────────────────────────────────────────────────── */
-.profile-area { position: relative; margin-left: auto; }
+/* ─── Header actions (notifications + profile) ──────────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.profile-area { position: relative; }
 
 .avatar-btn {
   display: flex;

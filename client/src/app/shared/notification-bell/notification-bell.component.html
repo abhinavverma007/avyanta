@@ -1,0 +1,38 @@
+<button class="bell-btn" (click)="togglePanel()" [attr.aria-expanded]="panelOpen()" aria-haspopup="true" aria-label="Notifications">
+  <span class="bell-icon" [innerHTML]="getIconSvg()"></span>
+  @if (unreadCount() > 0) {
+    <span class="unread-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+  }
+</button>
+
+@if (panelOpen()) {
+  <!-- Blocks clicks from reaching anything behind the panel, same pattern
+       as the account dropdowns in both shells. -->
+  <div class="menu-backdrop" (click)="closePanel()"></div>
+  <div class="notif-panel fade-in" role="menu">
+    <div class="notif-panel-header">
+      <span class="notif-panel-title">Notifications</span>
+      @if (unreadCount() > 0) {
+        <button class="mark-all-btn" (click)="markAllRead()">Mark all read</button>
+      }
+    </div>
+
+    @if (notifications().length === 0) {
+      <p class="notif-empty">No notifications yet.</p>
+    } @else {
+      <div class="notif-list">
+        @for (n of notifications(); track n.id) {
+          <button class="notif-item" [class.unread]="!n.read" (click)="openNotification(n)" role="menuitem">
+            <div class="notif-item-main">
+              <div class="notif-title">{{ n.title }}</div>
+              @if (n.body) {
+                <div class="notif-body">{{ n.body }}</div>
+              }
+            </div>
+            <div class="notif-time">{{ timeAgo(n.createdAt) }}</div>
+          </button>
+        }
+      </div>
+    }
+  </div>
+}

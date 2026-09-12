@@ -11,7 +11,10 @@
       }
     </nav>
 
-    <div class="sa-account">
+    <div class="sa-header-actions">
+      <app-notification-bell variant="light" />
+
+      <div class="sa-account">
       <button class="avatar-btn" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen()" aria-haspopup="true">
         <div class="avatar">{{ getInitials(identityName() ?? 'A') }}</div>
         <svg class="chevron" [class.open]="menuOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -128,6 +131,7 @@
           </button>
         </div>
       }
+      </div>
     </div>
   </header>
 

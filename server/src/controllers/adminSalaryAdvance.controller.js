@@ -2,6 +2,7 @@ const SalaryAdvance = require('../models/SalaryAdvance');
 const { sanitize } = require('./salaryAdvance.controller');
 const { recordAudit } = require('../utils/audit');
 const { rejectSelfReview } = require('../utils/reviewGuard');
+const { notifyEmployee } = require('../utils/notify');
 
 function withEmployee(advance) {
   return {
@@ -50,6 +51,14 @@ exports.review = (status) => async (req, res) => {
     summary: status === 'approved'
       ? `Approved ${advance.employee?.name}'s advance of ₹${advance.amount} (to be deducted from next month's salary)`
       : `Rejected ${advance.employee?.name}'s advance request of ₹${advance.amount}`,
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyEmployee(advance.employee._id, {
+    type: status === 'approved' ? 'advance.approved' : 'advance.rejected',
+    title: `Your advance request of ₹${advance.amount} was ${status}`,
+    body: advance.reviewNote || '',
+    link: '/requests',
   });
 
   res.json({ request: withEmployee(advance) });

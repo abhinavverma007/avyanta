@@ -1,0 +1,122 @@
+:host {
+  position: relative;
+  display: block;
+}
+
+.bell-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+}
+.bell-btn:hover { background: var(--surface-raised); }
+
+// The plain employee shell's header is a dark gradient bar (see
+// shell.component.scss's .top-bar) where the light-mode default colors
+// above would be invisible — the superadmin shell's header is a plain
+// light var(--surface) bar instead, where they're fine as-is.
+:host(.dark) .bell-btn { color: rgba(255,255,255,0.85); }
+:host(.dark) .bell-btn:hover { background: rgba(255,255,255,0.1); }
+
+.bell-icon { display: flex; align-items: center; }
+
+.unread-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+// Same invisible full-viewport click-catcher pattern as both shells'
+// account dropdowns.
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: transparent;
+}
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(360px, 90vw);
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 200;
+
+  // `right: 0` anchors to this bell button, not the viewport — and the
+  // bell sits well left of the header's actual right edge (the avatar
+  // button is further right still), so on a narrow phone the panel's width
+  // pushed its left edge past the screen entirely. Below 480px, anchor to
+  // the viewport instead so it can never overflow regardless of where the
+  // bell happens to sit.
+  @media (max-width: 480px) {
+    position: fixed;
+    top: 64px;
+    left: auto;
+    right: 12px;
+    width: min(260px, calc(100vw - 24px));
+    max-height: calc(100dvh - 80px);
+  }
+}
+
+.notif-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.notif-panel-title { font-family: var(--font-display); font-weight: 700; font-size: 0.9375rem; color: var(--text); }
+.mark-all-btn { font-size: 0.75rem; font-weight: 600; color: var(--accent-2); }
+.mark-all-btn:hover { text-decoration: underline; }
+
+.notif-empty { padding: var(--space-6); text-align: center; color: var(--text-muted); font-size: 0.8125rem; }
+
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  width: 100%;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--surface-raised); }
+.notif-item.unread { background: rgba(27,79,216,0.05); }
+.notif-item.unread:hover { background: rgba(27,79,216,0.08); }
+
+.notif-item-main { min-width: 0; flex: 1; }
+.notif-title { font-size: 0.8125rem; font-weight: 600; color: var(--text); }
+.notif-body { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.notif-time { font-size: 0.6875rem; color: var(--text-light); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }

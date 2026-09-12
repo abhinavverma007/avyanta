@@ -3,6 +3,7 @@ const Attendance = require('../models/Attendance');
 const Leave = require('../models/Leave');
 const { istDateString } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
+const { notifyReviewers } = require('../utils/notify');
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -99,6 +100,16 @@ exports.create = async (req, res) => {
     resourceType: 'AttendanceRegularization',
     resourceId: record._id,
     summary: `${req.employee.name} requested an attendance fix for ${date}`,
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyReviewers({
+    permissionKey: 'approvalsRegularization',
+    excludeEmployeeId: req.employee._id,
+    type: 'regularization.submitted',
+    title: `${req.employee.name} requested an attendance fix`,
+    body: `${date} — ${String(reason).trim()}`,
+    link: `/superadmin/approvals?section=regularization&employee=${req.employee.employeeId}`,
   });
 
   res.status(201).json({ request: sanitize(record) });

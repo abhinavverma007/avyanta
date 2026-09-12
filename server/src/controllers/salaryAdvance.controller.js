@@ -1,6 +1,7 @@
 const SalaryAdvance = require('../models/SalaryAdvance');
 const { istDateString } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
+const { notifyReviewers } = require('../utils/notify');
 
 function sanitize(a) {
   return {
@@ -49,6 +50,16 @@ exports.create = async (req, res) => {
     resourceType: 'SalaryAdvance',
     resourceId: advance._id,
     summary: `${req.employee.name} requested an advance of ₹${advance.amount}`,
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyReviewers({
+    permissionKey: 'approvalsAdvance',
+    excludeEmployeeId: req.employee._id,
+    type: 'advance.submitted',
+    title: `${req.employee.name} requested a salary advance`,
+    body: `₹${advance.amount} — ${advance.reason}`,
+    link: `/superadmin/approvals?section=advance&employee=${req.employee.employeeId}`,
   });
 
   res.status(201).json({ request: sanitize(advance) });

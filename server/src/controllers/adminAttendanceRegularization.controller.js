@@ -4,6 +4,7 @@ const { sanitize } = require('./attendanceRegularization.controller');
 const { istToDate } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
 const { rejectSelfReview } = require('../utils/reviewGuard');
+const { notifyEmployee } = require('../utils/notify');
 
 function shiftStartMinutes(shiftStart) {
   const [h, m] = (shiftStart || '09:30').split(':').map(Number);
@@ -66,6 +67,14 @@ exports.review = (status) => async (req, res) => {
     resourceType: 'AttendanceRegularization',
     resourceId: request._id,
     summary: `${status === 'approved' ? 'Approved' : 'Rejected'} ${request.employee?.name}'s regularization for ${request.date}`,
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyEmployee(request.employee._id, {
+    type: status === 'approved' ? 'regularization.approved' : 'regularization.rejected',
+    title: `Your attendance fix for ${request.date} was ${status}`,
+    body: request.reviewNote || '',
+    link: '/requests',
   });
 
   res.json({ request: withEmployee(request) });

@@ -7,6 +7,7 @@ import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PermissionKey } from '../../core/models/role.model';
 import { ICONS } from '../icons';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 interface NavItem {
   path: string;
@@ -25,7 +26,7 @@ interface NavItem {
 @Component({
   selector: 'app-superadmin-shell',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterModule, RouterLink, RouterLinkActive, NotificationBellComponent],
   templateUrl: './superadmin-shell.component.html',
   styleUrl: './superadmin-shell.component.scss',
 })

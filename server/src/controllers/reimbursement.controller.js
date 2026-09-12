@@ -1,5 +1,6 @@
 const Reimbursement = require('../models/Reimbursement');
 const { recordAudit } = require('../utils/audit');
+const { notifyReviewers } = require('../utils/notify');
 
 const CATEGORIES = ['petrol', 'food', 'travel', 'other'];
 
@@ -45,6 +46,16 @@ exports.create = async (req, res) => {
     resourceType: 'Reimbursement',
     resourceId: claim._id,
     summary: `${req.employee.name} submitted a ${category} claim of ₹${claim.amount}`,
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyReviewers({
+    permissionKey: 'approvalsReimbursements',
+    excludeEmployeeId: req.employee._id,
+    type: 'reimbursement.submitted',
+    title: `${req.employee.name} submitted a ${category} claim`,
+    body: `₹${claim.amount} — ${claim.description}`,
+    link: `/superadmin/approvals?section=reimbursements&employee=${req.employee.employeeId}`,
   });
 
   res.status(201).json({ claim: sanitize(claim) });

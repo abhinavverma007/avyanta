@@ -5,6 +5,7 @@ const Payout = require('../models/Payout');
 const { computeMonthlyAttendance } = require('../utils/attendanceStats');
 const { istNow, istDateString } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
+const { notifyEmployee } = require('../utils/notify');
 
 const round2 = (n) => Math.round(n * 100) / 100;
 
@@ -238,6 +239,14 @@ exports.recordPayout = async (req, res) => {
     resourceId: payout._id,
     summary: `Recorded ₹${amt} payout to ${employee.name} for ${m}/${y}`,
     metadata: { employeeId: employee._id, year: y, month: m, amount: amt },
+  });
+
+  // Not awaited — see the note in notify.js.
+  notifyEmployee(employee._id, {
+    type: 'salary.paid',
+    title: `₹${amt} recorded as paid`,
+    body: note || `For ${m}/${y}`,
+    link: '/salary',
   });
 
   const updated = await computeSalary(employee, y, m);

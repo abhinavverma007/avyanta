@@ -3,6 +3,7 @@ const Employee = require('../models/Employee');
 const { signToken } = require('../utils/jwt');
 const { isValidEmail, isValidUpiId } = require('../utils/validators');
 const { recordAudit } = require('../utils/audit');
+const { notifyAdmin } = require('../utils/notify');
 
 function sanitize(emp) {
   return {
@@ -109,6 +110,16 @@ exports.updateUpi = async (req, res) => {
     resourceId: employee._id,
     summary: `${employee.name} updated their own UPI ID`,
     metadata: { previousUpiId, upiId },
+  });
+
+  // Not awaited — see the note in notify.js. Owner-only visibility on
+  // purpose (see updateUpi's own comment above) — no permission fans this
+  // out to anyone else.
+  notifyAdmin({
+    type: 'employee.upi_self_update',
+    title: `${employee.name} updated their own UPI ID`,
+    body: previousUpiId ? `Changed from ${previousUpiId} to ${upiId}` : `Set to ${upiId}`,
+    link: `/superadmin/employees/${employee._id}/edit?focus=upi`,
   });
 
   res.json({ user: sanitize(employee) });

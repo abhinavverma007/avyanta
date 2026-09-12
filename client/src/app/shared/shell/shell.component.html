@@ -14,8 +14,11 @@
         {{ user()?.location }}
       </div>
 
-      <!-- Profile -->
-      <div class="profile-area">
+      <div class="header-actions">
+        <app-notification-bell variant="dark" />
+
+        <!-- Profile -->
+        <div class="profile-area">
         <button class="avatar-btn" (click)="toggleProfile()" [attr.aria-expanded]="profileOpen()" aria-haspopup="true">
           <div class="avatar">{{ getInitials(user()?.name ?? 'U') }}</div>
           <svg class="chevron" [class.open]="profileOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -54,6 +57,7 @@
             </button>
           </div>
         }
+        </div>
       </div>
 
     </div>
