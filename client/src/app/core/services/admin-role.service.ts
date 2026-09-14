@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateRolePayload, Role, UpdateRolePayload } from '../models/role.model';
+import { CreateRolePayload, Role, RoleEmployee, UpdateRolePayload } from '../models/role.model';
 
 // Deliberately always /admin/roles — role management has no /team scope
 // equivalent, it's one of the hard invariants that's never delegable.
@@ -26,5 +26,9 @@ export class AdminRoleService {
 
   remove(id: string): Promise<void> {
     return firstValueFrom(this.http.delete<void>(`${this.base}/${id}`));
+  }
+
+  employees(roleId: string): Promise<RoleEmployee[]> {
+    return firstValueFrom(this.http.get<{ employees: RoleEmployee[] }>(`${this.base}/${roleId}/employees`)).then(r => r.employees);
   }
 }

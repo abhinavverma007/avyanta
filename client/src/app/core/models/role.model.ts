@@ -7,7 +7,8 @@ export type PermissionKey =
   | 'approvalsReimbursements'
   | 'approvalsLeave'
   | 'approvalsRegularization'
-  | 'approvalsAdvance';
+  | 'approvalsAdvance'
+  | 'salary';
 
 export const PERMISSION_CATALOG: { key: PermissionKey; label: string; description: string }[] = [
   { key: 'employees', label: 'Manage Employees', description: 'View and edit employee details (not create, reset password, activate/deactivate, or change roles — those stay owner-only).' },
@@ -16,10 +17,7 @@ export const PERMISSION_CATALOG: { key: PermissionKey; label: string; descriptio
   { key: 'approvalsLeave', label: 'Approve Leave', description: 'Review and approve/reject leave requests.' },
   { key: 'approvalsRegularization', label: 'Approve Attendance Fixes', description: 'Review and approve/reject attendance correction requests.' },
   { key: 'approvalsAdvance', label: 'Approve Salary Advances', description: 'Review and approve/reject requests for a cash advance against next month\'s salary.' },
-  // Salary is deliberately NOT delegable — compensation data (base salary,
-  // payable, UPI) stays owner-only, same as the Employee create/reset-
-  // password/role fields never in this list. See adminSalary.routes.js and
-  // superadmin-shell.component.ts (Salary nav item has no `permission`).
+  { key: 'salary', label: 'View & Pay Salary', description: 'View payable salary and record payouts.' },
 ];
 
 export type RolePermissions = Record<PermissionKey, boolean>;
@@ -41,4 +39,12 @@ export interface CreateRolePayload {
 export interface UpdateRolePayload {
   name?: string;
   permissions?: Partial<RolePermissions>;
+}
+
+export interface RoleEmployee {
+  id: string;
+  name: string;
+  employeeId: string;
+  department: string;
+  isActive: boolean;
 }

@@ -13,5 +13,6 @@ router.get('/', asyncHandler(ctrl.list));
 router.post('/', asyncHandler(ctrl.create));
 router.patch('/:id', asyncHandler(ctrl.update));
 router.delete('/:id', asyncHandler(ctrl.remove));
+router.get('/:id/employees', asyncHandler(ctrl.employees));
 
 module.exports = router;

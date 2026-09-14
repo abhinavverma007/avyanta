@@ -16,11 +16,8 @@ interface NavItem {
   // Which permission gates this tab for a delegated Supervisor/Manager
   // session — irrelevant for a true Admin session, which always sees every
   // tab (see navItems below and superadmin-area.guard.ts, which enforces
-  // the same rule server-route-side). Omitted entirely means owner-only —
-  // never shown to a delegated session no matter what its Role grants (e.g.
-  // Salary, since compensation data always stays owner-only; see
-  // adminSalary.routes.js).
-  permission?: PermissionKey;
+  // the same rule server-route-side).
+  permission: PermissionKey;
 }
 
 @Component({
@@ -40,7 +37,7 @@ export class SuperadminShellComponent {
     { path: '/superadmin/employees', label: 'Employees', icon: 'users', permission: 'employees' },
     { path: '/superadmin/tasks', label: 'Tasks', icon: 'tasks', permission: 'tasks' },
     { path: '/superadmin/approvals', label: 'Approvals', icon: 'approvals', permission: 'approvalsReimbursements' },
-    { path: '/superadmin/salary', label: 'Salary', icon: 'wallet' },
+    { path: '/superadmin/salary', label: 'Salary', icon: 'wallet', permission: 'salary' },
   ];
 
   menuOpen = signal(false);
@@ -85,9 +82,6 @@ export class SuperadminShellComponent {
     if (this.isTrueAdmin()) return this.allNavItems;
     const permissions = this.auth.user()?.role?.permissions;
     return this.allNavItems.filter(n => {
-      // No `permission` at all means owner-only (e.g. Salary) — never shown
-      // to a delegated session regardless of what its Role grants.
-      if (!n.permission) return false;
       // The Approvals tab covers four sub-permissions — shown if any one of
       // them is granted; the page itself only renders the tabs actually
       // permitted (see anySuperadminAreaGuard).

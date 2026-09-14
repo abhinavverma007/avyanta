@@ -114,6 +114,27 @@ exports.update = async (req, res) => {
   res.json({ role: { ...sanitize(role), employeeCount } });
 };
 
+// Answers "who actually has this role?" — the Roles page only shows a
+// count today, with no way to see the names behind it.
+exports.employees = async (req, res) => {
+  const role = await Role.findById(req.params.id);
+  if (!role) return res.status(404).json({ message: 'Role not found.' });
+
+  const employees = await Employee.find({ role: role._id })
+    .sort({ name: 1 })
+    .select('name employeeId department isActive');
+
+  res.json({
+    employees: employees.map((e) => ({
+      id: e._id.toString(),
+      name: e.name,
+      employeeId: e.employeeId,
+      department: e.department,
+      isActive: e.isActive,
+    })),
+  });
+};
+
 exports.remove = async (req, res) => {
   const role = await Role.findById(req.params.id);
   if (!role) return res.status(404).json({ message: 'Role not found.' });

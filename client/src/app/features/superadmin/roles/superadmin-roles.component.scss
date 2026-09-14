@@ -10,15 +10,6 @@
 .page-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 700; color: var(--text); }
 .page-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; max-width: 560px; }
 
-.form-panel { margin-bottom: var(--space-5); }
-.form-panel-title { font-family: var(--font-display); margin-bottom: var(--space-4); }
-.form-hint { font-size: 0.8125rem; color: var(--text-muted); margin-top: 6px; }
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-}
 .error-msg {
   font-size: 0.8125rem;
   color: var(--danger);
@@ -56,6 +47,35 @@
 .role-detail {
   padding: 0 var(--space-5) var(--space-5);
 }
+
+.role-employees {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+.role-employees-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+.empty-note-sm { font-size: 0.8125rem; color: var(--text-muted); }
+.role-employees-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.role-employees-list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.role-employees-list a { font-size: 0.875rem; font-weight: 600; color: var(--accent-2); }
+.role-employees-list a:hover { text-decoration: underline; }
+.role-employee-meta { font-size: 0.75rem; color: var(--text-muted); }
 
 .permission-grid {
   display: flex;

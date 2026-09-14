@@ -17,7 +17,7 @@ import { PermissionKey } from '../models/role.model';
 // checks this; every Employee session always lands on the plain dashboard.
 export const MANAGEABLE_PERMISSIONS: PermissionKey[] = [
   'employees', 'tasks', 'approvalsReimbursements', 'approvalsLeave',
-  'approvalsRegularization', 'approvalsAdvance',
+  'approvalsRegularization', 'approvalsAdvance', 'salary',
 ];
 
 function hasAnyManageablePermission(auth: AuthService): boolean {

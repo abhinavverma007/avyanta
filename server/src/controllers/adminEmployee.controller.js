@@ -56,7 +56,16 @@ function maskUpi(value) {
   return `••••${value.slice(at)}`;
 }
 
-function sanitize(emp, { mask = false } = {}) {
+// Whether the caller can see this feature's compensation/payout data on the
+// Employees page — the true owner, or any role granted the 'salary'
+// permission (which already gets full, unmasked access to the same numbers
+// via the dedicated Salary page — see salary.controller.js; there's no
+// point pretending it's hidden here too for the same person).
+function canViewSalaryFor(req) {
+  return !!(req.admin || req.employee?.role?.permissions?.salary);
+}
+
+function sanitize(emp, { mask = false, canViewSalary = false } = {}) {
   return {
     id: emp._id.toString(),
     name: emp.name,
@@ -68,16 +77,21 @@ function sanitize(emp, { mask = false } = {}) {
     employeeId: emp.employeeId,
     joinDate: emp.joinDate,
     location: emp.location,
+    // Aadhaar is identity/KYC data, unrelated to salary/payouts — stays
+    // owner-only regardless of any permission.
     aadhaarNumber: mask ? maskAadhaar(emp.aadhaarNumber) : emp.aadhaarNumber,
-    upiId: mask ? maskUpi(emp.upiId) : emp.upiId,
+    // UPI and base salary ARE salary/payout data (UPI is what "Pay Now" on
+    // the Salary page sends money to) — a 'salary'-permission holder gets
+    // it unmasked here too, not just on the dedicated Salary page.
+    upiId: canViewSalary ? emp.upiId : maskUpi(emp.upiId),
     shiftStart: emp.shiftStart || '09:30',
     // Withheld entirely (not just masked — there's no natural partial
     // reveal for a pay figure the way there is for Aadhaar/UPI) for anyone
-    // short of the true owner, same as Aadhaar/UPI above.
+    // without admin or 'salary' access.
     // Explicit fallbacks, not just the schema default — list()/get() use
     // .lean() below (skips Mongoose hydration entirely), so a document
     // missing one of these fields would otherwise come back as undefined.
-    salaryMonthly: mask ? null : (emp.salaryMonthly ?? 0),
+    salaryMonthly: canViewSalary ? (emp.salaryMonthly ?? 0) : null,
     paidLeavesPerMonth: emp.paidLeavesPerMonth ?? 0,
     isActive: emp.isActive ?? true,
     createdAt: emp.createdAt,
@@ -105,8 +119,9 @@ exports.list = async (req, res) => {
     Employee.countDocuments(filter),
   ]);
 
+  const canViewSalary = canViewSalaryFor(req);
   res.json({
-    employees: employees.map((e) => sanitize(e, { mask: !req.admin })),
+    employees: employees.map((e) => sanitize(e, { mask: !req.admin, canViewSalary })),
     total,
     page,
     limit,
@@ -117,7 +132,7 @@ exports.list = async (req, res) => {
 exports.get = async (req, res) => {
   const employee = await Employee.findById(req.params.id).populate('role', 'name').lean();
   if (!employee) return res.status(404).json({ message: 'Employee not found.' });
-  res.json({ employee: sanitize(employee, { mask: !req.admin }) });
+  res.json({ employee: sanitize(employee, { mask: !req.admin, canViewSalary: canViewSalaryFor(req) }) });
 };
 
 // Live preview for the "Add Employee" form — shows what email would be
@@ -269,7 +284,7 @@ exports.update = async (req, res) => {
     });
   }
 
-  res.json({ employee: sanitize(employee, { mask: !req.admin }) });
+  res.json({ employee: sanitize(employee, { mask: !req.admin, canViewSalary: canViewSalaryFor(req) }) });
 };
 
 exports.resetPassword = async (req, res) => {
