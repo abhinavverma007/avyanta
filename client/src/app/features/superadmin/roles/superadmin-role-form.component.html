@@ -1,0 +1,28 @@
+<div class="page fade-in">
+  <button type="button" class="btn btn-ghost btn-sm back-btn" (click)="goBack()">← Back to Roles & Permissions</button>
+
+  <div class="page-header">
+    <h1 class="page-title">New Role</h1>
+    <p class="page-sub">Give it a name — you can enable or disable specific permissions for it right after creating it.</p>
+  </div>
+
+  <div class="card card-padded form-panel fade-in">
+    <div class="form-group">
+      <label class="form-label">Role Name</label>
+      <input
+        class="form-control"
+        placeholder="e.g. Site Supervisor"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+      />
+    </div>
+    <p class="form-hint">All permissions start enabled — you can disable specific ones for this role right after creating it.</p>
+    @if (error()) { <p class="error-msg">{{ error() }}</p> }
+    <div class="form-actions">
+      <button class="btn btn-ghost" (click)="goBack()">Cancel</button>
+      <button class="btn btn-blue" [disabled]="creating()" (click)="createRole()">
+        {{ creating() ? 'Creating…' : 'Create Role' }}
+      </button>
+    </div>
+  </div>
+</div>

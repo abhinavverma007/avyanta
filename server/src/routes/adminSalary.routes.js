@@ -1,15 +1,15 @@
 const express = require('express');
-const adminAuth = require('../middleware/adminAuth');
+const requirePermission = require('../middleware/requirePermission');
 const asyncHandler = require('../utils/asyncHandler');
 const ctrl = require('../controllers/salary.controller');
 
-// Mounted only at /admin/salary — never /team/*. Compensation data (base
-// salary, payable, UPI) stays owner-only, same as Role management and the
-// highest-risk Employee actions (see adminRole.routes.js, requirePermission.js).
-// Deliberately strict adminAuth, never requirePermission.
+// Mounted at both /admin/salary and /team/salary. A role granted the
+// 'salary' permission gets full, unmasked access — view every employee's
+// payable/base salary/UPI and record payouts — same as a true Admin, no
+// partial/hidden view. Product decision: this permission is all-or-nothing.
 const router = express.Router();
 
-router.use(adminAuth);
+router.use(requirePermission('salary'));
 router.get('/', asyncHandler(ctrl.summary));
 router.get('/:employeeId', asyncHandler(ctrl.detail));
 router.post('/:employeeId/pay', asyncHandler(ctrl.recordPayout));

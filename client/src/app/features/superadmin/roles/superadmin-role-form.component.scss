@@ -1,0 +1,21 @@
+.back-btn { margin-bottom: var(--space-3); padding-left: 4px; }
+
+.page-header { margin-bottom: var(--space-5); }
+.page-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 700; color: var(--text); }
+.page-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; max-width: 560px; }
+
+.form-hint { font-size: 0.8125rem; color: var(--text-muted); margin-top: 6px; }
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+.error-msg {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  padding: 8px 12px;
+  background: var(--danger-bg);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-3);
+}

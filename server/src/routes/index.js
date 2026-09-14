@@ -45,6 +45,28 @@ router.get('/maintenance/fix-employee-role', async (req, res) => {
   res.json({ message: 'Employee role permissions re-synced to all-false.', before, after: role.permissions.toObject() });
 });
 
+// TEMPORARY, no-auth, one-off maintenance route — ask Claude to remove this
+// once you've hit it in production. Flips 'salary' back to false on every
+// role: the permission was just re-added to the delegable catalog, and any
+// role that already existed picks up the schema default (true) on next
+// read/save — this forces every existing role back to false so the owner
+// opts each one in deliberately from Roles & Permissions, rather than every
+// role silently regaining full salary access the moment this deploys.
+router.get('/maintenance/reset-salary-permission', async (req, res) => {
+  const Role = require('../models/Role');
+
+  const roles = await Role.find();
+  const changed = [];
+  for (const role of roles) {
+    const before = !!role.permissions.salary;
+    role.permissions.salary = false;
+    await role.save();
+    changed.push({ id: role._id.toString(), name: role.name, wasTrue: before });
+  }
+
+  res.json({ message: `Reset 'salary' to false on ${changed.length} role(s).`, roles: changed });
+});
+
 // Public — the VAPID public key is meant to be handed to any client, same
 // as the concept of a public key implies; must be registered before the
 // authenticated /push router below since it shares that prefix.
@@ -95,10 +117,8 @@ router.use('/admin/regularizations', adminRegularizationRoutes);
 router.use('/team/regularizations', adminRegularizationRoutes);
 router.use('/admin/advances', adminSalaryAdvanceRoutes);
 router.use('/team/advances', adminSalaryAdvanceRoutes);
-// Admin-only — adminSalaryRoutes is internally gated by strict adminAuth
-// (not requirePermission), so it's never mounted under /team/*, same as
-// role management and the audit log above.
 router.use('/admin/salary', adminSalaryRoutes);
+router.use('/team/salary', adminSalaryRoutes);
 router.use('/admin/attendance', adminAttendanceRoutes);
 router.use('/team/attendance', adminAttendanceRoutes);
 

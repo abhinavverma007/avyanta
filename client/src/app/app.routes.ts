@@ -198,8 +198,8 @@ export const routes: Routes = [
       },
       {
         path: 'salary',
-        providers: [SalaryService],
-        canActivate: [adminAuthGuard],
+        providers: [apiScopeProvider, SalaryService],
+        canActivate: [superadminAreaGuard('salary')],
         loadComponent: () =>
           import('./features/superadmin/salary/superadmin-salary.component').then(m => m.SuperadminSalaryComponent),
       },
@@ -208,6 +208,12 @@ export const routes: Routes = [
         canActivate: [adminAuthGuard],
         loadComponent: () =>
           import('./features/superadmin/roles/superadmin-roles.component').then(m => m.SuperadminRolesComponent),
+      },
+      {
+        path: 'roles/new',
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/roles/superadmin-role-form.component').then(m => m.SuperadminRoleFormComponent),
       },
       {
         path: 'audit-log',

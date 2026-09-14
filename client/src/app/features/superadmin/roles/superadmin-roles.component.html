@@ -2,33 +2,10 @@
   <div class="page-header">
     <div class="page-header-row">
       <h1 class="page-title">Roles & Permissions</h1>
-      <button class="btn btn-blue" (click)="openCreateForm()">+ Add Role</button>
+      <a class="btn btn-blue" [routerLink]="['/superadmin/roles/new']">+ Add Role</a>
     </div>
     <p class="page-sub">Define what a Supervisor/Manager (or any custom role) can see and do — assign roles from the Add Employee form.</p>
   </div>
-
-  @if (showCreateForm()) {
-    <div class="card card-padded form-panel fade-in">
-      <h3 class="form-panel-title">New Role</h3>
-      <div class="form-group">
-        <label class="form-label">Role Name</label>
-        <input
-          class="form-control"
-          placeholder="e.g. Site Supervisor"
-          [value]="newRoleName()"
-          (input)="newRoleName.set($any($event.target).value)"
-        />
-      </div>
-      <p class="form-hint">All permissions start enabled — you can disable specific ones for this role right after creating it.</p>
-      @if (createError()) { <p class="error-msg">{{ createError() }}</p> }
-      <div class="form-actions">
-        <button class="btn btn-ghost" (click)="showCreateForm.set(false)">Cancel</button>
-        <button class="btn btn-blue" [disabled]="creating()" (click)="createRole()">
-          {{ creating() ? 'Creating…' : 'Create Role' }}
-        </button>
-      </div>
-    </div>
-  }
 
   @if (actionError()) { <p class="error-msg">{{ actionError() }}</p> }
 
@@ -60,6 +37,30 @@
 
             @if (expandedId() === role.id && draftPermissions(); as draft) {
               <div class="role-detail fade-in">
+                <div class="role-employees">
+                  <h4 class="role-employees-title">Employees with this role</h4>
+                  @if (roleEmployeesLoading()) {
+                    <p class="empty-note-sm">Loading…</p>
+                  } @else {
+                    @if (roleEmployees(); as employees) {
+                      @if (employees.length === 0) {
+                        <p class="empty-note-sm">No employees have this role yet.</p>
+                      } @else {
+                        <ul class="role-employees-list">
+                          @for (emp of employees; track emp.id) {
+                            <li>
+                              <a [routerLink]="['/superadmin/employees', emp.id, 'edit']" (click)="$event.stopPropagation()">
+                                {{ emp.name }}
+                              </a>
+                              <span class="role-employee-meta">{{ emp.employeeId }} · {{ !emp.isActive ? ' · inactive' : '' }}</span>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    }
+                  }
+                </div>
+
                 <div class="permission-grid">
                   @for (p of catalog; track p.key) {
                     <div class="permission-row">

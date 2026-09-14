@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AdminRoleService } from '../../../core/services/admin-role.service';
-import { PERMISSION_CATALOG, Role, RolePermissions } from '../../../core/models/role.model';
+import { PERMISSION_CATALOG, Role, RoleEmployee, RolePermissions } from '../../../core/models/role.model';
 
 @Component({
   selector: 'app-superadmin-roles',
@@ -32,10 +32,10 @@ export class SuperadminRolesComponent implements OnInit {
   saving = signal(false);
   actionError = signal('');
 
-  showCreateForm = signal(false);
-  newRoleName = signal('');
-  creating = signal(false);
-  createError = signal('');
+  // Who actually has the currently-expanded role — fetched on demand since
+  // the list itself only carries a count (see role.employeeCount).
+  roleEmployees = signal<RoleEmployee[] | null>(null);
+  roleEmployeesLoading = signal(false);
 
   constructor(private roleService: AdminRoleService) {}
 
@@ -56,10 +56,18 @@ export class SuperadminRolesComponent implements OnInit {
     if (this.expandedId() === role.id) {
       this.expandedId.set(null);
       this.draftPermissions.set(null);
+      this.roleEmployees.set(null);
       return;
     }
     this.expandedId.set(role.id);
     this.draftPermissions.set({ ...role.permissions });
+
+    this.roleEmployees.set(null);
+    this.roleEmployeesLoading.set(true);
+    this.roleService.employees(role.id).then(employees => {
+      this.roleEmployees.set(employees);
+      this.roleEmployeesLoading.set(false);
+    });
   }
 
   togglePermission(key: keyof RolePermissions): void {
@@ -76,6 +84,7 @@ export class SuperadminRolesComponent implements OnInit {
       this.roles.update(list => list.map(r => (r.id === role.id ? updated : r)));
       this.expandedId.set(null);
       this.draftPermissions.set(null);
+      this.roleEmployees.set(null);
     } catch (err: any) {
       this.actionError.set(err?.error?.message ?? 'Could not save. Please try again.');
     } finally {
@@ -90,30 +99,6 @@ export class SuperadminRolesComponent implements OnInit {
       this.roles.update(list => list.filter(r => r.id !== role.id));
     } catch (err: any) {
       this.actionError.set(err?.error?.message ?? 'Could not delete role.');
-    }
-  }
-
-  openCreateForm(): void {
-    this.newRoleName.set('');
-    this.createError.set('');
-    this.showCreateForm.set(true);
-  }
-
-  async createRole(): Promise<void> {
-    this.createError.set('');
-    if (!this.newRoleName().trim()) {
-      this.createError.set('A role name is required.');
-      return;
-    }
-    this.creating.set(true);
-    try {
-      const role = await this.roleService.create({ name: this.newRoleName().trim() });
-      this.roles.update(list => [...list, role]);
-      this.showCreateForm.set(false);
-    } catch (err: any) {
-      this.createError.set(err?.error?.message ?? 'Could not create role. Please try again.');
-    } finally {
-      this.creating.set(false);
     }
   }
 }
