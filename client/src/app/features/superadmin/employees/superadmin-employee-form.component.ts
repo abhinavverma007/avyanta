@@ -272,7 +272,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
         this.formError.set('Phone number must be exactly 10 digits.');
         return;
       }
-      phoneToSend = f.phone ? `+91${f.phone}` : '';
+      phoneToSend = f.phone || '';
     }
 
     this.saving.set(true);
