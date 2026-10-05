@@ -22,6 +22,12 @@
         </button>
       }
     </div>
+    @if (activeTab() !== 'pending') {
+      <label class="mine-toggle">
+        <input type="checkbox" [checked]="list.mineOnly()" (change)="list.setMineOnly($any($event.target).checked)" />
+        {{ 'saApprovals.mineOnly' | t }}
+      </label>
+    }
     <span class="summary-note">{{ (viewCount() === 1 ? 'saLeaveAppr.countOne' : 'saLeaveAppr.countMany') | t:{ n: viewCount() } }}</span>
   </div>
 
@@ -73,6 +79,9 @@
               </div>
               <p class="claim-employee">{{ leave.employee?.name }} · {{ leave.employee?.employeeId }} · {{ leave.employee?.department }}</p>
               <p class="claim-desc">{{ leave.reason }}</p>
+              @if (leave.reviewedBy) {
+                <p class="claim-note">{{ ('saApprovals.' + leave.status + 'By' + (list.isMine(leave) ? 'You' : '')) | t:{ name: leave.reviewedBy.name } }}</p>
+              }
               @if (leave.reviewNote) {
                 <p class="claim-note">{{ 'saApprovals.reviewNote' | t:{ note: leave.reviewNote } }}</p>
               }

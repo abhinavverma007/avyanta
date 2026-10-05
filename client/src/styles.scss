@@ -309,3 +309,14 @@ h1, h2, h3, h4, h5 {
   outline: 2px solid var(--accent-2);
   outline-offset: 2px;
 }
+
+// "Only my decisions" filter in the approvals toolbars.
+.mine-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  input { cursor: pointer; }
+}

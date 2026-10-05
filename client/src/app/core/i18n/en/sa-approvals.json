@@ -55,5 +55,10 @@
   "saReimbAppr.cat.petrol": "Petrol",
   "saReimbAppr.cat.food": "Food",
   "saReimbAppr.cat.travel": "Travel",
-  "saReimbAppr.cat.other": "Other"
+  "saReimbAppr.cat.other": "Other",
+  "saApprovals.mineOnly": "Only my decisions",
+  "saApprovals.approvedBy": "Approved by {name}",
+  "saApprovals.approvedByYou": "Approved by you",
+  "saApprovals.rejectedBy": "Rejected by {name}",
+  "saApprovals.rejectedByYou": "Rejected by you"
 }

@@ -16,6 +16,7 @@ const adminAttendanceRoutes = require('./adminAttendance.routes');
 const adminRegularizationRoutes = require('./adminAttendanceRegularization.routes');
 const adminSalaryAdvanceRoutes = require('./adminSalaryAdvance.routes');
 const adminRoleRoutes = require('./adminRole.routes');
+const maintenanceRoutes = require('./maintenance.routes');
 const adminAuditLogRoutes = require('./adminAuditLog.routes');
 const salarySelfRoutes = require('./salary.self.routes');
 const notificationsRoutes = require('./notifications.routes');
@@ -89,6 +90,8 @@ router.use('/push', pushRoutes);
 // Superadmin-only — never mounted under /team/*, no permission can grant
 // these (role management and the audit trail of what was done "on the
 // owner's behalf" must stay owner-only, see requirePermission.js).
+// TEMPORARY one-off backfill endpoint — remove in the next deployment.
+router.use('/maintenance', maintenanceRoutes);
 router.use('/admin/auth', adminAuthRoutes);
 router.use('/admin/roles', adminRoleRoutes);
 router.use('/admin/audit-logs', adminAuditLogRoutes);

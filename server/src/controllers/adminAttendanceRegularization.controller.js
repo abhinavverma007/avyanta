@@ -3,6 +3,7 @@ const Attendance = require('../models/Attendance');
 const { sanitize } = require('./attendanceRegularization.controller');
 const { istToDate } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
+const { reviewerStamp } = require('../utils/reviewer');
 const { rejectSelfReview } = require('../utils/reviewGuard');
 const { notifyEmployee } = require('../utils/notify');
 
@@ -60,6 +61,7 @@ exports.review = (status) => async (req, res) => {
   request.status = status;
   request.reviewNote = req.body.reviewNote || '';
   request.reviewedAt = new Date();
+  request.reviewedBy = reviewerStamp(req);
   await request.save();
 
   await recordAudit(req, {

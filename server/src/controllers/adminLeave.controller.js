@@ -1,6 +1,7 @@
 const Leave = require('../models/Leave');
 const { sanitize } = require('./leave.controller');
 const { recordAudit } = require('../utils/audit');
+const { reviewerStamp } = require('../utils/reviewer');
 const { rejectSelfReview } = require('../utils/reviewGuard');
 const { notifyEmployee } = require('../utils/notify');
 
@@ -55,6 +56,7 @@ exports.review = (status) => async (req, res) => {
   leave.status = status;
   leave.reviewNote = req.body.reviewNote || '';
   leave.reviewedAt = new Date();
+  leave.reviewedBy = reviewerStamp(req);
   await leave.save();
 
   await recordAudit(req, {

@@ -55,5 +55,10 @@
   "saReimbAppr.cat.petrol": "पेट्रोल",
   "saReimbAppr.cat.food": "खाना",
   "saReimbAppr.cat.travel": "सफ़र",
-  "saReimbAppr.cat.other": "दूसरा"
+  "saReimbAppr.cat.other": "दूसरा",
+  "saApprovals.mineOnly": "सिर्फ़ मेरे फ़ैसले",
+  "saApprovals.approvedBy": "{name} ने मंज़ूर किया",
+  "saApprovals.approvedByYou": "आपने मंज़ूर किया",
+  "saApprovals.rejectedBy": "{name} ने मना किया",
+  "saApprovals.rejectedByYou": "आपने मना किया"
 }

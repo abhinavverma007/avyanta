@@ -18,6 +18,14 @@ const salaryAdvanceSchema = new mongoose.Schema(
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
     reviewNote: { type: String, default: '' },
     reviewedAt: { type: Date },
+    // Who approved/rejected it — either the owner (Admin) or a delegated
+    // Supervisor/Manager (Employee). Absent on records reviewed before this
+    // field existed (see scripts/backfillReviewedBy.js).
+    reviewedBy: {
+      id: { type: mongoose.Schema.Types.ObjectId },
+      name: { type: String },
+      actorType: { type: String, enum: ['admin', 'employee'] },
+    },
   },
   { timestamps: true },
 );

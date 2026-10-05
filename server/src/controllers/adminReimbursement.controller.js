@@ -1,6 +1,7 @@
 const Reimbursement = require('../models/Reimbursement');
 const { sanitize } = require('./reimbursement.controller');
 const { recordAudit } = require('../utils/audit');
+const { reviewerStamp } = require('../utils/reviewer');
 const { rejectSelfReview } = require('../utils/reviewGuard');
 const { notifyEmployee } = require('../utils/notify');
 
@@ -55,6 +56,7 @@ exports.review = (status) => async (req, res) => {
   claim.status = status;
   claim.reviewNote = req.body.reviewNote || '';
   claim.reviewedAt = new Date();
+  claim.reviewedBy = reviewerStamp(req);
   await claim.save();
 
   await recordAudit(req, {

@@ -22,6 +22,12 @@
         </button>
       }
     </div>
+    @if (activeTab() !== 'pending') {
+      <label class="mine-toggle">
+        <input type="checkbox" [checked]="list.mineOnly()" (change)="list.setMineOnly($any($event.target).checked)" />
+        {{ 'saApprovals.mineOnly' | t }}
+      </label>
+    }
     <span class="summary-note">{{ (viewCount() === 1 ? 'saRegAppr.countOne' : 'saRegAppr.countMany') | t:{ n: viewCount() } }}</span>
   </div>
 
@@ -74,6 +80,9 @@
               </div>
               <p class="claim-employee">{{ request.employee?.name }} · {{ request.employee?.employeeId }} · {{ request.employee?.department }}</p>
               <p class="claim-desc">{{ request.reason }}</p>
+              @if (request.reviewedBy) {
+                <p class="claim-note">{{ ('saApprovals.' + request.status + 'By' + (list.isMine(request) ? 'You' : '')) | t:{ name: request.reviewedBy.name } }}</p>
+              }
               @if (request.reviewNote) {
                 <p class="claim-note">{{ 'saApprovals.reviewNote' | t:{ note: request.reviewNote } }}</p>
               }
