@@ -22,6 +22,12 @@
         </button>
       }
     </div>
+    @if (activeTab() !== 'pending') {
+      <label class="mine-toggle">
+        <input type="checkbox" [checked]="list.mineOnly()" (change)="list.setMineOnly($any($event.target).checked)" />
+        {{ 'saApprovals.mineOnly' | t }}
+      </label>
+    }
     <span class="summary-note">{{ (viewCount() === 1 ? 'saReimbAppr.countOne' : 'saReimbAppr.countMany') | t:{ n: viewCount(), total: (viewTotal() | number) } }}</span>
   </div>
 
@@ -75,6 +81,9 @@
               <p class="claim-employee">{{ claim.employee?.name }} · {{ claim.employee?.employeeId }} · {{ claim.employee?.department }}</p>
               <p class="claim-desc">{{ claim.description || '—' }}</p>
               <p class="claim-date">{{ 'saReimbAppr.expenseDate' | t:{ date: claim.date } }}</p>
+              @if (claim.reviewedBy) {
+                <p class="claim-note">{{ ('saApprovals.' + claim.status + 'By' + (list.isMine(claim) ? 'You' : '')) | t:{ name: claim.reviewedBy.name } }}</p>
+              }
               @if (claim.reviewNote) {
                 <p class="claim-note">{{ 'saApprovals.reviewNote' | t:{ note: claim.reviewNote } }}</p>
               }

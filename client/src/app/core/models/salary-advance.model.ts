@@ -1,3 +1,4 @@
+import { ReviewedBy } from './reviewer.model';
 // A cash advance an employee asks for mid-month, recovered from *next*
 // month's payable salary once approved (see salary.controller.js).
 
@@ -11,6 +12,7 @@ export interface SalaryAdvanceRequest {
   status: AdvanceStatus;
   reviewNote: string;
   reviewedAt?: string;
+  reviewedBy?: ReviewedBy | null;
   createdAt: string;
 }
 

@@ -1,6 +1,7 @@
 const SalaryAdvance = require('../models/SalaryAdvance');
 const { sanitize } = require('./salaryAdvance.controller');
 const { recordAudit } = require('../utils/audit');
+const { reviewerStamp } = require('../utils/reviewer');
 const { rejectSelfReview } = require('../utils/reviewGuard');
 const { notifyEmployee } = require('../utils/notify');
 
@@ -42,6 +43,7 @@ exports.review = (status) => async (req, res) => {
   advance.status = status;
   advance.reviewNote = req.body.reviewNote || '';
   advance.reviewedAt = new Date();
+  advance.reviewedBy = reviewerStamp(req);
   await advance.save();
 
   await recordAudit(req, {

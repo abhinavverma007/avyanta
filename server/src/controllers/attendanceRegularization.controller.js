@@ -18,6 +18,9 @@ function sanitize(r) {
     status: r.status,
     reviewNote: r.reviewNote,
     reviewedAt: r.reviewedAt,
+    reviewedBy: r.reviewedBy && r.reviewedBy.name
+      ? { id: String(r.reviewedBy.id), name: r.reviewedBy.name, actorType: r.reviewedBy.actorType }
+      : null,
   };
 }
 
@@ -90,6 +93,7 @@ exports.create = async (req, res) => {
         status: 'pending',
         reviewNote: '',
         reviewedAt: null,
+        reviewedBy: null,
       },
     },
     { upsert: true, new: true },

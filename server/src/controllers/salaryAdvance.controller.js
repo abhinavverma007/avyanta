@@ -12,6 +12,9 @@ function sanitize(a) {
     status: a.status,
     reviewNote: a.reviewNote,
     reviewedAt: a.reviewedAt,
+    reviewedBy: a.reviewedBy && a.reviewedBy.name
+      ? { id: String(a.reviewedBy.id), name: a.reviewedBy.name, actorType: a.reviewedBy.actorType }
+      : null,
     createdAt: a.createdAt,
   };
 }

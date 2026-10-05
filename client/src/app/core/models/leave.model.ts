@@ -1,3 +1,4 @@
+import { ReviewedBy } from './reviewer.model';
 // No leave "types" — the superadmin sets a flat monthly quota per employee
 // (Employee.paidLeavesPerMonth) and that's the only gate. Just dates + reason.
 // Requests start 'pending' and only count as an actual leave day once the
@@ -20,6 +21,7 @@ export interface LeaveRecord {
   status: LeaveStatus;
   reviewNote: string;
   reviewedAt?: string;
+  reviewedBy?: ReviewedBy | null;
 }
 
 export interface AdminLeave extends LeaveRecord {

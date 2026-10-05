@@ -1,10 +1,13 @@
-import { Signal, WritableSignal, computed, signal } from '@angular/core';
+import { Signal, WritableSignal, computed, inject, signal } from '@angular/core';
+import { AdminAuthService } from '../../core/services/admin-auth.service';
+import { AuthService } from '../../core/services/auth.service';
 
 export type SortDir = 'asc' | 'desc';
 
 export interface ApprovableEntity {
   id: string;
   status: 'pending' | 'approved' | 'rejected';
+  reviewedBy?: { id: string } | null;
 }
 
 export interface SortOption {
@@ -27,9 +30,18 @@ export class ApprovalListController<T extends ApprovableEntity> {
   readonly page = signal(1);
   readonly selectedIds = signal<ReadonlySet<string>>(new Set());
 
+  // "Only my decisions" — narrows already-reviewed rows to the ones the
+  // signed-in reviewer (owner or delegated Supervisor/Manager) approved or
+  // rejected themselves. Pending rows are unaffected (nobody has reviewed them yet).
+  readonly mineOnly = signal(false);
+
+  // Constructed in a component field initializer, so inject() is available.
+  private readonly adminAuth = inject(AdminAuthService);
+  private readonly auth = inject(AuthService);
+
   readonly filtered = computed(() => {
     const term = this.search().trim().toLowerCase();
-    const items = this.items();
+    const items = this.mineOnly() ? this.items().filter(i => i.status === 'pending' || this.isMine(i)) : this.items();
     if (!term) return items;
     return items.filter(item => this.searchText(item).toLowerCase().includes(term));
   });
@@ -72,6 +84,21 @@ export class ApprovalListController<T extends ApprovableEntity> {
     defaultSortKey: string,
   ) {
     this.sortKey = signal(defaultSortKey);
+  }
+
+  currentReviewerId(): string | null {
+    return this.adminAuth.isAuthenticated() ? (this.adminAuth.admin()?.id ?? null) : (this.auth.user()?.id ?? null);
+  }
+
+  isMine(item: ApprovableEntity): boolean {
+    const me = this.currentReviewerId();
+    return !!me && !!item.reviewedBy && item.reviewedBy.id === me;
+  }
+
+  setMineOnly(value: boolean): void {
+    this.mineOnly.set(value);
+    this.page.set(1);
+    this.clearSelection();
   }
 
   setSearch(value: string): void {

@@ -1,3 +1,4 @@
+import { ReviewedBy } from './reviewer.model';
 export type ReimbursementCategory = 'petrol' | 'food' | 'travel' | 'other';
 export type ReimbursementStatus = 'pending' | 'approved' | 'rejected';
 
@@ -10,6 +11,7 @@ export interface Reimbursement {
   status: ReimbursementStatus;
   reviewNote: string;
   reviewedAt?: string;
+  reviewedBy?: ReviewedBy | null;
   createdAt: string;
 }
 
