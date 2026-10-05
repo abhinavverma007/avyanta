@@ -7,6 +7,8 @@ import { AdminEmployeeService } from '../../../core/services/admin-employee.serv
 import { SiteLocation, TaskStatus } from '../../../core/models/admin-task.model';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { istDateString } from '../../../shared/utils/ist-date';
 
 // Matches the backend's IST-based "today" (server/src/utils/istDate.js) —
@@ -55,7 +57,7 @@ interface PickerEmployee {
 @Component({
   selector: 'app-superadmin-task-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, LocationPickerComponent],
+  imports: [CommonModule, FormsModule, LocationPickerComponent, TPipe],
   templateUrl: './superadmin-task-form.component.html',
   styleUrl: './superadmin-task-form.component.scss',
 })
@@ -85,9 +87,9 @@ export class SuperadminTaskFormComponent implements OnInit {
   formError = signal('');
 
   readonly statusOptions: { value: TaskStatus; label: string }[] = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'pending', label: 'saTaskForm.statusPending' },
+    { value: 'in_progress', label: 'saTaskForm.statusInProgress' },
+    { value: 'completed', label: 'saTaskForm.statusCompleted' },
   ];
 
   employeeSearch = signal('');
@@ -104,7 +106,13 @@ export class SuperadminTaskFormComponent implements OnInit {
     private employeeService: AdminEmployeeService,
     private route: ActivatedRoute,
     private router: Router,
+    readonly i18n: I18nService,
   ) {}
+
+  // Signals hold either an i18n key (ours) or a raw server message.
+  msg(v: string): string {
+    return v.startsWith('saTaskForm.') ? this.i18n.t(v) : v;
+  }
 
   ngOnInit(): void {
     this.searchEmployees('');
@@ -131,7 +139,7 @@ export class SuperadminTaskFormComponent implements OnInit {
         for (const e of task.employees) map.set(e.id, e);
         this.selectedEmployees.set(map);
       })
-      .catch(() => this.loadError.set('Could not load this task. It may have been removed.'))
+      .catch(() => this.loadError.set('saTaskForm.loadError'))
       .finally(() => this.loadingTask.set(false));
   }
 
@@ -196,7 +204,7 @@ export class SuperadminTaskFormComponent implements OnInit {
     const coords = parseLatLng(value);
     if (coords) {
       this.siteLocation.set(coords);
-      this.geocodeNote.set('Using the coordinates you typed.');
+      this.geocodeNote.set('saTaskForm.usingCoords');
       return;
     }
 
@@ -220,13 +228,13 @@ export class SuperadminTaskFormComponent implements OnInit {
       if (this.pinnedManually || this.site() !== query) return; // stale by the time this resolved
 
       if (results.length === 0) {
-        this.geocodeNote.set('No match found for that — pin the site manually on the map below.');
+        this.geocodeNote.set('saTaskForm.noMatch');
         return;
       }
       this.siteLocation.set({ lat: Number(results[0].lat), lng: Number(results[0].lon) });
       this.geocodeNote.set('');
     } catch {
-      this.geocodeNote.set('Could not look up that location — pin the site manually on the map below.');
+      this.geocodeNote.set('saTaskForm.lookupFailed');
     } finally {
       this.geocoding.set(false);
     }
@@ -236,19 +244,19 @@ export class SuperadminTaskFormComponent implements OnInit {
     this.formError.set('');
 
     if (!this.title().trim()) {
-      this.formError.set('Title is required.');
+      this.formError.set('saTaskForm.errTitle');
       return;
     }
     const employeeIds = Array.from(this.selectedEmployees().keys());
     if (employeeIds.length === 0) {
-      this.formError.set('Select at least one employee.');
+      this.formError.set('saTaskForm.errEmployee');
       return;
     }
 
     const id = this.taskId();
     if (id) {
       if (!this.editDate()) {
-        this.formError.set('Pick a date.');
+        this.formError.set('saTaskForm.errDate');
         return;
       }
       this.saving.set(true);
@@ -264,7 +272,7 @@ export class SuperadminTaskFormComponent implements OnInit {
         });
         this.router.navigate(['/superadmin/tasks']);
       } catch (err: any) {
-        this.formError.set(err?.error?.message ?? 'Could not save changes. Please try again.');
+        this.formError.set(err?.error?.message ?? 'saTaskForm.errSave');
       } finally {
         this.saving.set(false);
       }
@@ -273,7 +281,7 @@ export class SuperadminTaskFormComponent implements OnInit {
 
     const dates = this.selectedDates();
     if (dates.length === 0) {
-      this.formError.set('Pick a valid date range.');
+      this.formError.set('saTaskForm.errRange');
       return;
     }
 
@@ -289,7 +297,7 @@ export class SuperadminTaskFormComponent implements OnInit {
       });
       this.router.navigate(['/superadmin/tasks']);
     } catch (err: any) {
-      this.formError.set(err?.error?.message ?? 'Could not assign task. Please try again.');
+      this.formError.set(err?.error?.message ?? 'saTaskForm.errAssign');
     } finally {
       this.saving.set(false);
     }

@@ -5,11 +5,13 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../core/services/auth.service';
 import { MANAGEABLE_PERMISSIONS } from '../../core/guards/superadmin-area.guard';
 import { ICONS } from '../icons';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 interface NavItem {
   path: string;
-  label: string;
+  labelKey: string;
   icon: string;
 }
 
@@ -21,7 +23,7 @@ interface NavItem {
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive, NotificationBellComponent],
+  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive, NotificationBellComponent, TPipe],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
@@ -32,11 +34,11 @@ export class ShellComponent {
   // account/settings-shaped destination, not day-to-day work, so it
   // shouldn't compete for space in the footer tab bar.
   readonly navItems: NavItem[] = [
-    { path: '/dashboard', label: 'Home', icon: 'home' },
-    { path: '/attendance', label: 'Attendance', icon: 'calendar' },
-    { path: '/requests', label: 'Requests', icon: 'receipt' },
-    { path: '/tasks', label: 'Tasks', icon: 'tasks' },
-    { path: '/salary', label: 'Salary', icon: 'wallet' },
+    { path: '/dashboard', labelKey: 'nav.home', icon: 'home' },
+    { path: '/attendance', labelKey: 'nav.attendance', icon: 'calendar' },
+    { path: '/requests', labelKey: 'nav.requests', icon: 'receipt' },
+    { path: '/tasks', labelKey: 'nav.tasks', icon: 'tasks' },
+    { path: '/salary', labelKey: 'nav.salary', icon: 'wallet' },
   ];
 
   profileOpen = signal(false);
@@ -52,7 +54,12 @@ export class ShellComponent {
     return !!permissions && MANAGEABLE_PERMISSIONS.some(k => permissions[k]);
   });
 
-  constructor(readonly auth: AuthService, private sanitizer: DomSanitizer) {}
+  constructor(readonly auth: AuthService, readonly i18n: I18nService, private sanitizer: DomSanitizer) {}
+
+  toggleLanguage(): void {
+    this.i18n.toggle();
+    this.profileOpen.set(false);
+  }
 
   toggleProfile(): void {
     this.profileOpen.update(v => !v);

@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminLeaveService } from '../../../core/services/admin-leave.service';
 import { AdminLeave, LeaveStatus } from '../../../core/models/leave.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
@@ -12,7 +13,7 @@ type Tab = LeaveStatus | 'all';
 @Component({
   selector: 'app-superadmin-leave-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './superadmin-leave-approvals.component.html',
   styleUrl: './superadmin-leave-approvals.component.scss',
 })
@@ -24,8 +25,8 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
 
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
   readonly sortOptions: SortOption[] = [
-    { key: 'date', label: 'Date' },
-    { key: 'employee', label: 'Employee' },
+    { key: 'date', label: 'saApprovals.sort.date' },
+    { key: 'employee', label: 'saApprovals.sort.employee' },
   ];
 
   leaves = signal<AdminLeave[]>([]);

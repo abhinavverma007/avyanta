@@ -8,6 +8,7 @@ import { AdminReimbursementService } from '../../../core/services/admin-reimburs
 import { AdminSalaryAdvanceService } from '../../../core/services/admin-salary-advance.service';
 import { AdminTaskService } from '../../../core/services/admin-task.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { AdminLeave } from '../../../core/models/leave.model';
@@ -20,7 +21,7 @@ type ProfileTab = 'leave' | 'reimbursement' | 'advance' | 'tasks';
 @Component({
   selector: 'app-superadmin-employee-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TPipe],
   templateUrl: './superadmin-employee-profile.component.html',
   styleUrl: './superadmin-employee-profile.component.scss',
 })
@@ -45,10 +46,10 @@ export class SuperadminEmployeeProfileComponent implements OnInit {
   private readonly canViewTasks = this.isAdminScope || !!this.permissions?.tasks;
 
   readonly tabOptions: { value: ProfileTab; label: string }[] = [
-    ...(this.canViewLeave ? [{ value: 'leave' as const, label: 'Leave' }] : []),
-    ...(this.canViewReimbursement ? [{ value: 'reimbursement' as const, label: 'Reimbursement' }] : []),
-    ...(this.canViewAdvance ? [{ value: 'advance' as const, label: 'Advance' }] : []),
-    ...(this.canViewTasks ? [{ value: 'tasks' as const, label: 'Tasks' }] : []),
+    ...(this.canViewLeave ? [{ value: 'leave' as const, label: 'saEmpProfile.tabLeave' }] : []),
+    ...(this.canViewReimbursement ? [{ value: 'reimbursement' as const, label: 'saEmpProfile.tabReimb' }] : []),
+    ...(this.canViewAdvance ? [{ value: 'advance' as const, label: 'saEmpProfile.tabAdvance' }] : []),
+    ...(this.canViewTasks ? [{ value: 'tasks' as const, label: 'saEmpProfile.tabTasks' }] : []),
   ];
 
   tab = signal<ProfileTab | null>(null);

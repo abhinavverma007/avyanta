@@ -1,17 +1,17 @@
 <div class="page fade-in">
   <div class="page-header">
-    <h1 class="page-title">Work</h1>
+    <h1 class="page-title">{{ 'tasks.title' | t }}</h1>
     <p class="page-sub">{{ formatTodayHeader() }}</p>
   </div>
 
   @if (showPushBanner()) {
     <div class="push-banner">
-      <span>🔔 Get notified the moment a new task is assigned to you.</span>
+      <span>🔔 {{ 'tasks.pushBanner' | t }}</span>
       <div class="push-banner-actions">
         <button class="btn btn-blue btn-sm" [disabled]="enablingPush()" (click)="enablePush()">
-          {{ enablingPush() ? 'Enabling…' : 'Enable' }}
+          {{ (enablingPush() ? 'tasks.enabling' : 'tasks.enable') | t }}
         </button>
-        <button class="btn btn-ghost btn-sm" (click)="dismissPushBanner()">Not now</button>
+        <button class="btn btn-ghost btn-sm" (click)="dismissPushBanner()">{{ 'tasks.notNow' | t }}</button>
       </div>
     </div>
   }
@@ -19,20 +19,20 @@
   <div class="section-switcher">
     @for (opt of rangeOptions; track opt.value) {
       <button class="section-tab" [class.active]="range() === opt.value" (click)="setRange(opt.value)">
-        {{ opt.label }}
+        {{ opt.labelKey | t }}
       </button>
     }
   </div>
 
-  <select class="form-control section-select" [ngModel]="range()" (ngModelChange)="setRange($event)" aria-label="Work range">
+  <select class="form-control section-select" [ngModel]="range()" (ngModelChange)="setRange($event)" [attr.aria-label]="'tasks.rangeAria' | t">
     @for (opt of rangeOptions; track opt.value) {
-      <option [ngValue]="opt.value">{{ opt.label }}</option>
+      <option [ngValue]="opt.value">{{ opt.labelKey | t }}</option>
     }
   </select>
 
   <div class="card">
     @if (loading()) {
-      <p class="empty-note">Loading…</p>
+      <p class="empty-note">{{ 'tasks.loading' | t }}</p>
     } @else if (tasks().length === 0) {
       <p class="empty-note">{{ emptyMessage() }}</p>
     } @else {
@@ -47,11 +47,11 @@
               <span class="badge" [class]="statusBadgeClass(task.status)">{{ statusLabel(task.status) }}</span>
               @if (canUpdateStatus(task)) {
                 @if (task.status === 'pending') {
-                  <button class="btn btn-ghost btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'in_progress')">▶ Start Work</button>
+                  <button class="btn btn-ghost btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'in_progress')">▶ {{ 'tasks.startWork' | t }}</button>
                 } @else if (task.status === 'in_progress') {
-                  <button class="btn btn-blue btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'completed')">✅ Mark Complete</button>
+                  <button class="btn btn-blue btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'completed')">✅ {{ 'tasks.markComplete' | t }}</button>
                 } @else {
-                  <button class="btn btn-ghost btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'pending')">↩ Reopen</button>
+                  <button class="btn btn-ghost btn-sm" [disabled]="updatingTaskId() === task.id" (click)="setStatus(task, 'pending')">↩ {{ 'tasks.reopen' | t }}</button>
                 }
               }
             </div>
@@ -60,13 +60,13 @@
             }
             @if (task.siteLocation) {
               <app-location-picker class="task-map" [location]="task.siteLocation" [editable]="false" />
-              <a class="maps-link" [href]="directionsUrl(task)" target="_blank" rel="noopener">🧭 Open in Google Maps</a>
+              <a class="maps-link" [href]="directionsUrl(task)" target="_blank" rel="noopener">🧭 {{ 'tasks.openMaps' | t }}</a>
             }
             @if (task.description) {
               <p class="task-desc">{{ task.description }}</p>
             }
             @if (task.coworkers.length > 0) {
-              <p class="task-coworkers">Working with: {{ coworkerNames(task) }}</p>
+              <p class="task-coworkers">{{ 'tasks.workingWith' | t:{ names: coworkerNames(task) } }}</p>
             }
 
             @if (task.notes.length > 0) {
@@ -89,29 +89,29 @@
                   <textarea
                     class="form-control"
                     rows="2"
-                    placeholder="e.g. Material nahi mila, kal continue karunga"
+                    [placeholder]="'tasks.notePlaceholder' | t"
                     [value]="noteDraftText()"
                     (input)="noteDraftText.set($any($event.target).value)"
                   ></textarea>
                   @if (noteError()) { <p class="error-msg">{{ noteError() }}</p> }
                   <div class="note-composer-actions">
-                    <button class="btn btn-ghost btn-sm" (click)="cancelNoteComposer()">Cancel</button>
+                    <button class="btn btn-ghost btn-sm" (click)="cancelNoteComposer()">{{ 'tasks.cancel' | t }}</button>
                     <button class="btn btn-blue btn-sm" [disabled]="submittingNote()" (click)="submitNote(task)">
-                      {{ submittingNote() ? 'Sending…' : 'Send' }}
+                      {{ (submittingNote() ? 'tasks.sending' : 'tasks.send') | t }}
                     </button>
                   </div>
                 </div>
               } @else {
-                <button class="btn btn-ghost btn-sm note-toggle" (click)="openNoteComposer(task)">💬 Add Note</button>
+                <button class="btn btn-ghost btn-sm note-toggle" (click)="openNoteComposer(task)">💬 {{ 'tasks.addNote' | t }}</button>
               }
             }
           </div>
         }
       </div>
       <div class="pagination-row">
-        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
-        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }} ({{ total() }} total)</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← {{ 'tasks.prev' | t }}</button>
+        <span class="page-indicator">{{ 'tasks.pageInfo' | t:{ page: page(), pages: totalPages(), total: total() } }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">{{ 'tasks.next' | t }} →</button>
       </div>
     }
   </div>

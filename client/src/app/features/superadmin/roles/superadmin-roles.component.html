@@ -1,19 +1,19 @@
 <div class="page fade-in">
   <div class="page-header">
     <div class="page-header-row">
-      <h1 class="page-title">Roles & Permissions</h1>
-      <a class="btn btn-blue" [routerLink]="['/superadmin/roles/new']">+ Add Role</a>
+      <h1 class="page-title">{{ 'saRoles.title' | t }}</h1>
+      <a class="btn btn-blue" [routerLink]="['/superadmin/roles/new']">+ {{ 'saRoles.addRole' | t }}</a>
     </div>
-    <p class="page-sub">Define what a Supervisor/Manager (or any custom role) can see and do — assign roles from the Add Employee form.</p>
+    <p class="page-sub">{{ 'saRoles.sub' | t }}</p>
   </div>
 
-  @if (actionError()) { <p class="error-msg">{{ actionError() }}</p> }
+  @if (actionError()) { <p class="error-msg">{{ msg(actionError()) }}</p> }
 
   <div class="card table-card">
     @if (loading()) {
-      <p class="empty-note">Loading roles…</p>
+      <p class="empty-note">{{ 'saRoles.loading' | t }}</p>
     } @else if (visibleRoles().length === 0) {
-      <p class="empty-note">No delegated roles yet — click "+ Add Role" to create one (e.g. Supervisor or Manager).</p>
+      <p class="empty-note">{{ 'saRoles.empty' | t }}</p>
     } @else {
       <div class="roles-list">
         @for (role of visibleRoles(); track role.id) {
@@ -21,7 +21,7 @@
             <div class="role-summary" (click)="toggleExpand(role)">
               <div class="role-info">
                 <span class="role-name">{{ role.name }}</span>
-                <span class="role-count">{{ role.employeeCount }} employee{{ role.employeeCount === 1 ? '' : 's' }}</span>
+                <span class="role-count">{{ (role.employeeCount === 1 ? 'saRoles.employeeOne' : 'saRoles.employeeMany') | t:{ n: role.employeeCount } }}</span>
               </div>
               <div class="role-summary-actions">
                 <a
@@ -29,7 +29,7 @@
                   [routerLink]="['/superadmin/employees/new']"
                   [queryParams]="{ role: role.id }"
                   (click)="$event.stopPropagation()">
-                  + Add
+                  + {{ 'saRoles.add' | t }}
                 </a>
                 <span class="expand-arrow">{{ expandedId() === role.id ? '▲' : '▼' }}</span>
               </div>
@@ -38,13 +38,13 @@
             @if (expandedId() === role.id && draftPermissions(); as draft) {
               <div class="role-detail fade-in">
                 <div class="role-employees">
-                  <h4 class="role-employees-title">Employees with this role</h4>
+                  <h4 class="role-employees-title">{{ 'saRoles.employeesWithRole' | t }}</h4>
                   @if (roleEmployeesLoading()) {
-                    <p class="empty-note-sm">Loading…</p>
+                    <p class="empty-note-sm">{{ 'saRoles.loadingShort' | t }}</p>
                   } @else {
                     @if (roleEmployees(); as employees) {
                       @if (employees.length === 0) {
-                        <p class="empty-note-sm">No employees have this role yet.</p>
+                        <p class="empty-note-sm">{{ 'saRoles.noEmployees' | t }}</p>
                       } @else {
                         <ul class="role-employees-list">
                           @for (emp of employees; track emp.id) {
@@ -52,7 +52,7 @@
                               <a [routerLink]="['/superadmin/employees', emp.id, 'edit']" (click)="$event.stopPropagation()">
                                 {{ emp.name }}
                               </a>
-                              <span class="role-employee-meta">{{ emp.employeeId }} · {{ !emp.isActive ? ' · inactive' : '' }}</span>
+                              <span class="role-employee-meta">{{ emp.employeeId }} · {{ !emp.isActive ? (' · ' + ('saRoles.inactive' | t)) : '' }}</span>
                             </li>
                           }
                         </ul>
@@ -65,8 +65,8 @@
                   @for (p of catalog; track p.key) {
                     <div class="permission-row">
                       <div class="permission-text">
-                        <div class="permission-label">{{ p.label }}</div>
-                        <div class="permission-desc">{{ p.description }}</div>
+                        <div class="permission-label">{{ permLabel(p) }}</div>
+                        <div class="permission-desc">{{ permDesc(p) }}</div>
                       </div>
                       <label class="toggle-switch">
                         <input type="checkbox" [checked]="draft[p.key]" (change)="togglePermission(p.key)" />
@@ -76,9 +76,9 @@
                   }
                 </div>
                 <div class="role-actions">
-                  <button class="btn btn-ghost text-danger" [disabled]="saving()" (click)="removeRole(role)">Delete Role</button>
+                  <button class="btn btn-ghost text-danger" [disabled]="saving()" (click)="removeRole(role)">{{ 'saRoles.deleteRole' | t }}</button>
                   <button class="btn btn-blue btn-sm" [disabled]="saving()" (click)="saveDraft(role)">
-                    {{ saving() ? 'Saving…' : 'Save Changes' }}
+                    {{ (saving() ? 'saRoles.saving' : 'saRoles.save') | t }}
                   </button>
                 </div>
               </div>

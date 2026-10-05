@@ -1,26 +1,26 @@
 <div class="page fade-in">
-  <button type="button" class="btn btn-ghost btn-sm back-btn" (click)="goBack()">← Back to Employees</button>
+  <button type="button" class="btn btn-ghost btn-sm back-btn" (click)="goBack()">{{ 'saEmpForm.back' | t }}</button>
 
   <div class="page-header">
-    <h1 class="page-title">{{ isEditMode() ? 'Edit Employee' : 'Add Employee' }}</h1>
-    <p class="page-sub">{{ isEditMode() ? 'Update this employee\'s details.' : 'Create a new employee login.' }}</p>
+    <h1 class="page-title">{{ (isEditMode() ? 'saEmpForm.editTitle' : 'saEmpForm.addTitle') | t }}</h1>
+    <p class="page-sub">{{ (isEditMode() ? 'saEmpForm.editSub' : 'saEmpForm.addSub') | t }}</p>
   </div>
 
   @if (loadingEmployee()) {
-    <div class="card card-padded"><p class="empty-note">Loading employee…</p></div>
+    <div class="card card-padded"><p class="empty-note">{{ 'saEmpForm.loading' | t }}</p></div>
   } @else if (loadError()) {
-    <div class="card card-padded"><p class="error-msg">{{ loadError() }}</p></div>
+    <div class="card card-padded"><p class="error-msg">{{ loadErrorText() }}</p></div>
   } @else {
     <div class="card card-padded form-panel fade-in">
       <div class="form-grid">
         <div class="form-group">
-          <label class="form-label">Full Name</label>
+          <label class="form-label">{{ 'saEmpForm.fullName' | t }}</label>
           <input class="form-control" [value]="form().name" (input)="onNameInput($any($event.target).value)" />
         </div>
 
         @if (isAdminScope) {
           <div class="form-group">
-            <label class="form-label">Role</label>
+            <label class="form-label">{{ 'saEmpForm.role' | t }}</label>
             <select class="form-control" [ngModel]="form().roleId" (ngModelChange)="updateField('roleId', $event)">
               @for (r of roles(); track r.id) {
                 <option [ngValue]="r.id">{{ r.name }}</option>
@@ -31,21 +31,21 @@
 
         @if (!isEditMode()) {
           <div class="form-group">
-            <label class="form-label">Email (auto-generated)</label>
-            <input class="form-control font-mono" [value]="emailPreviewLoading() ? 'Generating…' : (emailPreview() || '—')" disabled />
+            <label class="form-label">{{ 'saEmpForm.emailAuto' | t }}</label>
+            <input class="form-control font-mono" [value]="emailPreviewLoading() ? i18n.t('saEmpForm.generating') : (emailPreview() || '—')" disabled />
           </div>
           <div class="form-group">
-            <label class="form-label">Password</label>
+            <label class="form-label">{{ 'saEmpForm.password' | t }}</label>
             <div class="password-row">
               <div class="password-wrap">
                 <input
                   class="form-control"
                   [type]="showPassword() ? 'text' : 'password'"
-                  placeholder="Leave blank to autogenerate on save"
+                  [placeholder]="'saEmpForm.passwordPlaceholder' | t"
                   [value]="form().password"
                   (input)="updateField('password', $any($event.target).value)"
                 />
-                <button type="button" class="toggle-pw" (click)="showPassword.set(!showPassword())" aria-label="Toggle password visibility">
+                <button type="button" class="toggle-pw" (click)="showPassword.set(!showPassword())" [attr.aria-label]="'saEmpForm.togglePassword' | t">
                   @if (showPassword()) {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                   } @else {
@@ -53,34 +53,34 @@
                   }
                 </button>
               </div>
-              <button type="button" class="btn btn-ghost btn-sm" (click)="fillGeneratedPassword()">Autogenerate</button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="fillGeneratedPassword()">{{ 'saEmpForm.autogenerate' | t }}</button>
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Join Date</label>
+            <label class="form-label">{{ 'saEmpForm.joinDate' | t }}</label>
             <input class="form-control" type="date" [value]="form().joinDate" (input)="updateField('joinDate', $any($event.target).value)" />
           </div>
         } @else {
           <div class="form-group">
-            <label class="form-label">Email</label>
+            <label class="form-label">{{ 'saEmpForm.email' | t }}</label>
             <input class="form-control" [value]="editingEmail()" disabled />
           </div>
           <div class="form-group">
-            <label class="form-label">Employee ID</label>
+            <label class="form-label">{{ 'saEmpForm.employeeId' | t }}</label>
             <input class="form-control" [value]="editingEmployeeId()" disabled />
           </div>
         }
 
         <div class="form-group">
-          <label class="form-label">Designation</label>
+          <label class="form-label">{{ 'saEmpForm.designation' | t }}</label>
           <input class="form-control" [value]="form().designation" (input)="updateField('designation', $any($event.target).value)" />
         </div>
         <div class="form-group">
-          <label class="form-label">Department</label>
+          <label class="form-label">{{ 'saEmpForm.department' | t }}</label>
           <input class="form-control" [value]="form().department" (input)="updateField('department', $any($event.target).value)" />
         </div>
         <div class="form-group">
-          <label class="form-label">Phone</label>
+          <label class="form-label">{{ 'saEmpForm.phone' | t }}</label>
           <div class="phone-input-row">
             <span class="phone-prefix">+91</span>
             <input
@@ -89,21 +89,21 @@
               inputmode="numeric"
               pattern="[0-9]*"
               maxlength="10"
-              placeholder="10-digit mobile number"
+              [placeholder]="'saEmpForm.phonePlaceholder' | t"
               [value]="form().phone"
               (input)="onPhoneInput($event)"
               (blur)="onPhoneBlur()"
             />
           </div>
-          @if (phoneError()) { <p class="field-error">{{ phoneError() }}</p> }
+          @if (phoneError()) { <p class="field-error">{{ phoneError() | t }}</p> }
         </div>
         <div class="form-group">
-          <label class="form-label">Location</label>
+          <label class="form-label">{{ 'saEmpForm.location' | t }}</label>
           <input class="form-control" [value]="form().location" (input)="updateField('location', $any($event.target).value)" />
         </div>
         @if (isAdminScope) {
           <div class="form-group">
-            <label class="form-label">Aadhaar Number</label>
+            <label class="form-label">{{ 'saEmpForm.aadhaar' | t }}</label>
             <input
               class="form-control font-mono"
               placeholder="XXXX-XXXX-XXXX"
@@ -114,7 +114,7 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">UPI ID</label>
+            <label class="form-label">{{ 'saEmpForm.upi' | t }}</label>
             <input
               #upiIdInput
               class="form-control font-mono"
@@ -124,24 +124,24 @@
             />
           </div>
           <div class="form-group">
-            <label class="form-label">Monthly Salary (₹)</label>
+            <label class="form-label">{{ 'saEmpForm.salary' | t }}</label>
             <input class="form-control" inputmode="numeric" [value]="formatMoney(form().salaryMonthly)" (input)="onSalaryInput($any($event.target).value)" />
           </div>
           <div class="form-group">
-            <label class="form-label">Paid Leaves / Month</label>
+            <label class="form-label">{{ 'saEmpForm.paidLeaves' | t }}</label>
             <input class="form-control" type="number" min="0" [value]="form().paidLeavesPerMonth" (input)="updateField('paidLeavesPerMonth', $any($event.target).valueAsNumber)" />
           </div>
         }
       </div>
 
       @if (formError()) {
-        <p class="error-msg">{{ formError() }}</p>
+        <p class="error-msg">{{ formErrorText() }}</p>
       }
 
       <div class="form-actions">
-        <button class="btn btn-ghost" (click)="goBack()">Cancel</button>
+        <button class="btn btn-ghost" (click)="goBack()">{{ 'saEmpForm.cancel' | t }}</button>
         <button class="btn btn-blue" [disabled]="saving()" (click)="submitForm()">
-          {{ saving() ? 'Saving…' : (isEditMode() ? 'Save Changes' : 'Create Employee') }}
+          {{ (saving() ? 'saEmpForm.saving' : (isEditMode() ? 'saEmpForm.save' : 'saEmpForm.create')) | t }}
         </button>
       </div>
     </div>

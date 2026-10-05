@@ -5,6 +5,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NotificationService } from '../../core/services/notification.service';
 import { AppNotification } from '../../core/models/notification.model';
 import { ICONS } from '../icons';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 
 // Polled rather than pushed (no websocket/SSE anywhere in this app) — often
 // enough that a new approval/payout/task shows up within a minute of the
@@ -18,7 +20,7 @@ const POLL_INTERVAL_MS = 45000;
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TPipe],
   templateUrl: './notification-bell.component.html',
   styleUrl: './notification-bell.component.scss',
   host: {
@@ -38,6 +40,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private router: Router,
     private sanitizer: DomSanitizer,
+    private i18n: I18nService,
   ) {}
 
   ngOnInit(): void {
@@ -96,12 +99,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   timeAgo(dateStr: string): string {
     const diffMs = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diffMs / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return this.i18n.t('common.justNow');
+    if (mins < 60) return this.i18n.t('common.minsAgo', { n: mins });
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) return this.i18n.t('common.hoursAgo', { n: hours });
     const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    return this.i18n.t('common.daysAgo', { n: days });
   }
 
   getIconSvg(): SafeHtml {

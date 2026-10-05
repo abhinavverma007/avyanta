@@ -1,6 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { AttendanceRegularizationService } from '../../core/services/attendance-regularization.service';
 import { RegularizationRecord } from '../../core/models/attendance-regularization.model';
 import { istDateString } from '../../shared/utils/ist-date';
@@ -18,7 +20,7 @@ const PAGE_SIZE = 3;
 @Component({
   selector: 'app-regularization',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './regularization.component.html',
   styleUrl: './regularization.component.scss',
 })
@@ -37,6 +39,8 @@ export class RegularizationComponent implements OnInit {
   submitting = signal(false);
   error = signal('');
   success = signal('');
+
+  readonly i18n = inject(I18nService);
 
   constructor(private regularizationService: AttendanceRegularizationService) {}
 
@@ -75,15 +79,15 @@ export class RegularizationComponent implements OnInit {
     this.success.set('');
 
     if (!this.date()) {
-      this.error.set('A date is required.');
+      this.error.set(this.i18n.t('regularization.errDate'));
       return;
     }
     if (!this.reason().trim()) {
-      this.error.set('A reason is required.');
+      this.error.set(this.i18n.t('requests.errReason'));
       return;
     }
     if (this.checkOut() <= this.checkIn()) {
-      this.error.set('Check-out must be after check-in.');
+      this.error.set(this.i18n.t('regularization.errTime'));
       return;
     }
 
@@ -95,12 +99,12 @@ export class RegularizationComponent implements OnInit {
         requestedCheckIn: this.checkIn(),
         requestedCheckOut: this.checkOut(),
       });
-      this.success.set('Regularization request submitted — awaiting superadmin approval.');
+      this.success.set(this.i18n.t('regularization.success'));
       this.reason.set('');
       this.page.set(1);
       this.loadHistory();
     } catch (err: any) {
-      this.error.set(err?.error?.message ?? 'Could not submit request. Please try again.');
+      this.error.set(err?.error?.message ?? this.i18n.t('requests.errSubmit'));
     } finally {
       this.submitting.set(false);
     }

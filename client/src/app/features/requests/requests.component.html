@@ -1,20 +1,20 @@
 <div class="page fade-in">
   <div class="page-header">
-    <h1 class="page-title">Requests</h1>
-    <p class="page-sub">Apply for leave, submit an expense claim, request an attendance correction, or ask for a salary advance</p>
+    <h1 class="page-title">{{ 'requests.title' | t }}</h1>
+    <p class="page-sub">{{ 'requests.sub' | t }}</p>
   </div>
 
   <div class="section-switcher">
     @for (opt of sectionOptions; track opt.value) {
       <button class="section-tab" [class.active]="section() === opt.value" (click)="setSection(opt.value)">
-        {{ opt.label }}
+        {{ opt.label | t }}
       </button>
     }
   </div>
 
-  <select class="form-control section-select" [ngModel]="section()" (ngModelChange)="setSection($event)" aria-label="Request type">
+  <select class="form-control section-select" [ngModel]="section()" (ngModelChange)="setSection($event)" [attr.aria-label]="'requests.type' | t">
     @for (opt of sectionOptions; track opt.value) {
-      <option [ngValue]="opt.value">{{ opt.label }}</option>
+      <option [ngValue]="opt.value">{{ opt.label | t }}</option>
     }
   </select>
 

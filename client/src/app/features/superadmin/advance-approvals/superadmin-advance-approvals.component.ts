@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminSalaryAdvanceService } from '../../../core/services/admin-salary-advance.service';
 import { AdminSalaryAdvance, AdvanceStatus } from '../../../core/models/salary-advance.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
@@ -12,7 +13,7 @@ type Tab = AdvanceStatus | 'all';
 @Component({
   selector: 'app-superadmin-advance-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './superadmin-advance-approvals.component.html',
   styleUrl: './superadmin-advance-approvals.component.scss',
 })
@@ -24,9 +25,9 @@ export class SuperadminAdvanceApprovalsComponent implements OnInit {
 
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
   readonly sortOptions: SortOption[] = [
-    { key: 'date', label: 'Date' },
-    { key: 'amount', label: 'Amount' },
-    { key: 'employee', label: 'Employee' },
+    { key: 'date', label: 'saApprovals.sort.date' },
+    { key: 'amount', label: 'saApprovals.sort.amount' },
+    { key: 'employee', label: 'saApprovals.sort.employee' },
   ];
 
   requests = signal<AdminSalaryAdvance[]>([]);

@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminAttendanceRegularizationService } from '../../../core/services/admin-attendance-regularization.service';
 import { AdminRegularization, RegularizationStatus } from '../../../core/models/attendance-regularization.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
@@ -12,7 +13,7 @@ type Tab = RegularizationStatus | 'all';
 @Component({
   selector: 'app-superadmin-regularization-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './superadmin-regularization-approvals.component.html',
   styleUrl: './superadmin-regularization-approvals.component.scss',
 })
@@ -24,8 +25,8 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
 
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
   readonly sortOptions: SortOption[] = [
-    { key: 'date', label: 'Date' },
-    { key: 'employee', label: 'Employee' },
+    { key: 'date', label: 'saApprovals.sort.date' },
+    { key: 'employee', label: 'saApprovals.sort.employee' },
   ];
 
   requests = signal<AdminRegularization[]>([]);

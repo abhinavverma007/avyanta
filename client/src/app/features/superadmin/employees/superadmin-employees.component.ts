@@ -5,6 +5,8 @@ import { AdminEmployeeService } from '../../../core/services/admin-employee.serv
 import { AuthService } from '../../../core/services/auth.service';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 
 // Card view (mobile) only shows Name + Status until tapped (see the
 // template), so 10 fit per page without feeling cramped — higher than this
@@ -15,7 +17,7 @@ const PAGE_SIZE = 10;
 @Component({
   selector: 'app-superadmin-employees',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TPipe],
   templateUrl: './superadmin-employees.component.html',
   styleUrl: './superadmin-employees.component.scss',
 })
@@ -45,6 +47,7 @@ export class SuperadminEmployeesComponent implements OnInit {
   // not showing controls that would just 403 anyway).
   readonly isAdminScope = inject(API_SCOPE) === 'admin';
   private readonly authService = inject(AuthService);
+  readonly i18n = inject(I18nService);
 
   constructor(
     private employeeService: AdminEmployeeService,
@@ -135,7 +138,7 @@ export class SuperadminEmployeesComponent implements OnInit {
   // null means the server withheld it (a delegated Supervisor/Manager, not
   // the true owner) — see adminEmployee.controller.js's sanitize().
   salaryDisplay(emp: AdminEmployee): string {
-    return emp.salaryMonthly === null ? 'Hidden' : `₹${emp.salaryMonthly.toLocaleString('en-IN')}`;
+    return emp.salaryMonthly === null ? this.i18n.t('saEmp.hidden') : `₹${emp.salaryMonthly.toLocaleString('en-IN')}`;
   }
 
   // Same route serves both a true Admin and a delegated Supervisor/Manager

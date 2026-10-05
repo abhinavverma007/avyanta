@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { ActivatedRoute } from '@angular/router';
 import { SuperadminReimbursementsComponent } from '../reimbursements/superadmin-reimbursements.component';
 import { SuperadminLeaveApprovalsComponent } from '../leave-approvals/superadmin-leave-approvals.component';
@@ -19,16 +20,16 @@ const SECTION_PERMISSION: Record<Section, 'approvalsReimbursements' | 'approvals
 };
 
 const SECTION_LABEL: Record<Section, string> = {
-  reimbursements: 'Reimbursements',
-  leave: 'Leave',
-  regularization: 'Fix Attendance',
-  advance: 'Advance',
+  reimbursements: 'saApprovals.section.reimbursements',
+  leave: 'saApprovals.section.leave',
+  regularization: 'saApprovals.section.regularization',
+  advance: 'saApprovals.section.advance',
 };
 
 @Component({
   selector: 'app-superadmin-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule, SuperadminReimbursementsComponent, SuperadminLeaveApprovalsComponent, SuperadminRegularizationApprovalsComponent, SuperadminAdvanceApprovalsComponent],
+  imports: [CommonModule, FormsModule, SuperadminReimbursementsComponent, SuperadminLeaveApprovalsComponent, SuperadminRegularizationApprovalsComponent, SuperadminAdvanceApprovalsComponent, TPipe],
   templateUrl: './superadmin-approvals.component.html',
   styleUrl: './superadmin-approvals.component.scss',
 })

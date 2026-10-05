@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AdminAuthService } from '../../../core/services/admin-auth.service';
 import { isValidEmail } from '../../../core/utils/validators';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 
 // The one unified entry point — for everyone. There's no separate portal to
 // pick: the same form tries an Employee login (laborer, or a Supervisor/
@@ -16,7 +18,7 @@ import { isValidEmail } from '../../../core/utils/validators';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
@@ -27,19 +29,17 @@ export class LoginComponent {
   loading = signal(false);
   error = signal('');
 
-  readonly greeting = (() => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  })();
+  private readonly greetingHour = new Date().getHours();
+  readonly greetingKey = () =>
+    this.greetingHour < 12 ? 'login.greetingMorning'
+      : this.greetingHour < 17 ? 'login.greetingAfternoon' : 'login.greetingEvening';
 
-  constructor(private auth: AuthService, private adminAuth: AdminAuthService, private router: Router) {}
+  constructor(private auth: AuthService, private adminAuth: AdminAuthService, private router: Router, readonly i18n: I18nService) {}
 
   async onSubmit(): Promise<void> {
     this.error.set('');
     if (!isValidEmail(this.email())) {
-      this.error.set('Enter a valid email address.');
+      this.error.set(this.i18n.t('login.err.invalidEmail'));
       return;
     }
 
@@ -59,7 +59,7 @@ export class LoginComponent {
       this.auth.clearLocalSession();
       this.router.navigate(['/superadmin/employees']);
     } catch (err: any) {
-      this.error.set(err?.error?.message ?? 'Invalid credentials. Please try again.');
+      this.error.set(err?.error?.message ?? this.i18n.t('login.err.invalidCredentials'));
     } finally {
       this.loading.set(false);
     }
