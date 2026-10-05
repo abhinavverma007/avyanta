@@ -6,6 +6,8 @@ import { PushNotificationService } from '../../core/services/push-notification.s
 import { EmployeeTask, TaskRange, TaskStatus } from '../../core/models/task.model';
 import { LocationPickerComponent } from '../../shared/components/location-picker/location-picker.component';
 import { googleMapsDirectionsUrl } from '../../shared/utils/maps-link';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { istDateString } from '../../shared/utils/ist-date';
 
 const PAGE_SIZE = 3;
@@ -14,7 +16,7 @@ const PUSH_BANNER_DISMISSED_KEY = 'sundesh_push_banner_dismissed';
 @Component({
   selector: 'app-tasks',
   standalone: true,
-  imports: [CommonModule, FormsModule, LocationPickerComponent],
+  imports: [CommonModule, FormsModule, LocationPickerComponent, TPipe],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.scss',
 })
@@ -24,11 +26,11 @@ export class TasksComponent implements OnInit {
   // A row of tabs stops scaling once there are more of them than fit on a
   // narrow screen — below 640px this becomes a plain <select> instead (see
   // .section-select in the scss), same pattern as Requests/Approvals.
-  readonly rangeOptions: { value: TaskRange; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'past', label: 'Past Work' },
-    { value: 'today', label: "Today's Work" },
-    { value: 'upcoming', label: 'Upcoming Work' },
+  readonly rangeOptions: { value: TaskRange; labelKey: string }[] = [
+    { value: 'all', labelKey: 'tasks.range.all' },
+    { value: 'past', labelKey: 'tasks.range.past' },
+    { value: 'today', labelKey: 'tasks.range.today' },
+    { value: 'upcoming', labelKey: 'tasks.range.upcoming' },
   ];
 
   range = signal<TaskRange>('today');
@@ -57,6 +59,7 @@ export class TasksComponent implements OnInit {
   constructor(
     private taskService: TaskService,
     private pushNotification: PushNotificationService,
+    readonly i18n: I18nService,
   ) {}
 
   ngOnInit(): void {
@@ -121,10 +124,10 @@ export class TasksComponent implements OnInit {
   }
 
   emptyMessage(): string {
-    if (this.range() === 'all') return 'No work assigned yet.';
-    if (this.range() === 'past') return 'No past work on record.';
-    if (this.range() === 'upcoming') return 'No upcoming work assigned yet.';
-    return 'No work assigned for today.';
+    if (this.range() === 'all') return this.i18n.t('tasks.empty.all');
+    if (this.range() === 'past') return this.i18n.t('tasks.empty.past');
+    if (this.range() === 'upcoming') return this.i18n.t('tasks.empty.upcoming');
+    return this.i18n.t('tasks.empty.today');
   }
 
   coworkerNames(task: EmployeeTask): string {
@@ -136,9 +139,9 @@ export class TasksComponent implements OnInit {
   }
 
   statusLabel(status: TaskStatus): string {
-    if (status === 'completed') return 'Completed';
-    if (status === 'in_progress') return 'In Progress';
-    return 'Pending';
+    if (status === 'completed') return this.i18n.t('tasks.status.completed');
+    if (status === 'in_progress') return this.i18n.t('tasks.status.in_progress');
+    return this.i18n.t('tasks.status.pending');
   }
 
   statusBadgeClass(status: TaskStatus): string {
@@ -182,7 +185,7 @@ export class TasksComponent implements OnInit {
   async submitNote(task: EmployeeTask): Promise<void> {
     const text = this.noteDraftText().trim();
     if (!text) {
-      this.noteError.set('Write something before sending.');
+      this.noteError.set(this.i18n.t('tasks.noteEmpty'));
       return;
     }
     this.submittingNote.set(true);
@@ -192,7 +195,7 @@ export class TasksComponent implements OnInit {
       this.tasks.update(list => list.map(t => (t.id === task.id ? updated : t)));
       this.cancelNoteComposer();
     } catch (err: any) {
-      this.noteError.set(err?.error?.message ?? 'Could not send that note. Please try again.');
+      this.noteError.set(err?.error?.message ?? this.i18n.t('tasks.noteFail'));
     } finally {
       this.submittingNote.set(false);
     }

@@ -2,7 +2,7 @@
   <div class="tabs">
     @for (tab of tabs; track tab) {
       <button class="tab" [class.active]="activeTab() === tab" (click)="setTab(tab)">
-        {{ tab | titlecase }}
+        {{ 'saApprovals.tab.' + tab | t }}
       </button>
     }
   </div>
@@ -10,38 +10,38 @@
   <div class="toolbar">
     <input
       class="form-control search-input"
-      placeholder="Search by employee, department or reason…"
+      [placeholder]="'saLeaveAppr.search' | t"
       [value]="list.search()"
       (input)="list.setSearch($any($event.target).value)"
     />
     <div class="sort-group">
-      <span class="sort-label">Sort:</span>
+      <span class="sort-label">{{ 'saApprovals.sort' | t }}</span>
       @for (opt of sortOptions; track opt.key) {
         <button class="sort-btn" [class.active]="list.sortKey() === opt.key" (click)="list.setSort(opt.key)">
-          {{ opt.label }} @if (list.sortKey() === opt.key) { {{ list.sortDir() === 'asc' ? '↑' : '↓' }} }
+          {{ opt.label | t }} @if (list.sortKey() === opt.key) { {{ list.sortDir() === 'asc' ? '↑' : '↓' }} }
         </button>
       }
     </div>
-    <span class="summary-note">{{ viewCount() }} request{{ viewCount() === 1 ? '' : 's' }} in view</span>
+    <span class="summary-note">{{ (viewCount() === 1 ? 'saLeaveAppr.countOne' : 'saLeaveAppr.countMany') | t:{ n: viewCount() } }}</span>
   </div>
 
   @if (activeTab() === 'pending' && list.pendingIdsInView().length > 0) {
     <div class="bulk-bar">
       <label class="select-all">
         <input type="checkbox" [checked]="list.allPendingSelected()" (change)="list.toggleSelectAllPending()" />
-        Select all pending
+        {{ 'saApprovals.selectAllPending' | t }}
       </label>
       @if (list.selectedCount() > 0) {
-        <span class="bulk-count">{{ list.selectedCount() }} selected</span>
+        <span class="bulk-count">{{ 'saApprovals.selected' | t:{ n: list.selectedCount() } }}</span>
         <input
           class="form-control note-input bulk-note-input"
-          placeholder="Optional note for all selected…"
+          [placeholder]="'saApprovals.bulkNotePh' | t"
           [value]="bulkNote()"
           (input)="bulkNote.set($any($event.target).value)"
         />
         <div class="bulk-buttons">
-          <button class="btn btn-success btn-sm" [disabled]="bulkActing()" (click)="bulkApprove()">Approve selected</button>
-          <button class="btn btn-ghost btn-sm" [disabled]="bulkActing()" (click)="bulkReject()">Reject selected</button>
+          <button class="btn btn-success btn-sm" [disabled]="bulkActing()" (click)="bulkApprove()">{{ 'saApprovals.approveSelected' | t }}</button>
+          <button class="btn btn-ghost btn-sm" [disabled]="bulkActing()" (click)="bulkReject()">{{ 'saApprovals.rejectSelected' | t }}</button>
         </div>
       }
     </div>
@@ -49,9 +49,9 @@
 
   <div class="card table-card">
     @if (loading()) {
-      <p class="empty-note">Loading leave requests…</p>
+      <p class="empty-note">{{ 'saLeaveAppr.loading' | t }}</p>
     } @else if (list.paged().length === 0) {
-      <p class="empty-note">No leave requests in this view.</p>
+      <p class="empty-note">{{ 'saLeaveAppr.empty' | t }}</p>
     } @else {
       <div class="claims-list">
         @for (leave of list.paged(); track leave.id) {
@@ -68,30 +68,30 @@
                 }
                 <span class="claim-amount font-mono">{{ formatDate(leave.date) }}</span>
                 <span class="badge" [class]="leave.status === 'approved' ? 'badge-success' : leave.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
-                  {{ leave.status | titlecase }}
+                  {{ 'saApprovals.status.' + leave.status | t }}
                 </span>
               </div>
               <p class="claim-employee">{{ leave.employee?.name }} · {{ leave.employee?.employeeId }} · {{ leave.employee?.department }}</p>
               <p class="claim-desc">{{ leave.reason }}</p>
               @if (leave.reviewNote) {
-                <p class="claim-note">Review note: {{ leave.reviewNote }}</p>
+                <p class="claim-note">{{ 'saApprovals.reviewNote' | t:{ note: leave.reviewNote } }}</p>
               }
             </div>
 
             @if (leave.status === 'pending') {
               @if (isOwnRequest(leave.employee?.id)) {
-                <p class="own-request-note">Only the owner can review your own request.</p>
+                <p class="own-request-note">{{ 'saApprovals.ownRequest' | t }}</p>
               } @else {
                 <div class="claim-actions">
                   <input
                     class="form-control note-input"
-                    placeholder="Optional note…"
+                    [placeholder]="'saApprovals.notePh' | t"
                     [value]="noteFor(leave.id)"
                     (input)="setNote(leave.id, $any($event.target).value)"
                   />
                   <div class="claim-buttons">
-                    <button class="btn btn-success btn-sm" [disabled]="actingId() === leave.id" (click)="approve(leave)">Approve</button>
-                    <button class="btn btn-ghost btn-sm" [disabled]="actingId() === leave.id" (click)="reject(leave)">Reject</button>
+                    <button class="btn btn-success btn-sm" [disabled]="actingId() === leave.id" (click)="approve(leave)">{{ 'saApprovals.approve' | t }}</button>
+                    <button class="btn btn-ghost btn-sm" [disabled]="actingId() === leave.id" (click)="reject(leave)">{{ 'saApprovals.reject' | t }}</button>
                   </div>
                 </div>
               }
@@ -102,9 +102,9 @@
 
       @if (list.totalPages() > 1) {
         <div class="pagination">
-          <button class="btn btn-ghost btn-sm" [disabled]="list.currentPage() === 1" (click)="list.goToPage(list.currentPage() - 1)">Prev</button>
-          <span class="page-info">Page {{ list.currentPage() }} of {{ list.totalPages() }}</span>
-          <button class="btn btn-ghost btn-sm" [disabled]="list.currentPage() === list.totalPages()" (click)="list.goToPage(list.currentPage() + 1)">Next</button>
+          <button class="btn btn-ghost btn-sm" [disabled]="list.currentPage() === 1" (click)="list.goToPage(list.currentPage() - 1)">{{ 'saApprovals.prev' | t }}</button>
+          <span class="page-info">{{ 'saApprovals.page' | t:{ n: list.currentPage(), total: list.totalPages() } }}</span>
+          <button class="btn btn-ghost btn-sm" [disabled]="list.currentPage() === list.totalPages()" (click)="list.goToPage(list.currentPage() + 1)">{{ 'saApprovals.next' | t }}</button>
         </div>
       }
     }

@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { ADMIN_TOKEN_KEY, AdminAuthService } from '../services/admin-auth.service';
 import { AuthService } from '../services/auth.service';
 import { NoticeService } from '../services/notice.service';
+import { I18nService } from '../i18n/i18n.service';
 
 const EMPLOYEE_TOKEN_KEY = 'sundesh_token';
 
@@ -24,6 +25,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const adminAuthService = inject(AdminAuthService);
   const noticeService = inject(NoticeService);
+  const i18n = inject(I18nService);
   const isAdminRequest = req.url.startsWith(`${environment.apiUrl}/admin/`);
   const isTeamRequest = req.url.startsWith(`${environment.apiUrl}/team/`);
   const tokenKey = isAdminRequest ? ADMIN_TOKEN_KEY : EMPLOYEE_TOKEN_KEY;
@@ -57,7 +59,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         // about it on its own. Refresh it in the background, bounce them
         // somewhere they still have access, and tell them why.
         authService.refreshUser().catch(() => {});
-        noticeService.show('Your access to this feature was updated by the owner.');
+        noticeService.show(i18n.t('notice.accessUpdated'));
         router.navigate(['/dashboard']);
       }
       return throwError(() => err);

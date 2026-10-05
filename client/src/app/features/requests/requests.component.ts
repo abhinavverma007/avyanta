@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LeaveComponent } from '../leave/leave.component';
@@ -11,7 +12,7 @@ type Section = 'leave' | 'reimbursement' | 'regularization' | 'advance';
 @Component({
   selector: 'app-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, LeaveComponent, ReimbursementsComponent, RegularizationComponent, SalaryAdvanceComponent],
+  imports: [CommonModule, FormsModule, TPipe, LeaveComponent, ReimbursementsComponent, RegularizationComponent, SalaryAdvanceComponent],
   templateUrl: './requests.component.html',
   styleUrl: './requests.component.scss',
 })
@@ -22,10 +23,10 @@ export class RequestsComponent {
   // template); desktop keeps the tab row. Add new request types here once,
   // both views pick it up.
   readonly sectionOptions: { value: Section; label: string }[] = [
-    { value: 'leave', label: 'Leave' },
-    { value: 'reimbursement', label: 'Reimbursement' },
-    { value: 'regularization', label: 'Fix Attendance' },
-    { value: 'advance', label: 'Advance' },
+    { value: 'leave', label: 'requests.tab.leave' },
+    { value: 'reimbursement', label: 'requests.tab.reimbursement' },
+    { value: 'regularization', label: 'requests.tab.regularization' },
+    { value: 'advance', label: 'requests.tab.advance' },
   ];
 
   section = signal<Section>('leave');

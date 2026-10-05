@@ -1,16 +1,16 @@
 <div class="panel fade-in">
-  <p class="tab-intro">Need cash before month-end? Request an advance — it's deducted from next month's salary once approved.</p>
+  <p class="tab-intro">{{ 'advance.intro' | t }}</p>
 
   <div class="card card-padded form-card">
-    <h3 class="form-card-title">Request Advance</h3>
+    <h3 class="form-card-title">{{ 'advance.title' | t }}</h3>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label">Amount (₹)</label>
+        <label class="form-label">{{ 'requests.amount' | t }}</label>
         <input class="form-control" inputmode="numeric" [value]="formatMoney(amount())" (input)="onAmountInput($any($event.target).value)" />
       </div>
       <div class="form-group reason-group">
-        <label class="form-label">Reason</label>
-        <input class="form-control" placeholder="e.g. Family emergency" [value]="reason()" (input)="reason.set($any($event.target).value)" />
+        <label class="form-label">{{ 'requests.reason' | t }}</label>
+        <input class="form-control" [placeholder]="'advance.reasonPh' | t" [value]="reason()" (input)="reason.set($any($event.target).value)" />
       </div>
     </div>
 
@@ -18,16 +18,16 @@
     @if (success()) { <p class="success-msg">{{ success() }}</p> }
 
     <button class="btn btn-blue" [disabled]="submitting()" (click)="submitRequest()">
-      {{ submitting() ? 'Submitting…' : 'Request Advance' }}
+      {{ submitting() ? ('requests.submitting' | t) : ('advance.submit' | t) }}
     </button>
   </div>
 
   <div class="card table-card">
-    <h3 class="table-title">Advance History</h3>
+    <h3 class="table-title">{{ 'advance.history' | t }}</h3>
     @if (loading()) {
-      <p class="empty-note">Loading…</p>
+      <p class="empty-note">{{ 'requests.loading' | t }}</p>
     } @else if (requests().length === 0) {
-      <p class="empty-note">No advance requests yet.</p>
+      <p class="empty-note">{{ 'advance.empty' | t }}</p>
     } @else {
       <div class="claims-list">
         @for (r of requests(); track r.id) {
@@ -35,13 +35,13 @@
             <div class="claim-top">
               <span class="claim-amount font-mono">₹{{ r.amount | number }}</span>
               <span class="badge" [class]="r.status === 'approved' ? 'badge-success' : r.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
-                {{ r.status | titlecase }}
+                {{ ('requests.status.' + r.status) | t }}
               </span>
             </div>
             <p class="claim-desc">{{ r.reason }}</p>
-            <p class="claim-date">Requested {{ formatDate(r.requestedDate) }}</p>
+            <p class="claim-date">{{ 'advance.requested' | t }} {{ formatDate(r.requestedDate) }}</p>
             @if (r.reviewNote) {
-              <p class="claim-note">Note from superadmin: {{ r.reviewNote }}</p>
+              <p class="claim-note">{{ 'requests.superadminNote' | t }}: {{ r.reviewNote }}</p>
             }
           </div>
         }

@@ -1,19 +1,22 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminAttendanceService } from '../../../core/services/admin-attendance.service';
 import { AdminMonthlyAttendance, DayAttendance } from '../../../core/models/attendance.model';
+import { TPipe } from '../../../core/i18n/t.pipe';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { formatWorkDuration } from '../../../core/utils/format-duration';
 
 @Component({
   selector: 'app-superadmin-employee-attendance',
   standalone: true,
-  imports: [CommonModule, SlicePipe, RouterLink],
+  imports: [CommonModule, SlicePipe, RouterLink, TPipe],
   templateUrl: './superadmin-employee-attendance.component.html',
   styleUrl: './superadmin-employee-attendance.component.scss',
 })
 export class SuperadminEmployeeAttendanceComponent implements OnInit {
-  readonly DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  readonly DOW = ['saEmpAtt.dow.sun', 'saEmpAtt.dow.mon', 'saEmpAtt.dow.tue', 'saEmpAtt.dow.wed', 'saEmpAtt.dow.thu', 'saEmpAtt.dow.fri', 'saEmpAtt.dow.sat'];
+  readonly i18n = inject(I18nService);
   readonly today = new Date();
   readonly formatWorkDuration = formatWorkDuration;
 
@@ -104,8 +107,8 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit {
 
   statusLabel(status: string): string {
     const map: Record<string, string> = {
-      present: 'Present', absent: 'Absent', leave: 'Leave', pending: 'Pending Approval', future: '—',
+      present: 'saEmpAtt.present', absent: 'saEmpAtt.absent', leave: 'saEmpAtt.leave', pending: 'saEmpAtt.pending',
     };
-    return map[status] ?? status;
+    return map[status] ? this.i18n.t(map[status]) : (status === 'future' ? '—' : status);
   }
 }

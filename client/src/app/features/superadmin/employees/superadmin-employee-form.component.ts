@@ -8,6 +8,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Role } from '../../../core/models/role.model';
 import { generatePassword } from '../../../core/utils/generate-password';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 
 interface EmployeeForm {
   name: string;
@@ -51,7 +53,7 @@ function extractPhoneDigits(raw: string): string {
 @Component({
   selector: 'app-superadmin-employee-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './superadmin-employee-form.component.html',
   styleUrl: './superadmin-employee-form.component.scss',
 })
@@ -81,6 +83,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
 
   readonly isAdminScope = inject(API_SCOPE) === 'admin';
   private readonly authService = inject(AuthService);
+  readonly i18n = inject(I18nService);
   roles = signal<Role[]>([]);
 
   @ViewChild('upiIdInput') upiIdInputRef?: ElementRef<HTMLInputElement>;
@@ -112,7 +115,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
     // controller layer, attempt to submit) their own record, the same
     // conflict-of-interest gap already closed for approvals.
     if (!this.isAdminScope && id === this.authService.user()?.id) {
-      this.loadError.set('You cannot edit your own employee record — ask the owner to make this change.');
+      this.loadError.set('saEmpForm.errOwnRecord');
       return;
     }
 
@@ -151,9 +154,17 @@ export class SuperadminEmployeeFormComponent implements OnInit {
           });
         }
       })
-      .catch(() => this.loadError.set('Could not load this employee. They may have been removed.'))
+      .catch(() => this.loadError.set('saEmpForm.errLoad'))
       .finally(() => this.loadingEmployee.set(false));
   }
+
+  // loadError/formError hold either an i18n key (local messages) or raw
+  // server text; keys are translated at display time.
+  private resolveMsg(v: string): string {
+    return v.startsWith('saEmpForm.') ? this.i18n.t(v) : v;
+  }
+  loadErrorText(): string { return this.resolveMsg(this.loadError()); }
+  formErrorText(): string { return this.resolveMsg(this.formError()); }
 
   goBack(): void {
     this.router.navigate(['/superadmin/employees']);
@@ -225,7 +236,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
 
   onPhoneBlur(): void {
     const len = this.form().phone.length;
-    this.phoneError.set(len > 0 && len < 10 ? 'Phone number must be exactly 10 digits.' : '');
+    this.phoneError.set(len > 0 && len < 10 ? 'saEmpForm.errPhone' : '');
   }
 
   onSalaryInput(value: string): void {
@@ -248,14 +259,14 @@ export class SuperadminEmployeeFormComponent implements OnInit {
 
     if (!this.isEditMode()) {
       if (!f.name || !f.joinDate) {
-        this.formError.set('Name and join date are required.');
+        this.formError.set('saEmpForm.errRequired');
         return;
       }
     }
 
     const aadhaarDigits = f.aadhaarNumber.replace(/-/g, '');
     if (this.isAdminScope && aadhaarDigits && aadhaarDigits.length !== 12) {
-      this.formError.set('Aadhaar number must be 12 digits.');
+      this.formError.set('saEmpForm.errAadhaar');
       return;
     }
 
@@ -268,8 +279,8 @@ export class SuperadminEmployeeFormComponent implements OnInit {
       phoneToSend = this.originalPhone;
     } else {
       if (f.phone && f.phone.length !== 10) {
-        this.phoneError.set('Phone number must be exactly 10 digits.');
-        this.formError.set('Phone number must be exactly 10 digits.');
+        this.phoneError.set('saEmpForm.errPhone');
+        this.formError.set('saEmpForm.errPhone');
         return;
       }
       phoneToSend = f.phone || '';
@@ -318,7 +329,7 @@ export class SuperadminEmployeeFormComponent implements OnInit {
         });
       }
     } catch (err: any) {
-      this.formError.set(err?.error?.message ?? 'Something went wrong. Please try again.');
+      this.formError.set(err?.error?.message ?? 'saEmpForm.errGeneric');
     } finally {
       this.saving.set(false);
     }

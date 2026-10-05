@@ -6,12 +6,14 @@ import { AttendanceService } from '../../core/services/attendance.service';
 import { LeaveService } from '../../core/services/leave.service';
 import { MonthlyAttendance } from '../../core/models/attendance.model';
 import { LeaveSummary } from '../../core/models/leave.model';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { formatWorkDuration } from '../../core/utils/format-duration';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TPipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -33,12 +35,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Mini calendar
   readonly today = new Date();
-  readonly DAYS_OF_WEEK = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  readonly DAYS_OF_WEEK = ['dashboard.dowSun', 'dashboard.dowMon', 'dashboard.dowTue', 'dashboard.dowWed', 'dashboard.dowThu', 'dashboard.dowFri', 'dashboard.dowSat'];
 
   constructor(
     private auth: AuthService,
     private attendance: AttendanceService,
     private leaveService: LeaveService,
+    readonly i18n: I18nService,
   ) {}
 
   ngOnInit(): void {
@@ -108,9 +111,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   greetUser(): string {
     const h = this.currentTime().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 12) return this.i18n.t('dashboard.goodMorning');
+    if (h < 17) return this.i18n.t('dashboard.goodAfternoon');
+    return this.i18n.t('dashboard.goodEvening');
   }
 
   getFirstName(): string {

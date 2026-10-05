@@ -1,38 +1,38 @@
 <div class="page fade-in">
   <div class="page-header">
     <div class="page-header-row">
-      <h1 class="page-title">Audit Log</h1>
+      <h1 class="page-title">{{ 'saAudit.title' | t }}</h1>
       <button
         type="button"
         class="btn btn-ghost refresh-btn"
         [disabled]="loading()"
         (click)="load()"
-        aria-label="Refresh">
+        [attr.aria-label]="'saAudit.refresh' | t">
         <svg class="refresh-icon" [class.spinning]="loading()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
           <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
         </svg>
-        Refresh
+        {{ 'saAudit.refresh' | t }}
       </button>
     </div>
-    <p class="page-sub">Every action taken on your behalf — by you or anyone with a delegated role — with who did it and when.</p>
+    <p class="page-sub">{{ 'saAudit.sub' | t }}</p>
   </div>
 
   <div class="search-row">
     <input
       class="form-control search-input"
-      placeholder="Filter this page by actor name…"
+      [placeholder]="'saAudit.filterPh' | t"
       [value]="actorFilter()"
       (input)="onActorFilterInput($any($event.target).value)"
     />
-    <span class="result-count">{{ total() }} total entries</span>
+    <span class="result-count">{{ 'saAudit.total' | t:{ n: total() } }}</span>
   </div>
 
   <div class="card table-card">
     @if (loading()) {
-      <p class="empty-note">Loading…</p>
+      <p class="empty-note">{{ 'saAudit.loading' | t }}</p>
     } @else if (filteredEntries.length === 0) {
-      <p class="empty-note">{{ entries().length === 0 ? 'No activity recorded yet.' : 'No entries on this page match that name.' }}</p>
+      <p class="empty-note">{{ (entries().length === 0 ? 'saAudit.empty' : 'saAudit.noMatch') | t }}</p>
     } @else {
       <div class="log-list">
         @for (entry of filteredEntries; track entry.id) {
@@ -40,7 +40,7 @@
             <div class="log-main">
               <div class="log-top">
                 <span class="badge" [class]="entry.actorType === 'admin' ? 'badge-info' : 'badge-warning'">
-                  {{ entry.actorType === 'admin' ? 'Owner' : 'Delegated' }}
+                  {{ (entry.actorType === 'admin' ? 'saAudit.owner' : 'saAudit.delegated') | t }}
                 </span>
                 <span class="log-actor">{{ entry.actorName }}</span>
               </div>
@@ -51,9 +51,9 @@
         }
       </div>
       <div class="pagination-row">
-        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
-        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">{{ 'saAudit.prev' | t }}</button>
+        <span class="page-indicator">{{ 'saAudit.pageOf' | t:{ page: page(), total: totalPages() } }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">{{ 'saAudit.next' | t }}</button>
       </div>
     }
   </div>

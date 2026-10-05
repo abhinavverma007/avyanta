@@ -2,6 +2,8 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminRoleService } from '../../../core/services/admin-role.service';
 
 // Create-only — editing an existing role's permissions still happens
@@ -12,7 +14,7 @@ import { AdminRoleService } from '../../../core/services/admin-role.service';
 @Component({
   selector: 'app-superadmin-role-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './superadmin-role-form.component.html',
   styleUrl: './superadmin-role-form.component.scss',
 })
@@ -21,7 +23,12 @@ export class SuperadminRoleFormComponent {
   creating = signal(false);
   error = signal('');
 
-  constructor(private roleService: AdminRoleService, private router: Router) {}
+  constructor(private roleService: AdminRoleService, private router: Router, readonly i18n: I18nService) {}
+
+  // Signal holds either an i18n key (ours) or a raw server message.
+  msg(v: string): string {
+    return v.startsWith('saRoleForm.') ? this.i18n.t(v) : v;
+  }
 
   goBack(): void {
     this.router.navigate(['/superadmin/roles']);
@@ -30,7 +37,7 @@ export class SuperadminRoleFormComponent {
   async createRole(): Promise<void> {
     this.error.set('');
     if (!this.name().trim()) {
-      this.error.set('A role name is required.');
+      this.error.set('saRoleForm.errName');
       return;
     }
     this.creating.set(true);
@@ -38,7 +45,7 @@ export class SuperadminRoleFormComponent {
       await this.roleService.create({ name: this.name().trim() });
       this.router.navigate(['/superadmin/roles']);
     } catch (err: any) {
-      this.error.set(err?.error?.message ?? 'Could not create role. Please try again.');
+      this.error.set(err?.error?.message ?? 'saRoleForm.errCreate');
       this.creating.set(false);
     }
   }

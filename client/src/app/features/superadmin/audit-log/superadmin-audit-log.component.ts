@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminAuditLogService } from '../../../core/services/admin-audit-log.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { AuditLogEntry } from '../../../core/models/audit-log.model';
 
 // Read-only, glance-and-scan rows — page size is deliberately larger than
@@ -12,7 +13,7 @@ const PAGE_SIZE = 20;
 @Component({
   selector: 'app-superadmin-audit-log',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './superadmin-audit-log.component.html',
   styleUrl: './superadmin-audit-log.component.scss',
 })

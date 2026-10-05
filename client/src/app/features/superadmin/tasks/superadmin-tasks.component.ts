@@ -6,6 +6,7 @@ import { AdminEmployeeService } from '../../../core/services/admin-employee.serv
 import { AdminTask, TaskStatus } from '../../../core/models/admin-task.model';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { googleMapsDirectionsUrl } from '../../../shared/utils/maps-link';
 
 const PAGE_SIZE = 10;
@@ -14,7 +15,7 @@ const EMPLOYEE_SEARCH_LIMIT = 8;
 @Component({
   selector: 'app-superadmin-tasks',
   standalone: true,
-  imports: [CommonModule, LocationPickerComponent],
+  imports: [CommonModule, LocationPickerComponent, TPipe],
   templateUrl: './superadmin-tasks.component.html',
   styleUrl: './superadmin-tasks.component.scss',
 })
@@ -35,9 +36,9 @@ export class SuperadminTasksComponent implements OnInit {
   );
 
   readonly statusOptions: { value: TaskStatus; label: string }[] = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'completed', label: 'Completed' },
+    { value: 'pending', label: 'saTasks.statusPending' },
+    { value: 'in_progress', label: 'saTasks.statusInProgress' },
+    { value: 'completed', label: 'saTasks.statusCompleted' },
   ];
 
   // Employee filter — search-driven so this stays usable with hundreds of
@@ -139,9 +140,9 @@ export class SuperadminTasksComponent implements OnInit {
   }
 
   statusLabel(status: TaskStatus): string {
-    if (status === 'completed') return 'Completed';
-    if (status === 'in_progress') return 'In Progress';
-    return 'Pending';
+    if (status === 'completed') return 'saTasks.statusCompleted';
+    if (status === 'in_progress') return 'saTasks.statusInProgress';
+    return 'saTasks.statusPending';
   }
 
   statusBadgeClass(status: TaskStatus): string {

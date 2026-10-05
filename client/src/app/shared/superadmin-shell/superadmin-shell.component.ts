@@ -7,11 +7,13 @@ import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PermissionKey } from '../../core/models/role.model';
 import { ICONS } from '../icons';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 interface NavItem {
   path: string;
-  label: string;
+  labelKey: string;
   icon: string;
   // Which permission gates this tab for a delegated Supervisor/Manager
   // session — irrelevant for a true Admin session, which always sees every
@@ -23,7 +25,7 @@ interface NavItem {
 @Component({
   selector: 'app-superadmin-shell',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, RouterLink, RouterLinkActive, NotificationBellComponent],
+  imports: [CommonModule, FormsModule, RouterModule, RouterLink, RouterLinkActive, NotificationBellComponent, TPipe],
   templateUrl: './superadmin-shell.component.html',
   styleUrl: './superadmin-shell.component.scss',
 })
@@ -34,10 +36,10 @@ export class SuperadminShellComponent {
   // They're also never shown to a delegated session at all (see the
   // template) — that stays strictly owner-only.
   readonly allNavItems: NavItem[] = [
-    { path: '/superadmin/employees', label: 'Employees', icon: 'users', permission: 'employees' },
-    { path: '/superadmin/tasks', label: 'Tasks', icon: 'tasks', permission: 'tasks' },
-    { path: '/superadmin/approvals', label: 'Approvals', icon: 'approvals', permission: 'approvalsReimbursements' },
-    { path: '/superadmin/salary', label: 'Salary', icon: 'wallet', permission: 'salary' },
+    { path: '/superadmin/employees', labelKey: 'nav.employees', icon: 'users', permission: 'employees' },
+    { path: '/superadmin/tasks', labelKey: 'nav.tasks', icon: 'tasks', permission: 'tasks' },
+    { path: '/superadmin/approvals', labelKey: 'nav.approvals', icon: 'approvals', permission: 'approvalsReimbursements' },
+    { path: '/superadmin/salary', labelKey: 'nav.salary', icon: 'wallet', permission: 'salary' },
   ];
 
   menuOpen = signal(false);
@@ -96,6 +98,7 @@ export class SuperadminShellComponent {
   constructor(
     private adminAuth: AdminAuthService,
     private auth: AuthService,
+    readonly i18n: I18nService,
     private sanitizer: DomSanitizer,
   ) {
     // Unlike the plain employee shell, this one scrolls the whole document
@@ -105,6 +108,11 @@ export class SuperadminShellComponent {
     effect(() => {
       document.body.style.overflow = this.menuOpen() ? 'hidden' : '';
     });
+  }
+
+  toggleLanguage(): void {
+    this.i18n.toggle();
+    this.closeMenu();
   }
 
   toggleMenu(): void {
@@ -133,15 +141,15 @@ export class SuperadminShellComponent {
     this.cpSuccess.set('');
 
     if (!this.currentPassword() || !this.newPassword() || !this.confirmPassword()) {
-      this.cpError.set('All fields are required.');
+      this.cpError.set(this.i18n.t('sa.err.allRequired'));
       return;
     }
     if (this.newPassword().length < 6) {
-      this.cpError.set('New password must be at least 6 characters.');
+      this.cpError.set(this.i18n.t('sa.err.minLength'));
       return;
     }
     if (this.newPassword() !== this.confirmPassword()) {
-      this.cpError.set('New password and confirmation do not match.');
+      this.cpError.set(this.i18n.t('sa.err.mismatch'));
       return;
     }
 
@@ -152,13 +160,13 @@ export class SuperadminShellComponent {
       } else {
         await this.auth.changePassword(this.currentPassword(), this.newPassword());
       }
-      this.cpSuccess.set('Password changed successfully. Logging you out… Please re-login.');
+      this.cpSuccess.set(this.i18n.t('sa.pwChanged'));
       this.currentPassword.set('');
       this.newPassword.set('');
       this.confirmPassword.set('');
       setTimeout(() => this.logout(), 1800);
     } catch (err: any) {
-      this.cpError.set(err?.error?.message ?? 'Could not change password. Please try again.');
+      this.cpError.set(err?.error?.message ?? this.i18n.t('sa.err.changeFailed'));
       this.submitting.set(false);
     }
   }

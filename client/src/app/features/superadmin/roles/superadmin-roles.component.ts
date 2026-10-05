@@ -2,13 +2,15 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminRoleService } from '../../../core/services/admin-role.service';
 import { PERMISSION_CATALOG, Role, RoleEmployee, RolePermissions } from '../../../core/models/role.model';
 
 @Component({
   selector: 'app-superadmin-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TPipe],
   templateUrl: './superadmin-roles.component.html',
   styleUrl: './superadmin-roles.component.scss',
 })
@@ -37,7 +39,24 @@ export class SuperadminRolesComponent implements OnInit {
   roleEmployees = signal<RoleEmployee[] | null>(null);
   roleEmployeesLoading = signal(false);
 
-  constructor(private roleService: AdminRoleService) {}
+  constructor(private roleService: AdminRoleService, readonly i18n: I18nService) {}
+
+  // Signal holds either an i18n key (ours) or a raw server message.
+  msg(v: string): string {
+    return v.startsWith('saRoles.') ? this.i18n.t(v) : v;
+  }
+
+  permLabel(p: { key: string; label: string }): string {
+    const k = 'saRoles.perm.' + p.key + '.label';
+    const v = this.i18n.t(k);
+    return v === k ? p.label : v;
+  }
+
+  permDesc(p: { key: string; description: string }): string {
+    const k = 'saRoles.perm.' + p.key + '.desc';
+    const v = this.i18n.t(k);
+    return v === k ? p.description : v;
+  }
 
   ngOnInit(): void {
     this.load();
@@ -86,7 +105,7 @@ export class SuperadminRolesComponent implements OnInit {
       this.draftPermissions.set(null);
       this.roleEmployees.set(null);
     } catch (err: any) {
-      this.actionError.set(err?.error?.message ?? 'Could not save. Please try again.');
+      this.actionError.set(err?.error?.message ?? 'saRoles.errSave');
     } finally {
       this.saving.set(false);
     }
@@ -98,7 +117,7 @@ export class SuperadminRolesComponent implements OnInit {
       await this.roleService.remove(role.id);
       this.roles.update(list => list.filter(r => r.id !== role.id));
     } catch (err: any) {
-      this.actionError.set(err?.error?.message ?? 'Could not delete role.');
+      this.actionError.set(err?.error?.message ?? 'saRoles.errDelete');
     }
   }
 }

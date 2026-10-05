@@ -1,5 +1,5 @@
 <div class="page fade-in">
-  <a class="back-link" [routerLink]="['/superadmin/employees']">← Back to Employees</a>
+  <a class="back-link" [routerLink]="['/superadmin/employees']">{{ 'saEmpProfile.back' | t }}</a>
 
   <div class="page-header">
     @if (employee(); as emp) {
@@ -7,38 +7,38 @@
         {{ emp.name }}
         <span class="emp-code">{{ emp.employeeId }}</span>
       </h1>
-      <p class="page-sub">{{ emp.designation || 'Employee' }}{{ emp.department ? ' · ' + emp.department : '' }}</p>
+      <p class="page-sub">{{ emp.designation || ('saEmpProfile.employee' | t) }}{{ emp.department ? ' · ' + emp.department : '' }}</p>
     } @else if (!loadingEmployee()) {
-      <h1 class="page-title">Employee Profile</h1>
+      <h1 class="page-title">{{ 'saEmpProfile.title' | t }}</h1>
     }
-    <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', employeeId, 'attendance']">See Attendance History</a>
+    <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/employees', employeeId, 'attendance']">{{ 'saEmpProfile.seeAttendance' | t }}</a>
   </div>
 
   @if (loadingEmployee()) {
-    <div class="card card-padded"><p class="empty-note">Loading…</p></div>
+    <div class="card card-padded"><p class="empty-note">{{ 'saEmpProfile.loading' | t }}</p></div>
   } @else if (tabOptions.length === 0) {
-    <div class="card card-padded"><p class="empty-note">You don't have permission to view this employee's request history.</p></div>
+    <div class="card card-padded"><p class="empty-note">{{ 'saEmpProfile.noPermission' | t }}</p></div>
   } @else {
     <div class="section-switcher">
       @for (opt of tabOptions; track opt.value) {
         <button class="section-tab" [class.active]="tab() === opt.value" (click)="setTab(opt.value)">
-          {{ opt.label }}
+          {{ opt.label | t }}
         </button>
       }
     </div>
 
-    <select class="form-control section-select" [ngModel]="tab()" (ngModelChange)="setTab($event)" aria-label="Section">
+    <select class="form-control section-select" [ngModel]="tab()" (ngModelChange)="setTab($event)" [attr.aria-label]="'saEmpProfile.section' | t">
       @for (opt of tabOptions; track opt.value) {
-        <option [ngValue]="opt.value">{{ opt.label }}</option>
+        <option [ngValue]="opt.value">{{ opt.label | t }}</option>
       }
     </select>
 
     <div class="card table-card">
       @if (loading()) {
-        <p class="empty-note">Loading…</p>
+        <p class="empty-note">{{ 'saEmpProfile.loading' | t }}</p>
       } @else if (tab() === 'leave') {
         @if (leaves().length === 0) {
-          <p class="empty-note">No leave requests on record.</p>
+          <p class="empty-note">{{ 'saEmpProfile.emptyLeave' | t }}</p>
         } @else {
           <div class="history-list">
             @for (l of leaves(); track l.id) {
@@ -46,10 +46,10 @@
                 <div class="history-main">
                   <div class="history-top">
                     <span class="history-date font-mono">{{ l.date }}</span>
-                    <span class="badge" [class]="approvalBadgeClass(l.status)">{{ l.status }}</span>
+                    <span class="badge" [class]="approvalBadgeClass(l.status)">{{ 'saEmpProfile.status.' + l.status | t }}</span>
                   </div>
                   <p class="history-desc">{{ l.reason }}</p>
-                  @if (l.reviewNote) { <p class="history-note">Note: {{ l.reviewNote }}</p> }
+                  @if (l.reviewNote) { <p class="history-note">{{ 'saEmpProfile.note' | t:{ note: l.reviewNote } }}</p> }
                 </div>
               </div>
             }
@@ -57,7 +57,7 @@
         }
       } @else if (tab() === 'reimbursement') {
         @if (reimbursements().length === 0) {
-          <p class="empty-note">No reimbursement claims on record.</p>
+          <p class="empty-note">{{ 'saEmpProfile.emptyReimb' | t }}</p>
         } @else {
           <div class="history-list">
             @for (r of reimbursements(); track r.id) {
@@ -67,10 +67,10 @@
                     <span class="history-date font-mono">{{ r.date }}</span>
                     <span class="history-amount">₹{{ r.amount | number }}</span>
                     <span class="badge badge-info">{{ r.category }}</span>
-                    <span class="badge" [class]="approvalBadgeClass(r.status)">{{ r.status }}</span>
+                    <span class="badge" [class]="approvalBadgeClass(r.status)">{{ 'saEmpProfile.status.' + r.status | t }}</span>
                   </div>
                   @if (r.description) { <p class="history-desc">{{ r.description }}</p> }
-                  @if (r.reviewNote) { <p class="history-note">Note: {{ r.reviewNote }}</p> }
+                  @if (r.reviewNote) { <p class="history-note">{{ 'saEmpProfile.note' | t:{ note: r.reviewNote } }}</p> }
                 </div>
               </div>
             }
@@ -78,7 +78,7 @@
         }
       } @else if (tab() === 'advance') {
         @if (advances().length === 0) {
-          <p class="empty-note">No salary advance requests on record.</p>
+          <p class="empty-note">{{ 'saEmpProfile.emptyAdvance' | t }}</p>
         } @else {
           <div class="history-list">
             @for (a of advances(); track a.id) {
@@ -87,10 +87,10 @@
                   <div class="history-top">
                     <span class="history-date font-mono">{{ a.requestedDate }}</span>
                     <span class="history-amount">₹{{ a.amount | number }}</span>
-                    <span class="badge" [class]="approvalBadgeClass(a.status)">{{ a.status }}</span>
+                    <span class="badge" [class]="approvalBadgeClass(a.status)">{{ 'saEmpProfile.status.' + a.status | t }}</span>
                   </div>
                   <p class="history-desc">{{ a.reason }}</p>
-                  @if (a.reviewNote) { <p class="history-note">Note: {{ a.reviewNote }}</p> }
+                  @if (a.reviewNote) { <p class="history-note">{{ 'saEmpProfile.note' | t:{ note: a.reviewNote } }}</p> }
                 </div>
               </div>
             }
@@ -98,7 +98,7 @@
         }
       } @else if (tab() === 'tasks') {
         @if (tasks().length === 0) {
-          <p class="empty-note">No tasks assigned yet.</p>
+          <p class="empty-note">{{ 'saEmpProfile.emptyTasks' | t }}</p>
         } @else {
           <div class="history-list">
             @for (t of tasks(); track t.id) {
@@ -107,7 +107,7 @@
                   <div class="history-top">
                     <span class="history-date font-mono">{{ t.date }}</span>
                     <span class="history-title">{{ t.title }}</span>
-                    <span class="badge" [class]="taskBadgeClass(t.status)">{{ t.status.replace('_', ' ') }}</span>
+                    <span class="badge" [class]="taskBadgeClass(t.status)">{{ 'saEmpProfile.task.' + t.status | t }}</span>
                   </div>
                   @if (t.site) { <p class="history-desc">📍 {{ t.site }}</p> }
                 </div>

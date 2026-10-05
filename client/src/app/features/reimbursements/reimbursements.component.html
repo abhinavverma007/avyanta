@@ -1,11 +1,11 @@
 <div class="panel fade-in">
-  <p class="tab-intro">Submit expenses like petrol or food for approval — approved claims are added to your payable salary.</p>
+  <p class="tab-intro">{{ 'reimb.intro' | t }}</p>
 
   <div class="card card-padded form-card">
-    <h3 class="form-card-title">New Claim</h3>
+    <h3 class="form-card-title">{{ 'reimb.new' | t }}</h3>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label">Category</label>
+        <label class="form-label">{{ 'reimb.category' | t }}</label>
         <select class="form-control" [ngModel]="category()" (ngModelChange)="category.set($event)">
           @for (c of categories; track c) {
             <option [ngValue]="c">{{ categoryLabel(c) }}</option>
@@ -13,15 +13,15 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Amount (₹)</label>
+        <label class="form-label">{{ 'requests.amount' | t }}</label>
         <input class="form-control" inputmode="numeric" [value]="formatMoney(amount())" (input)="onAmountInput($any($event.target).value)" />
       </div>
       <div class="form-group">
-        <label class="form-label">Expense Date</label>
+        <label class="form-label">{{ 'reimb.expenseDate' | t }}</label>
         <input class="form-control" type="date" [value]="date()" (input)="date.set($any($event.target).value)" />
       </div>
       <div class="form-group description-group">
-        <label class="form-label">Description</label>
+        <label class="form-label">{{ 'reimb.description' | t }}</label>
         <input class="form-control" [placeholder]="descriptionPlaceholder()" [value]="description()" (input)="description.set($any($event.target).value)" />
       </div>
     </div>
@@ -30,16 +30,16 @@
     @if (success()) { <p class="success-msg">{{ success() }}</p> }
 
     <button class="btn btn-blue" [disabled]="submitting()" (click)="submitClaim()">
-      {{ submitting() ? 'Submitting…' : 'Submit Claim' }}
+      {{ submitting() ? ('requests.submitting' | t) : ('reimb.submit' | t) }}
     </button>
   </div>
 
   <div class="card table-card">
-    <h3 class="table-title">Your Claims</h3>
+    <h3 class="table-title">{{ 'reimb.yours' | t }}</h3>
     @if (loading()) {
-      <p class="empty-note">Loading…</p>
+      <p class="empty-note">{{ 'requests.loading' | t }}</p>
     } @else if (claims().length === 0) {
-      <p class="empty-note">No claims submitted yet.</p>
+      <p class="empty-note">{{ 'reimb.empty' | t }}</p>
     } @else {
       <div class="claims-list">
         @for (claim of claims(); track claim.id) {
@@ -49,13 +49,13 @@
                 <span class="badge badge-info">{{ categoryLabel(claim.category) }}</span>
                 <span class="claim-amount font-mono">₹{{ claim.amount | number }}</span>
                 <span class="badge" [class]="claim.status === 'approved' ? 'badge-success' : claim.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
-                  {{ claim.status | titlecase }}
+                  {{ ('requests.status.' + claim.status) | t }}
                 </span>
               </div>
               <p class="claim-desc">{{ claim.description || '—' }}</p>
-              <p class="claim-date">Expense date: {{ claim.date }}</p>
+              <p class="claim-date">{{ 'reimb.expenseDate' | t }}: {{ claim.date }}</p>
               @if (claim.reviewNote) {
-                <p class="claim-note">Note from superadmin: {{ claim.reviewNote }}</p>
+                <p class="claim-note">{{ 'requests.superadminNote' | t }}: {{ claim.reviewNote }}</p>
               }
             </div>
           </div>

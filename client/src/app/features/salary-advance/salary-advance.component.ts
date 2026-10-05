@@ -1,13 +1,15 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { SalaryAdvanceService } from '../../core/services/salary-advance.service';
 import { SalaryAdvanceRequest } from '../../core/models/salary-advance.model';
 
 @Component({
   selector: 'app-salary-advance',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './salary-advance.component.html',
   styleUrl: './salary-advance.component.scss',
 })
@@ -20,6 +22,8 @@ export class SalaryAdvanceComponent implements OnInit {
   submitting = signal(false);
   error = signal('');
   success = signal('');
+
+  readonly i18n = inject(I18nService);
 
   constructor(private advanceService: SalaryAdvanceService) {}
 
@@ -50,23 +54,23 @@ export class SalaryAdvanceComponent implements OnInit {
     this.success.set('');
 
     if (!this.amount() || this.amount()! <= 0) {
-      this.error.set('Enter an amount greater than 0.');
+      this.error.set(this.i18n.t('requests.errAmount'));
       return;
     }
     if (!this.reason().trim()) {
-      this.error.set('A reason is required.');
+      this.error.set(this.i18n.t('requests.errReason'));
       return;
     }
 
     this.submitting.set(true);
     try {
       await this.advanceService.apply({ amount: this.amount()!, reason: this.reason() });
-      this.success.set('Advance request submitted — awaiting superadmin approval. It\'ll be deducted from next month\'s salary once approved.');
+      this.success.set(this.i18n.t('advance.success'));
       this.amount.set(null);
       this.reason.set('');
       this.load();
     } catch (err: any) {
-      this.error.set(err?.error?.message ?? 'Could not submit request. Please try again.');
+      this.error.set(err?.error?.message ?? this.i18n.t('requests.errSubmit'));
     } finally {
       this.submitting.set(false);
     }

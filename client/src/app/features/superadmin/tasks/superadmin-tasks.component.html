@@ -1,16 +1,16 @@
 <div class="page fade-in">
   <div class="page-header">
     <div class="page-header-row">
-      <h1 class="page-title">Tasks</h1>
-      <button class="btn btn-blue" (click)="openForm()">+ Assign Task</button>
+      <h1 class="page-title">{{ 'saTasks.title' | t }}</h1>
+      <button class="btn btn-blue" (click)="openForm()">+ {{ 'saTasks.assign' | t }}</button>
     </div>
-    <p class="page-sub">Assign work to one or more employees, for a single day or a date range</p>
+    <p class="page-sub">{{ 'saTasks.sub' | t }}</p>
   </div>
 
   <div class="filter-row">
     <input
       class="form-control filter-search"
-      placeholder="Search by title or site…"
+      [placeholder]="'saTasks.searchPh' | t"
       [value]="filterSearch()"
       (input)="onFilterSearchInput($any($event.target).value)"
     />
@@ -19,12 +19,12 @@
       @if (filterEmployee(); as emp) {
         <span class="chip">
           {{ emp.name }}
-          <button type="button" class="chip-remove" (click)="clearEmployeeFilter()" aria-label="Remove">×</button>
+          <button type="button" class="chip-remove" (click)="clearEmployeeFilter()" [attr.aria-label]="'saTasks.remove' | t">×</button>
         </span>
       } @else {
         <input
           class="form-control"
-          placeholder="Filter by employee…"
+          [placeholder]="'saTasks.employeePh' | t"
           [value]="employeeFilterQuery()"
           (input)="onEmployeeFilterInput($any($event.target).value)"
           (focus)="showEmployeeFilterResults.set(true)"
@@ -33,9 +33,9 @@
         @if (showEmployeeFilterResults() && employeeFilterQuery()) {
           <div class="employee-filter-results">
             @if (employeeFilterLoading()) {
-              <p class="picker-note">Searching…</p>
+              <p class="picker-note">{{ 'saTasks.searching' | t }}</p>
             } @else if (employeeFilterResults().length === 0) {
-              <p class="picker-note">No matching employees.</p>
+              <p class="picker-note">{{ 'saTasks.noEmployees' | t }}</p>
             } @else {
               @for (emp of employeeFilterResults(); track emp.id) {
                 <button type="button" class="employee-filter-option" (mousedown)="selectEmployeeFilter(emp)">
@@ -50,22 +50,22 @@
 
     <input class="form-control filter-date" type="date" [value]="filterDate()" (input)="onFilterDateChange($any($event.target).value)" />
     <select class="form-control filter-status" [value]="filterStatus()" (change)="onFilterStatusChange($any($event.target).value)">
-      <option value="">All statuses</option>
+      <option value="">{{ 'saTasks.allStatuses' | t }}</option>
       @for (opt of statusOptions; track opt.value) {
-        <option [value]="opt.value">{{ opt.label }}</option>
+        <option [value]="opt.value">{{ opt.label | t }}</option>
       }
     </select>
     @if (hasActiveFilters()) {
-      <button class="btn btn-ghost btn-sm" (click)="clearFilter()">Clear filters</button>
+      <button class="btn btn-ghost btn-sm" (click)="clearFilter()">{{ 'saTasks.clearFilters' | t }}</button>
     }
-    <span class="result-count">{{ total() }} task{{ total() === 1 ? '' : 's' }}</span>
+    <span class="result-count">{{ (total() === 1 ? 'saTasks.countOne' : 'saTasks.countMany') | t:{ n: total() } }}</span>
   </div>
 
   <div class="card table-card">
     @if (loading()) {
-      <p class="empty-note">Loading…</p>
+      <p class="empty-note">{{ 'saTasks.loading' | t }}</p>
     } @else if (tasks().length === 0) {
-      <p class="empty-note">{{ hasActiveFilters() ? 'No tasks match these filters.' : 'No tasks assigned yet.' }}</p>
+      <p class="empty-note">{{ (hasActiveFilters() ? 'saTasks.emptyFiltered' : 'saTasks.empty') | t }}</p>
     } @else {
       <div class="task-list">
         @for (task of tasks(); track task.id) {
@@ -74,15 +74,15 @@
               <div class="task-top">
                 <span class="task-date font-mono">{{ task.date }}</span>
                 <h3 class="task-title">{{ task.title }}</h3>
-                <span class="badge" [class]="statusBadgeClass(task.status)">{{ statusLabel(task.status) }}</span>
+                <span class="badge" [class]="statusBadgeClass(task.status)">{{ statusLabel(task.status) | t }}</span>
               </div>
               @if (task.status === 'completed' && task.completedBy) {
-                <p class="task-completed-note">Completed by {{ task.completedBy.name }}</p>
+                <p class="task-completed-note">{{ 'saTasks.completedBy' | t:{ name: task.completedBy.name } }}</p>
               }
               @if (task.site) { <p class="task-site">📍 {{ task.site }}</p> }
               @if (task.siteLocation) {
                 <app-location-picker class="task-map" [location]="task.siteLocation" [editable]="false" />
-                <a class="maps-link" [href]="directionsUrl(task)" target="_blank" rel="noopener">🧭 Open in Google Maps</a>
+                <a class="maps-link" [href]="directionsUrl(task)" target="_blank" rel="noopener">🧭 {{ 'saTasks.openMaps' | t }}</a>
               }
               @if (task.description) { <p class="task-desc">{{ task.description }}</p> }
               <p class="task-employees">
@@ -93,7 +93,7 @@
 
               @if (task.notes.length > 0) {
                 <button type="button" class="notes-toggle" (click)="toggleNotes(task.id)">
-                  💬 {{ task.notes.length }} note{{ task.notes.length === 1 ? '' : 's' }}
+                  💬 {{ (task.notes.length === 1 ? 'saTasks.noteOne' : 'saTasks.noteMany') | t:{ n: task.notes.length } }}
                   {{ expandedNotesTaskId() === task.id ? '▲' : '▼' }}
                 </button>
                 @if (expandedNotesTaskId() === task.id) {
@@ -112,16 +112,16 @@
               }
             </div>
             <div class="task-actions">
-              <button class="btn btn-ghost btn-sm" (click)="openEditForm(task)">Edit</button>
-              <button class="btn btn-ghost btn-sm" (click)="deleteTask(task)">Remove</button>
+              <button class="btn btn-ghost btn-sm" (click)="openEditForm(task)">{{ 'saTasks.edit' | t }}</button>
+              <button class="btn btn-ghost btn-sm" (click)="deleteTask(task)">{{ 'saTasks.removeBtn' | t }}</button>
             </div>
           </div>
         }
       </div>
       <div class="pagination-row">
-        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
-        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">{{ 'saTasks.prev' | t }}</button>
+        <span class="page-indicator">{{ 'saTasks.pageOf' | t:{ page: page(), total: totalPages() } }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">{{ 'saTasks.next' | t }}</button>
       </div>
     }
   </div>

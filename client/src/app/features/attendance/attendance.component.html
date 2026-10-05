@@ -2,8 +2,8 @@
 
   <!-- Page header -->
   <div class="page-header">
-    <h1 class="page-title">Attendance Tracker</h1>
-    <p class="page-sub">Track your daily punch records and monthly summary</p>
+    <h1 class="page-title">{{ 'attendance.title' | t }}</h1>
+    <p class="page-sub">{{ 'attendance.subtitle' | t }}</p>
   </div>
 
   @if (monthlyData(); as data) {
@@ -13,19 +13,19 @@
       <div class="summary-strip">
         <div class="summary-stat">
           <span class="ss-value" style="color: var(--success)">{{ data.presentDays }}</span>
-          <span class="ss-label">Present</span>
+          <span class="ss-label">{{ 'attendance.present' | t }}</span>
         </div>
         <div class="summary-stat">
           <span class="ss-value" style="color: var(--danger)">{{ data.absentDays }}</span>
-          <span class="ss-label">Absent</span>
+          <span class="ss-label">{{ 'attendance.absent' | t }}</span>
         </div>
         <div class="summary-stat">
           <span class="ss-value" style="color: var(--warning)">{{ data.leaveDays }}</span>
-          <span class="ss-label">Leaves</span>
+          <span class="ss-label">{{ 'attendance.leaves' | t }}</span>
         </div>
         <div class="summary-stat">
           <span class="ss-value" style="color: var(--accent-2)">{{ data.totalWorkingDays }}</span>
-          <span class="ss-label">Working Days</span>
+          <span class="ss-label">{{ 'attendance.workingDays' | t }}</span>
         </div>
       </div>
 
@@ -34,11 +34,11 @@
 
         <!-- Month navigation -->
         <div class="cal-nav">
-          <button class="nav-btn" (click)="prevMonth()" aria-label="Previous month">
+          <button class="nav-btn" (click)="prevMonth()" [attr.aria-label]="'attendance.prevMonth' | t">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h2 class="cal-month-label">{{ monthLabel() }}</h2>
-          <button class="nav-btn" (click)="nextMonth()" [disabled]="!canGoNext()" aria-label="Next month">
+          <button class="nav-btn" (click)="nextMonth()" [disabled]="!canGoNext()" [attr.aria-label]="'attendance.nextMonth' | t">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
@@ -46,7 +46,7 @@
         <!-- Day of week headers -->
         <div class="dow-row">
           @for (d of DOW; track d) {
-            <div class="dow">{{ d }}</div>
+            <div class="dow">{{ d | t }}</div>
           }
         </div>
 
@@ -76,10 +76,10 @@
 
         <!-- Legend -->
         <div class="legend-row">
-          <span class="leg"><span class="ld present"></span> Present</span>
-          <span class="leg"><span class="ld absent"></span> Absent</span>
-          <span class="leg"><span class="ld leave"></span> Leave</span>
-          <span class="leg"><span class="ld pending"></span> Pending Approval</span>
+          <span class="leg"><span class="ld present"></span> {{ 'attendance.present' | t }}</span>
+          <span class="leg"><span class="ld absent"></span> {{ 'attendance.absent' | t }}</span>
+          <span class="leg"><span class="ld leave"></span> {{ 'attendance.leave' | t }}</span>
+          <span class="leg"><span class="ld pending"></span> {{ 'attendance.pendingApproval' | t }}</span>
         </div>
 
       </div>
@@ -94,7 +94,7 @@
                 {{ statusLabel(day.status) }}
               </span>
             </div>
-            <button class="close-btn" (click)="selectedDay.set(null)" aria-label="Close">
+            <button class="close-btn" (click)="selectedDay.set(null)" [attr.aria-label]="'attendance.close' | t">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
@@ -102,59 +102,59 @@
           @if (day.status === 'present') {
             <div class="dd-row-grid">
               <div class="dd-stat">
-                <span class="dd-label">First Punch In</span>
+                <span class="dd-label">{{ 'attendance.firstPunchIn' | t }}</span>
                 <span class="dd-val font-mono">{{ day.checkIn }}</span>
               </div>
               <div class="dd-stat">
-                <span class="dd-label">Last Punch Out</span>
-                <span class="dd-val font-mono">{{ day.checkOut ?? 'Still clocked in' }}</span>
+                <span class="dd-label">{{ 'attendance.lastPunchOut' | t }}</span>
+                <span class="dd-val font-mono">{{ day.checkOut ?? ('attendance.stillClockedIn' | t) }}</span>
               </div>
               <div class="dd-stat">
-                <span class="dd-label">Total Working Hours</span>
+                <span class="dd-label">{{ 'attendance.totalHours' | t }}</span>
                 <span class="dd-val font-mono">{{ formatWorkDuration(day.workHours ?? 0) }}</span>
               </div>
             </div>
           } @else if (day.status === 'absent') {
-            <p class="dd-note">No check-in recorded for this day.</p>
+            <p class="dd-note">{{ 'attendance.noCheckIn' | t }}</p>
 
             @if (regularizationByDate().get(day.date); as reg) {
               <div class="reg-status">
                 <span class="badge" [class]="reg.status === 'approved' ? 'badge-success' : reg.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
-                  Attendance Fix {{ reg.status | titlecase }}
+                  {{ 'attendance.fixStatus' | t:{ status: ('attendance.reg.' + reg.status) | t } }}
                 </span>
-                <p class="dd-note">Requested {{ reg.requestedCheckIn }}–{{ reg.requestedCheckOut }} — {{ reg.reason }}</p>
+                <p class="dd-note">{{ 'attendance.requested' | t:{ from: reg.requestedCheckIn, to: reg.requestedCheckOut, reason: reg.reason } }}</p>
                 @if (reg.reviewNote) {
-                  <p class="dd-note">Review note: {{ reg.reviewNote }}</p>
+                  <p class="dd-note">{{ 'attendance.reviewNote' | t:{ note: reg.reviewNote } }}</p>
                 }
               </div>
             } @else {
               <div class="reg-form">
-                <p class="reg-form-title">Forgot to punch? Ask to fix this day's attendance.</p>
+                <p class="reg-form-title">{{ 'attendance.forgotPunch' | t }}</p>
                 <div class="reg-form-row">
                   <div class="reg-field">
-                    <label class="form-label">Check In</label>
+                    <label class="form-label">{{ 'attendance.checkIn' | t }}</label>
                     <input class="form-control" type="time" [value]="regCheckIn()" (input)="regCheckIn.set($any($event.target).value)" />
                   </div>
                   <div class="reg-field">
-                    <label class="form-label">Check Out</label>
+                    <label class="form-label">{{ 'attendance.checkOut' | t }}</label>
                     <input class="form-control" type="time" [value]="regCheckOut()" (input)="regCheckOut.set($any($event.target).value)" />
                   </div>
                 </div>
                 <div class="reg-field">
-                  <label class="form-label">Reason</label>
-                  <input class="form-control" placeholder="e.g. Forgot to punch in" [value]="regReason()" (input)="regReason.set($any($event.target).value)" />
+                  <label class="form-label">{{ 'attendance.reason' | t }}</label>
+                  <input class="form-control" [placeholder]="'attendance.reasonPlaceholder' | t" [value]="regReason()" (input)="regReason.set($any($event.target).value)" />
                 </div>
                 @if (regError()) { <p class="error-msg">{{ regError() }}</p> }
                 @if (regSuccess()) { <p class="success-msg">{{ regSuccess() }}</p> }
                 <button class="btn btn-blue btn-sm" [disabled]="regSubmitting()" (click)="submitRegularization()">
-                  {{ regSubmitting() ? 'Submitting…' : 'Fix Attendance' }}
+                  {{ (regSubmitting() ? 'attendance.submitting' : 'attendance.fixAttendance') | t }}
                 </button>
               </div>
             }
           } @else if (day.status === 'leave') {
-            <p class="dd-note">Leave approved for this day{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+            <p class="dd-note">{{ 'attendance.leaveApproved' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
           } @else if (day.status === 'pending') {
-            <p class="dd-note">Leave request pending superadmin approval{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+            <p class="dd-note">{{ 'attendance.leavePending' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
           }
         </div>
       }

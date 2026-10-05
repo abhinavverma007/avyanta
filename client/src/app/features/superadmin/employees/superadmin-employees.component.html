@@ -1,37 +1,37 @@
 <div class="page fade-in">
   <div class="page-header">
     <div class="page-header-row">
-      <h1 class="page-title">Employees</h1>
+      <h1 class="page-title">{{ 'saEmp.title' | t }}</h1>
       @if (isAdminScope) {
-        <button class="btn btn-blue" (click)="openCreateForm()">+ Add</button>
+        <button class="btn btn-blue" (click)="openCreateForm()">{{ 'saEmp.add' | t }}</button>
       }
     </div>
-    <p class="page-sub">Manage your master employee list, salaries and leave allowances</p>
+    <p class="page-sub">{{ 'saEmp.subtitle' | t }}</p>
   </div>
 
   <div class="search-row">
     <input
       class="form-control search-input"
-      placeholder="Search by name, email, employee ID or department…"
+      [placeholder]="'saEmp.searchPlaceholder' | t"
       [value]="search()"
       (input)="onSearchInput($any($event.target).value)"
     />
-    <span class="result-count">{{ total() }} employee{{ total() === 1 ? '' : 's' }}</span>
+    <span class="result-count">{{ (total() === 1 ? 'saEmp.countOne' : 'saEmp.countMany') | t:{ n: total() } }}</span>
   </div>
 
   @if (credentialBanner(); as cred) {
     <div class="card card-padded credential-banner fade-in">
       <div>
-        <p class="cb-title">Credentials for {{ cred.name }}</p>
-        <p class="cb-sub">Share these with the employee manually — the password won't be shown again.</p>
-        <div class="cb-row"><span class="cb-label">Email</span><span class="font-mono">{{ cred.email }}</span></div>
+        <p class="cb-title">{{ 'saEmp.credFor' | t:{ name: cred.name } }}</p>
+        <p class="cb-sub">{{ 'saEmp.credHint' | t }}</p>
+        <div class="cb-row"><span class="cb-label">{{ 'saEmp.email' | t }}</span><span class="font-mono">{{ cred.email }}</span></div>
         <div class="cb-row">
-          <span class="cb-label">Password</span>
+          <span class="cb-label">{{ 'saEmp.password' | t }}</span>
           <span class="font-mono cb-password">{{ cred.password }}</span>
-          <button class="btn btn-ghost btn-sm" (click)="copyCredentials(cred.email, cred.password)">Copy</button>
+          <button class="btn btn-ghost btn-sm" (click)="copyCredentials(cred.email, cred.password)">{{ 'saEmp.copy' | t }}</button>
         </div>
       </div>
-      <button class="close-btn" (click)="dismissBanner()" aria-label="Dismiss">
+      <button class="close-btn" (click)="dismissBanner()" [attr.aria-label]="'saEmp.dismiss' | t">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -39,24 +39,24 @@
 
   <div class="card table-card">
     @if (loading()) {
-      <p class="empty-note">Loading employees…</p>
+      <p class="empty-note">{{ 'saEmp.loading' | t }}</p>
     } @else if (employees().length === 0) {
-      <p class="empty-note">No employees yet. Click "Add Employee" to create your first login.</p>
+      <p class="empty-note">{{ 'saEmp.empty' | t }}</p>
     } @else {
       <!-- Table view — laptop/desktop -->
       <div class="table-scroll">
         <table class="employees-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Employee ID</th>
-              <th>Role</th>
-              <th>Department</th>
-              <th>Email</th>
-              <th>Salary</th>
-              <th>Leaves/mo</th>
-              <th>Status</th>
-              <th>Profile</th>
+              <th>{{ 'saEmp.name' | t }}</th>
+              <th>{{ 'saEmp.employeeId' | t }}</th>
+              <th>{{ 'saEmp.role' | t }}</th>
+              <th>{{ 'saEmp.department' | t }}</th>
+              <th>{{ 'saEmp.email' | t }}</th>
+              <th>{{ 'saEmp.salary' | t }}</th>
+              <th>{{ 'saEmp.leavesPerMonth' | t }}</th>
+              <th>{{ 'saEmp.status' | t }}</th>
+              <th>{{ 'saEmp.profile' | t }}</th>
               <th></th>
             </tr>
           </thead>
@@ -75,22 +75,22 @@
                 <td>{{ emp.paidLeavesPerMonth }}</td>
                 <td>
                   <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
-                    {{ emp.isActive ? 'Active' : 'Inactive' }}
+                    {{ (emp.isActive ? 'saEmp.active' : 'saEmp.inactive') | t }}
                   </span>
                 </td>
                 <td>
-                  <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">View Profile</a>
+                  <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">{{ 'saEmp.viewProfile' | t }}</a>
                 </td>
                 <td class="row-actions">
                   @if (!isOwnRow(emp)) {
-                    <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                    <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">{{ 'saEmp.edit' | t }}</button>
                   }
                   @if (isAdminScope) {
                     <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
-                      {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
+                      {{ (resettingId() === emp.id ? 'saEmp.resetting' : 'saEmp.resetPassword') | t }}
                     </button>
                     <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
-                      {{ emp.isActive ? 'Deactivate' : 'Activate' }}
+                      {{ (emp.isActive ? 'saEmp.deactivate' : 'saEmp.activate') | t }}
                     </button>
                   }
                 </td>
@@ -111,7 +111,7 @@
               </div>
               <div class="ec-header-actions">
                 <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
-                  {{ emp.isActive ? 'Active' : 'Inactive' }}
+                  {{ (emp.isActive ? 'saEmp.active' : 'saEmp.inactive') | t }}
                 </span>
                 <span class="ec-expand-arrow">{{ expandedId() === emp.id ? '▲' : '▼' }}</span>
               </div>
@@ -119,24 +119,24 @@
 
             @if (expandedId() === emp.id) {
               <div class="ec-body">
-                <div class="ec-row"><span class="ec-label">Designation</span><span>{{ emp.designation || '—' }}</span></div>
-                <div class="ec-row"><span class="ec-label">Role</span><span>{{ emp.role?.name || '—' }}</span></div>
-                <div class="ec-row"><span class="ec-label">Department</span><span>{{ emp.department || '—' }}</span></div>
-                <div class="ec-row"><span class="ec-label">Email</span><span class="font-mono">{{ emp.email }}</span></div>
-                <div class="ec-row"><span class="ec-label">Salary</span><span class="font-mono">{{ salaryDisplay(emp) }}</span></div>
-                <div class="ec-row"><span class="ec-label">Leaves/mo</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
+                <div class="ec-row"><span class="ec-label">{{ 'saEmp.designation' | t }}</span><span>{{ emp.designation || '—' }}</span></div>
+                <div class="ec-row"><span class="ec-label">{{ 'saEmp.role' | t }}</span><span>{{ emp.role?.name || '—' }}</span></div>
+                <div class="ec-row"><span class="ec-label">{{ 'saEmp.department' | t }}</span><span>{{ emp.department || '—' }}</span></div>
+                <div class="ec-row"><span class="ec-label">{{ 'saEmp.email' | t }}</span><span class="font-mono">{{ emp.email }}</span></div>
+                <div class="ec-row"><span class="ec-label">{{ 'saEmp.salary' | t }}</span><span class="font-mono">{{ salaryDisplay(emp) }}</span></div>
+                <div class="ec-row"><span class="ec-label">{{ 'saEmp.leavesPerMonth' | t }}</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
               </div>
               <div class="ec-actions" (click)="$event.stopPropagation()">
-                <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">View Profile</a>
+                <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">{{ 'saEmp.viewProfile' | t }}</a>
                 @if (!isOwnRow(emp)) {
-                  <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">Edit</button>
+                  <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">{{ 'saEmp.edit' | t }}</button>
                 }
                 @if (isAdminScope) {
                   <button class="btn btn-ghost btn-sm" [disabled]="resettingId() === emp.id" (click)="resetPassword(emp)">
-                    {{ resettingId() === emp.id ? 'Resetting…' : 'Reset Password' }}
+                    {{ (resettingId() === emp.id ? 'saEmp.resetting' : 'saEmp.resetPassword') | t }}
                   </button>
                   <button class="btn btn-ghost btn-sm" (click)="toggleActive(emp)">
-                    {{ emp.isActive ? 'Deactivate' : 'Activate' }}
+                    {{ (emp.isActive ? 'saEmp.deactivate' : 'saEmp.activate') | t }}
                   </button>
                 }
               </div>
@@ -146,9 +146,9 @@
       </div>
 
       <div class="pagination-row">
-        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
-        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">{{ 'saEmp.prev' | t }}</button>
+        <span class="page-indicator">{{ 'saEmp.pageOf' | t:{ page: page(), total: totalPages() } }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">{{ 'saEmp.next' | t }}</button>
       </div>
     }
   </div>

@@ -1,56 +1,56 @@
 <div class="panel fade-in">
-  <p class="tab-intro">Your superadmin sets how many leave days you get each month — no leave types, just dates and a reason.</p>
+  <p class="tab-intro">{{ 'leave.intro' | t }}</p>
 
   @if (summary(); as s) {
     <div class="summary-strip">
       <div class="summary-stat">
         <span class="ss-value">{{ s.quota }}</span>
-        <span class="ss-label">Monthly Quota</span>
+        <span class="ss-label">{{ 'leave.quota' | t }}</span>
       </div>
       <div class="summary-stat">
         <span class="ss-value text-warning">{{ s.taken }}</span>
-        <span class="ss-label">Taken This Month</span>
+        <span class="ss-label">{{ 'leave.taken' | t }}</span>
       </div>
       <div class="summary-stat">
         <span class="ss-value" [class.text-success]="s.remaining > 0" [class.text-danger]="s.remaining === 0">{{ s.remaining }}</span>
-        <span class="ss-label">Remaining This Month</span>
+        <span class="ss-label">{{ 'leave.remaining' | t }}</span>
       </div>
     </div>
   }
 
   <div class="card card-padded form-card">
-    <h3 class="form-card-title">Apply for Leave</h3>
+    <h3 class="form-card-title">{{ 'leave.apply' | t }}</h3>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label">From</label>
+        <label class="form-label">{{ 'leave.from' | t }}</label>
         <input class="form-control" type="date" [value]="fromDate()" (input)="fromDate.set($any($event.target).value)" />
       </div>
       <div class="form-group">
-        <label class="form-label">To</label>
+        <label class="form-label">{{ 'leave.to' | t }}</label>
         <input class="form-control" type="date" [value]="toDate()" (input)="toDate.set($any($event.target).value)" />
       </div>
       <div class="form-group reason-group">
-        <label class="form-label">Reason</label>
-        <input class="form-control" placeholder="e.g. Family function" [value]="reason()" (input)="reason.set($any($event.target).value)" />
+        <label class="form-label">{{ 'requests.reason' | t }}</label>
+        <input class="form-control" [placeholder]="'leave.reasonPh' | t" [value]="reason()" (input)="reason.set($any($event.target).value)" />
       </div>
     </div>
 
-    <p class="days-count">{{ selectedDates().length }} day{{ selectedDates().length === 1 ? '' : 's' }} selected</p>
+    <p class="days-count">{{ (selectedDates().length === 1 ? 'leave.daySelected' : 'leave.daysSelected') | t:{ n: selectedDates().length } }}</p>
 
     @if (error()) { <p class="error-msg">{{ error() }}</p> }
     @if (success()) { <p class="success-msg">{{ success() }}</p> }
 
     <button class="btn btn-blue" [disabled]="submitting()" (click)="submitLeave()">
-      {{ submitting() ? 'Submitting…' : 'Apply Leave' }}
+      {{ submitting() ? ('requests.submitting' | t) : ('leave.applyBtn' | t) }}
     </button>
   </div>
 
   <div class="card table-card">
-    <h3 class="table-title">Leave History</h3>
+    <h3 class="table-title">{{ 'leave.history' | t }}</h3>
     @if (loading()) {
-      <p class="empty-note">Loading…</p>
+      <p class="empty-note">{{ 'requests.loading' | t }}</p>
     } @else if (leaves().length === 0) {
-      <p class="empty-note">No leave taken yet.</p>
+      <p class="empty-note">{{ 'leave.empty' | t }}</p>
     } @else {
       <div class="leave-list">
         @for (l of leaves(); track l.id) {
@@ -59,19 +59,19 @@
               <span class="leave-date">{{ formatDate(l.date) }}</span>
               <span class="leave-reason">{{ l.reason }}</span>
               @if (l.reviewNote) {
-                <span class="leave-note">Review note: {{ l.reviewNote }}</span>
+                <span class="leave-note">{{ 'requests.reviewNote' | t }}: {{ l.reviewNote }}</span>
               }
             </div>
             <span class="badge" [class]="l.status === 'approved' ? 'badge-success' : l.status === 'rejected' ? 'badge-danger' : 'badge-warning'">
-              {{ l.status | titlecase }}
+              {{ ('requests.status.' + l.status) | t }}
             </span>
           </div>
         }
       </div>
       <div class="pagination-row">
-        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">← Prev</button>
-        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }} ({{ total() }} total)</span>
-        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">Next →</button>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="prevPage()">{{ 'requests.prev' | t }}</button>
+        <span class="page-indicator">{{ 'requests.pageOf' | t:{ page: page(), pages: totalPages(), total: total() } }}</span>
+        <button class="btn btn-ghost btn-sm" [disabled]="page() >= totalPages()" (click)="nextPage()">{{ 'requests.next' | t }}</button>
       </div>
     }
   </div>

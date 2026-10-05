@@ -5,17 +5,19 @@ import { AttendanceService } from '../../core/services/attendance.service';
 import { AttendanceRegularizationService } from '../../core/services/attendance-regularization.service';
 import { MonthlyAttendance, DayAttendance } from '../../core/models/attendance.model';
 import { RegularizationRecord } from '../../core/models/attendance-regularization.model';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { formatWorkDuration } from '../../core/utils/format-duration';
 
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CommonModule, SlicePipe, FormsModule],
+  imports: [CommonModule, SlicePipe, FormsModule, TPipe],
   templateUrl: './attendance.component.html',
   styleUrl: './attendance.component.scss',
 })
 export class AttendanceComponent implements OnInit {
-  readonly DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  readonly DOW = ['attendance.dowSun', 'attendance.dowMon', 'attendance.dowTue', 'attendance.dowWed', 'attendance.dowThu', 'attendance.dowFri', 'attendance.dowSat'];
   readonly today = new Date();
   readonly formatWorkDuration = formatWorkDuration;
 
@@ -52,7 +54,7 @@ export class AttendanceComponent implements OnInit {
     return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
   });
 
-  constructor(private attendance: AttendanceService, private regularizationService: AttendanceRegularizationService) {}
+  constructor(private attendance: AttendanceService, private regularizationService: AttendanceRegularizationService, readonly i18n: I18nService) {}
 
   ngOnInit(): void {
     this.loadMonth();
@@ -111,11 +113,11 @@ export class AttendanceComponent implements OnInit {
     this.regError.set('');
     this.regSuccess.set('');
     if (!this.regReason().trim()) {
-      this.regError.set('A reason is required.');
+      this.regError.set(this.i18n.t('attendance.errReason'));
       return;
     }
     if (this.regCheckOut() <= this.regCheckIn()) {
-      this.regError.set('Check-out must be after check-in.');
+      this.regError.set(this.i18n.t('attendance.errTime'));
       return;
     }
 
@@ -127,11 +129,11 @@ export class AttendanceComponent implements OnInit {
         requestedCheckIn: this.regCheckIn(),
         requestedCheckOut: this.regCheckOut(),
       });
-      this.regSuccess.set('Regularization request submitted — awaiting superadmin approval.');
+      this.regSuccess.set(this.i18n.t('attendance.submitted'));
       this.regReason.set('');
       this.loadRegularizations();
     } catch (err: any) {
-      this.regError.set(err?.error?.message ?? 'Could not submit request. Please try again.');
+      this.regError.set(err?.error?.message ?? this.i18n.t('attendance.errSubmit'));
     } finally {
       this.regSubmitting.set(false);
     }
@@ -151,8 +153,8 @@ export class AttendanceComponent implements OnInit {
 
   statusLabel(status: string): string {
     const map: Record<string, string> = {
-      present: 'Present', absent: 'Absent', leave: 'Leave', pending: 'Pending Approval', future: '—',
+      present: 'attendance.present', absent: 'attendance.absent', leave: 'attendance.leave', pending: 'attendance.pendingApproval',
     };
-    return map[status] ?? status;
+    return map[status] ? this.i18n.t(map[status]) : status === 'future' ? '—' : status;
   }
 }

@@ -1,27 +1,27 @@
 <div class="page fade-in">
-  <button type="button" class="btn btn-ghost btn-sm back-btn" (click)="goBack()">← Back to Roles & Permissions</button>
+  <button type="button" class="btn btn-ghost btn-sm back-btn" (click)="goBack()">{{ 'saRoleForm.back' | t }}</button>
 
   <div class="page-header">
-    <h1 class="page-title">New Role</h1>
-    <p class="page-sub">Give it a name — you can enable or disable specific permissions for it right after creating it.</p>
+    <h1 class="page-title">{{ 'saRoleForm.title' | t }}</h1>
+    <p class="page-sub">{{ 'saRoleForm.sub' | t }}</p>
   </div>
 
   <div class="card card-padded form-panel fade-in">
     <div class="form-group">
-      <label class="form-label">Role Name</label>
+      <label class="form-label">{{ 'saRoleForm.name' | t }}</label>
       <input
         class="form-control"
-        placeholder="e.g. Site Supervisor"
+        [placeholder]="'saRoleForm.namePh' | t"
         [value]="name()"
         (input)="name.set($any($event.target).value)"
       />
     </div>
-    <p class="form-hint">All permissions start enabled — you can disable specific ones for this role right after creating it.</p>
-    @if (error()) { <p class="error-msg">{{ error() }}</p> }
+    <p class="form-hint">{{ 'saRoleForm.hint' | t }}</p>
+    @if (error()) { <p class="error-msg">{{ msg(error()) }}</p> }
     <div class="form-actions">
-      <button class="btn btn-ghost" (click)="goBack()">Cancel</button>
+      <button class="btn btn-ghost" (click)="goBack()">{{ 'saRoleForm.cancel' | t }}</button>
       <button class="btn btn-blue" [disabled]="creating()" (click)="createRole()">
-        {{ creating() ? 'Creating…' : 'Create Role' }}
+        {{ (creating() ? 'saRoleForm.creating' : 'saRoleForm.create') | t }}
       </button>
     </div>
   </div>

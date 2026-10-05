@@ -1,4 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -23,7 +25,7 @@ type PayConfirmMode = 'none' | 'upi' | 'direct';
 @Component({
   selector: 'app-superadmin-salary',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TPipe],
   templateUrl: './superadmin-salary.component.html',
   styleUrl: './superadmin-salary.component.scss',
 })
@@ -73,7 +75,7 @@ export class SuperadminSalaryComponent implements OnInit {
     return this.filteredRows().slice(start, start + CARD_PAGE_SIZE);
   });
 
-  constructor(private salaryService: SalaryService) {
+  constructor(private salaryService: SalaryService, readonly i18n: I18nService) {
     const currentYear = new Date().getFullYear();
     this.years = [currentYear - 1, currentYear, currentYear + 1];
   }
@@ -170,7 +172,7 @@ export class SuperadminSalaryComponent implements OnInit {
         this.fetchDetail(row.employeeId);
       }
     } catch (err: any) {
-      this.payoutError.set(err?.error?.message ?? 'Could not record payment. Please try again.');
+      this.payoutError.set(err?.error?.message ?? this.i18n.t('saSalary.payoutFailed'));
     } finally {
       this.payingId.set(null);
     }

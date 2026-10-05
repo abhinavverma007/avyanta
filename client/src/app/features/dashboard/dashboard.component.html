@@ -28,11 +28,11 @@
             <span class="punch-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </span>
-            <span class="punch-label">PUNCH IN</span>
+            <span class="punch-label">{{ 'dashboard.punchIn' | t }}</span>
             @if (punchState() === 'in' && lastPunchTime()) {
               <span class="punch-sub">{{ formatTime(lastPunchTime()!) }}</span>
             } @else {
-              <span class="punch-sub">Check-in Time</span>
+              <span class="punch-sub">{{ 'dashboard.checkInTime' | t }}</span>
             }
           </button>
 
@@ -44,25 +44,25 @@
             <span class="punch-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
             </span>
-            <span class="punch-label">PUNCH OUT</span>
-            <span class="punch-sub">End Shift</span>
+            <span class="punch-label">{{ 'dashboard.punchOut' | t }}</span>
+            <span class="punch-sub">{{ 'dashboard.endShift' | t }}</span>
           </button>
         </div>
         @if (lastPunchTime()) {
           <p class="last-punch">
-            Last Punch {{ punchState() === 'out' ? 'Out' : 'In' }}: {{ formatTime(lastPunchTime()!) }} | {{ formatDate(lastPunchTime()!) }}
-            @if (workHours() !== undefined) { — {{ formatWorkDuration(workHours()!) }} worked today }
+            {{ (punchState() === 'out' ? 'dashboard.lastPunchOut' : 'dashboard.lastPunchIn') | t:{ time: formatTime(lastPunchTime()!), date: formatDate(lastPunchTime()!) } }}
+            @if (workHours() !== undefined) { — {{ 'dashboard.workedToday' | t:{ duration: formatWorkDuration(workHours()!) } }} }
           </p>
 
           @if (!showUnmarkConfirm()) {
-            <button class="unmark-link" (click)="showUnmarkConfirm.set(true)">Punched in by mistake? Unmark today's attendance</button>
+            <button class="unmark-link" (click)="showUnmarkConfirm.set(true)">{{ 'dashboard.unmarkLink' | t }}</button>
           } @else {
             <div class="unmark-confirm">
-              <p class="unmark-warning">This resets today completely — as if you never punched in. Are you sure?</p>
+              <p class="unmark-warning">{{ 'dashboard.unmarkWarning' | t }}</p>
               <div class="unmark-actions">
-                <button class="btn btn-ghost btn-sm" [disabled]="unmarking()" (click)="showUnmarkConfirm.set(false)">Cancel</button>
+                <button class="btn btn-ghost btn-sm" [disabled]="unmarking()" (click)="showUnmarkConfirm.set(false)">{{ 'dashboard.cancel' | t }}</button>
                 <button class="btn btn-danger btn-sm" [disabled]="unmarking()" (click)="unmarkToday()">
-                  {{ unmarking() ? 'Resetting…' : "Yes, reset today's attendance" }}
+                  {{ (unmarking() ? 'dashboard.resetting' : 'dashboard.confirmReset') | t }}
                 </button>
               </div>
             </div>
@@ -77,19 +77,19 @@
         <div class="stat-cards">
           <div class="stat-card present">
             <span class="stat-value">{{ data.presentDays }}</span>
-            <span class="stat-label">Present Days</span>
+            <span class="stat-label">{{ 'dashboard.presentDays' | t }}</span>
           </div>
           <div class="stat-card absent">
             <span class="stat-value">{{ data.absentDays }}</span>
-            <span class="stat-label">Absent Days</span>
+            <span class="stat-label">{{ 'dashboard.absentDays' | t }}</span>
           </div>
           <div class="stat-card leave">
             <span class="stat-value">{{ data.leaveDays }}</span>
-            <span class="stat-label">Leaves</span>
+            <span class="stat-label">{{ 'dashboard.leaves' | t }}</span>
           </div>
           <div class="stat-card remaining">
             <span class="stat-value">{{ leaveSummary()?.remaining ?? '—' }}</span>
-            <span class="stat-label">Leaves Remaining</span>
+            <span class="stat-label">{{ 'dashboard.leavesRemaining' | t }}</span>
           </div>
         </div>
       </section>
@@ -97,14 +97,14 @@
       <!-- ── Mini attendance calendar ──────────────────────────── -->
       <section class="section">
         <div class="section-header">
-          <h2 class="section-title">Attendance — {{ getMonthLabel() }}</h2>
-          <a routerLink="/attendance" class="see-all">View all</a>
+          <h2 class="section-title">{{ 'dashboard.attendanceMonth' | t:{ month: getMonthLabel() } }}</h2>
+          <a routerLink="/attendance" class="see-all">{{ 'dashboard.viewAll' | t }}</a>
         </div>
         <div class="card card-padded">
           <div class="mini-cal">
             <div class="cal-header">
               @for (d of DAYS_OF_WEEK; track d + $index) {
-                <span class="cal-dow">{{ d }}</span>
+                <span class="cal-dow">{{ d | t }}</span>
               }
             </div>
             <div class="cal-grid">
@@ -119,9 +119,9 @@
           </div>
           <!-- Legend -->
           <div class="cal-legend">
-            <span class="legend-item"><span class="dot present"></span> Present</span>
-            <span class="legend-item"><span class="dot absent"></span> Absent</span>
-            <span class="legend-item"><span class="dot leave"></span> Leave</span>
+            <span class="legend-item"><span class="dot present"></span> {{ 'dashboard.present' | t }}</span>
+            <span class="legend-item"><span class="dot absent"></span> {{ 'dashboard.absent' | t }}</span>
+            <span class="legend-item"><span class="dot leave"></span> {{ 'dashboard.leave' | t }}</span>
           </div>
         </div>
       </section>
@@ -134,14 +134,14 @@
           <span class="ql-icon" style="color: var(--success)">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8C8 10 5.9 16.17 3.82 19.11a1.006 1.006 0 0 0 1.41 1.41C9.54 18.29 15.5 16 21 16a1 1 0 0 0 1-1c0-5-2-9-5-7z"/></svg>
           </span>
-          <span class="ql-label">Requests</span>
+          <span class="ql-label">{{ 'dashboard.requests' | t }}</span>
           <svg class="ql-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
         <a routerLink="/attendance" class="quick-link-card card card-padded">
           <span class="ql-icon" style="color: var(--accent-2)">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           </span>
-          <span class="ql-label">Attendance History</span>
+          <span class="ql-label">{{ 'dashboard.attendanceHistory' | t }}</span>
           <svg class="ql-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
       </div>

@@ -1,35 +1,35 @@
 <div class="page fade-in">
   <div class="page-header">
-    <h1 class="page-title">Approvals</h1>
-    <p class="page-sub">Review and approve expense claims, leave requests, attendance fix requests and salary advances</p>
+    <h1 class="page-title">{{ 'saApprovals.title' | t }}</h1>
+    <p class="page-sub">{{ 'saApprovals.subtitle' | t }}</p>
   </div>
 
   <div class="section-switcher">
     @if (visibleSections.includes('reimbursements')) {
       <button class="section-tab" [class.active]="section() === 'reimbursements'" (click)="setSection('reimbursements')">
-        Reimbursements
+        {{ 'saApprovals.section.reimbursements' | t }}
       </button>
     }
     @if (visibleSections.includes('leave')) {
       <button class="section-tab" [class.active]="section() === 'leave'" (click)="setSection('leave')">
-        Leave
+        {{ 'saApprovals.section.leave' | t }}
       </button>
     }
     @if (visibleSections.includes('regularization')) {
       <button class="section-tab" [class.active]="section() === 'regularization'" (click)="setSection('regularization')">
-        Fix Attendance
+        {{ 'saApprovals.section.regularization' | t }}
       </button>
     }
     @if (visibleSections.includes('advance')) {
       <button class="section-tab" [class.active]="section() === 'advance'" (click)="setSection('advance')">
-        Advance
+        {{ 'saApprovals.section.advance' | t }}
       </button>
     }
   </div>
 
-  <select class="form-control section-select" [ngModel]="section()" (ngModelChange)="setSection($event)" aria-label="Approval type">
+  <select class="form-control section-select" [ngModel]="section()" (ngModelChange)="setSection($event)" [attr.aria-label]="'saApprovals.approvalType' | t">
     @for (opt of sectionOptions; track opt.value) {
-      <option [ngValue]="opt.value">{{ opt.label }}</option>
+      <option [ngValue]="opt.value">{{ opt.label | t }}</option>
     }
   </select>
 

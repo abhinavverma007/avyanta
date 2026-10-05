@@ -1,6 +1,8 @@
 import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TPipe } from '../../../core/i18n/t.pipe';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { AdminReimbursementService } from '../../../core/services/admin-reimbursement.service';
 import { AdminReimbursement, ReimbursementStatus } from '../../../core/models/reimbursement.model';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
@@ -12,7 +14,7 @@ type Tab = ReimbursementStatus | 'all';
 @Component({
   selector: 'app-superadmin-reimbursements',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TPipe],
   templateUrl: './superadmin-reimbursements.component.html',
   styleUrl: './superadmin-reimbursements.component.scss',
 })
@@ -24,9 +26,9 @@ export class SuperadminReimbursementsComponent implements OnInit {
 
   readonly tabs: Tab[] = ['all', 'pending', 'approved', 'rejected'];
   readonly sortOptions: SortOption[] = [
-    { key: 'date', label: 'Date' },
-    { key: 'amount', label: 'Amount' },
-    { key: 'employee', label: 'Employee' },
+    { key: 'date', label: 'saApprovals.sort.date' },
+    { key: 'amount', label: 'saApprovals.sort.amount' },
+    { key: 'employee', label: 'saApprovals.sort.employee' },
   ];
 
   claims = signal<AdminReimbursement[]>([]);
@@ -55,6 +57,7 @@ export class SuperadminReimbursementsComponent implements OnInit {
 
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
   private readonly authService = inject(AuthService);
+  private readonly i18n = inject(I18nService);
 
   constructor(private reimbursementService: AdminReimbursementService) {}
 
@@ -145,7 +148,7 @@ export class SuperadminReimbursementsComponent implements OnInit {
   }
 
   categoryLabel(category: string): string {
-    const map: Record<string, string> = { petrol: 'Petrol', food: 'Food', travel: 'Travel', other: 'Other' };
-    return map[category] ?? category;
+    const known = ['petrol', 'food', 'travel', 'other'];
+    return known.includes(category) ? this.i18n.t('saReimbAppr.cat.' + category) : category;
   }
 }
