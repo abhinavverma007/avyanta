@@ -62,8 +62,13 @@ export class ShellComponent {
   // bootstrap (no root-singleton service or route-provider value can carry
   // over stale from this session), exactly matching what the user asked
   // for ("page will be refreshed to load manager/supervisor view").
-  switchToManagementView(): void {
-    window.location.href = '/superadmin/employees';
+  async switchToManagementView(): Promise<void> {
+    // Re-sync the cached Role first — the cached permissions can be stale
+    // (changed by the owner since login), which would make the guards and
+    // the backend disagree and bounce the user straight back here.
+    try { await this.auth.refreshUser(); } catch { /* fall through with cached copy */ }
+    if (!this.hasManagementAccess()) return;
+    window.location.href = '/superadmin';
   }
 
   logout(): void {

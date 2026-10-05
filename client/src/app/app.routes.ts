@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { adminAuthGuard } from './core/guards/admin-auth.guard';
-import { superadminShellGuard, superadminAreaGuard, anySuperadminAreaGuard } from './core/guards/superadmin-area.guard';
+import { superadminShellGuard, superadminLandingGuard, superadminAreaGuard, anySuperadminAreaGuard } from './core/guards/superadmin-area.guard';
 import { AdminAuthService } from './core/services/admin-auth.service';
 import { API_SCOPE } from './core/tokens/api-scope';
 import { AdminEmployeeService } from './core/services/admin-employee.service';
@@ -110,8 +110,9 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'employees',
         pathMatch: 'full',
+        canActivate: [superadminLandingGuard],
+        children: [],
       },
       {
         path: 'employees',

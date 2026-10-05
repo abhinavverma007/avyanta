@@ -37,6 +37,25 @@ export const superadminShellGuard: CanActivateFn = () => {
   return router.createUrlTree(['/login']);
 };
 
+// Landing route for bare /superadmin — a true Admin always starts at
+// Employees, a delegated session at the first tab its Role actually grants
+// (a Role with e.g. only approvals must not land on a tab it can't open, or
+// the area guard bounces it straight back to /dashboard).
+export const superadminLandingGuard: CanActivateFn = () => {
+  const adminAuth = inject(AdminAuthService);
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (adminAuth.isAuthenticated()) return router.createUrlTree(['/superadmin/employees']);
+  const p = auth.user()?.role?.permissions;
+  if (p?.employees) return router.createUrlTree(['/superadmin/employees']);
+  if (p?.tasks) return router.createUrlTree(['/superadmin/tasks']);
+  if (p?.approvalsReimbursements || p?.approvalsLeave || p?.approvalsRegularization || p?.approvalsAdvance) {
+    return router.createUrlTree(['/superadmin/approvals']);
+  }
+  if (p?.salary) return router.createUrlTree(['/superadmin/salary']);
+  return router.createUrlTree(['/dashboard']);
+};
+
 // A Supervisor/Manager lacking this one permission still has a normal
 // employee session — send them to their own dashboard rather than a dead
 // end (same fallback the old /team/* permission guards used).
