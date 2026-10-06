@@ -1,6 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, Router, RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../core/services/auth.service';
 import { MANAGEABLE_PERMISSIONS } from '../../core/guards/superadmin-area.guard';
@@ -54,7 +56,18 @@ export class ShellComponent {
     return !!permissions && MANAGEABLE_PERMISSIONS.some(k => permissions[k]);
   });
 
-  constructor(readonly auth: AuthService, readonly i18n: I18nService, private sanitizer: DomSanitizer) {}
+  constructor(
+    readonly auth: AuthService,
+    readonly i18n: I18nService,
+    private sanitizer: DomSanitizer,
+    private router: Router,
+  ) {
+    // Close the profile menu on any navigation (e.g. tapping a bottom tab,
+    // which sits above the menu backdrop).
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe(() => this.profileOpen.set(false));
+  }
 
   toggleLanguage(): void {
     this.i18n.toggle();

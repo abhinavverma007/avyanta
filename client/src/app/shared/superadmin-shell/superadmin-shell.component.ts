@@ -1,7 +1,9 @@
 import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, Router, RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AdminAuthService } from '../../core/services/admin-auth.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -100,7 +102,14 @@ export class SuperadminShellComponent {
     private auth: AuthService,
     readonly i18n: I18nService,
     private sanitizer: DomSanitizer,
+    private router: Router,
   ) {
+    // Switching tabs (top nav or the mobile bottom bar, which sits above the
+    // menu backdrop) must not leave the account menu hanging open.
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe(() => this.closeMenu());
+
     // Unlike the plain employee shell, this one scrolls the whole document
     // (no internal overflow container) — so locking the menu's background
     // means locking body scroll directly. Runs for every place menuOpen can

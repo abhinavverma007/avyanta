@@ -1,6 +1,8 @@
 import { Component, Input, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NotificationService } from '../../core/services/notification.service';
 import { AppNotification } from '../../core/models/notification.model';
@@ -41,7 +43,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private router: Router,
     private sanitizer: DomSanitizer,
     private i18n: I18nService,
-  ) {}
+  ) {
+    // Same as the account menus: any navigation closes the open panel.
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe(() => this.closePanel());
+  }
 
   ngOnInit(): void {
     this.refresh();
