@@ -57,6 +57,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.pollHandle) clearInterval(this.pollHandle);
+    this.watchScroll(false);
   }
 
   private refresh(): void {
@@ -73,11 +74,31 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   togglePanel(): void {
     this.panelOpen.update(v => !v);
+    this.watchScroll(this.panelOpen());
     if (this.panelOpen()) this.refresh();
   }
 
   closePanel(): void {
     this.panelOpen.set(false);
+    this.watchScroll(false);
+  }
+
+  // Scrolling the page behind the open panel closes it (the backdrop below also
+  // closes it on a wheel / touch-drag over it). Captured on the document so it
+  // catches any scrolling container, not just the window — but scrolling the
+  // panel's own list must not close it.
+  private scrolling = false;
+  private readonly onPageScroll = (e: Event): void => {
+    const target = e.target instanceof Element ? e.target : null;
+    if (target?.closest('.notif-panel')) return;
+    this.closePanel();
+  };
+
+  private watchScroll(on: boolean): void {
+    if (on === this.scrolling) return;
+    this.scrolling = on;
+    if (on) document.addEventListener('scroll', this.onPageScroll, true);
+    else document.removeEventListener('scroll', this.onPageScroll, true);
   }
 
   openNotification(n: AppNotification): void {

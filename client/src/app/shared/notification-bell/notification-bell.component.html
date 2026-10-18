@@ -8,7 +8,7 @@
 @if (panelOpen()) {
   <!-- Blocks clicks from reaching anything behind the panel, same pattern
        as the account dropdowns in both shells. -->
-  <div class="menu-backdrop" (click)="closePanel()"></div>
+  <div class="menu-backdrop" (click)="closePanel()" (wheel)="closePanel()" (touchmove)="closePanel()"></div>
   <div class="notif-panel fade-in" role="menu">
     <div class="notif-panel-header">
       <span class="notif-panel-title">{{ 'common.notifications' | t }}</span>
