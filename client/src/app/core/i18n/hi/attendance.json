@@ -40,5 +40,7 @@
   "attendance.errTime": "जाने का समय आने के समय के बाद का होना चाहिए।",
   "attendance.submitted": "अनुरोध भेज दिया गया — सुपरएडमिन की मंज़ूरी का इंतज़ार है।",
   "attendance.errSubmit": "अनुरोध नहीं भेज सके। कृपया फिर कोशिश करें।",
-  "attendance.close": "बंद करें"
+  "attendance.close": "बंद करें",
+  "attendance.regularized": "अनुरोध से सुधारा गया",
+  "attendance.regularizedNote": "इस दिन का समय मंज़ूर हुए हाज़िरी सुधार अनुरोध से जोड़ा गया है, सीधे पंच से नहीं।"
 }

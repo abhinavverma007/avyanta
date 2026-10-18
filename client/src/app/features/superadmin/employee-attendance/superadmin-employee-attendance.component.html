@@ -13,119 +13,228 @@
     </div>
   </div>
 
-  @if (monthlyData(); as data) {
-    <div class="page-body">
+  @if (tabOptions.length > 1) {
+    <div class="section-switcher">
+      @for (opt of tabOptions; track opt.value) {
+        <button class="section-tab" [class.active]="tab() === opt.value" (click)="setTab(opt.value)">
+          {{ opt.label | t }}
+        </button>
+      }
+    </div>
 
-      <div class="summary-strip">
-        <div class="summary-stat">
-          <span class="ss-value" style="color: var(--success)">{{ data.presentDays }}</span>
-          <span class="ss-label">{{ 'saEmpAtt.present' | t }}</span>
-        </div>
-        <div class="summary-stat">
-          <span class="ss-value" style="color: var(--danger)">{{ data.absentDays }}</span>
-          <span class="ss-label">{{ 'saEmpAtt.absent' | t }}</span>
-        </div>
-        <div class="summary-stat">
-          <span class="ss-value" style="color: var(--warning)">{{ data.leaveDays }}</span>
-          <span class="ss-label">{{ 'saEmpAtt.leaves' | t }}</span>
-        </div>
-        <div class="summary-stat">
-          <span class="ss-value" style="color: var(--accent-2)">{{ data.totalWorkingDays }}</span>
-          <span class="ss-label">{{ 'saEmpAtt.workingDays' | t }}</span>
-        </div>
-      </div>
+    <select class="form-control section-select" [ngModel]="tab()" (ngModelChange)="setTab($event)" [attr.aria-label]="'saEmpProfile.section' | t">
+      @for (opt of tabOptions; track opt.value) {
+        <option [ngValue]="opt.value">{{ opt.label | t }}</option>
+      }
+    </select>
+  }
 
-      <div class="card calendar-card">
+  @if (tab() === 'attendance') {
+    @if (monthlyData(); as data) {
+      <div class="page-body">
 
-        <div class="cal-nav">
-          <button class="nav-btn" (click)="prevMonth()" [attr.aria-label]="'saEmpAtt.prevMonth' | t">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <h2 class="cal-month-label">{{ monthLabel() }}</h2>
-          <button class="nav-btn" (click)="nextMonth()" [disabled]="!canGoNext()" [attr.aria-label]="'saEmpAtt.nextMonth' | t">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-
-        <div class="dow-row">
-          @for (d of DOW; track d) {
-            <div class="dow">{{ d | t }}</div>
-          }
-        </div>
-
-        <div class="day-grid">
-          @for (cell of calendarCells(); track $index) {
-            <div
-              class="day-cell"
-              [class]="cell ? 'status-' + cell.status : 'empty'"
-              [class.today]="isToday(cell)"
-              [class.selected]="selectedDay() === cell"
-              (click)="selectDay(cell)"
-              [attr.aria-label]="cell ? cell.date + ' ' + statusLabel(cell.status) : null"
-              [attr.role]="cell && cell.status !== 'future' ? 'button' : null"
-              [attr.tabindex]="cell && cell.status !== 'future' ? 0 : null">
-              @if (cell) {
-                <span class="day-num">{{ cell.date | slice:8 }}</span>
-                @if (cell.status === 'leave') {
-                  <span class="day-icon">🌿</span>
-                } @else if (cell.status === 'pending') {
-                  <span class="day-icon">⏳</span>
-                }
-              }
-            </div>
-          }
+        <div class="summary-strip">
+          <div class="summary-stat">
+            <span class="ss-value" style="color: var(--success)">{{ data.presentDays }}</span>
+            <span class="ss-label">{{ 'saEmpAtt.present' | t }}</span>
+          </div>
+          <div class="summary-stat">
+            <span class="ss-value" style="color: var(--danger)">{{ data.absentDays }}</span>
+            <span class="ss-label">{{ 'saEmpAtt.absent' | t }}</span>
+          </div>
+          <div class="summary-stat">
+            <span class="ss-value" style="color: var(--warning)">{{ data.leaveDays }}</span>
+            <span class="ss-label">{{ 'saEmpAtt.leaves' | t }}</span>
+          </div>
+          <div class="summary-stat">
+            <span class="ss-value" style="color: var(--accent-2)">{{ data.totalWorkingDays }}</span>
+            <span class="ss-label">{{ 'saEmpAtt.workingDays' | t }}</span>
+          </div>
         </div>
 
-        <div class="legend-row">
-          <span class="leg"><span class="ld present"></span> {{ 'saEmpAtt.present' | t }}</span>
-          <span class="leg"><span class="ld absent"></span> {{ 'saEmpAtt.absent' | t }}</span>
-          <span class="leg"><span class="ld leave"></span> {{ 'saEmpAtt.leave' | t }}</span>
-          <span class="leg"><span class="ld pending"></span> {{ 'saEmpAtt.pending' | t }}</span>
-        </div>
+        <div class="card calendar-card">
 
-      </div>
-
-      @if (selectedDay(); as day) {
-        <div class="day-detail card card-padded fade-in">
-          <div class="dd-header">
-            <div>
-              <h3 class="dd-date">{{ formatDayDisplay(day.date) }}</h3>
-              <span class="badge" [class]="'badge-' + (day.status === 'present' ? 'success' : (day.status === 'leave' || day.status === 'pending') ? 'warning' : 'danger')">
-                {{ statusLabel(day.status) }}
-              </span>
-            </div>
-            <button class="close-btn" (click)="selectedDay.set(null)" [attr.aria-label]="'saEmpAtt.close' | t">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <div class="cal-nav">
+            <button class="nav-btn" (click)="prevMonth()" [attr.aria-label]="'saEmpAtt.prevMonth' | t">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <h2 class="cal-month-label">{{ monthLabel() }}</h2>
+            <button class="nav-btn" (click)="nextMonth()" [disabled]="!canGoNext()" [attr.aria-label]="'saEmpAtt.nextMonth' | t">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
 
-          @if (day.status === 'present') {
-            <div class="dd-row-grid">
-              <div class="dd-stat">
-                <span class="dd-label">{{ 'saEmpAtt.firstIn' | t }}</span>
-                <span class="dd-val font-mono">{{ day.checkIn }}</span>
+          <div class="dow-row">
+            @for (d of DOW; track d) {
+              <div class="dow">{{ d | t }}</div>
+            }
+          </div>
+
+          <div class="day-grid">
+            @for (cell of calendarCells(); track $index) {
+              <div
+                class="day-cell"
+                [class]="cell ? 'status-' + cell.status : 'empty'"
+                [class.today]="isToday(cell)"
+                [class.selected]="selectedDay() === cell"
+                (click)="selectDay(cell)"
+                [attr.aria-label]="cell ? cell.date + ' ' + statusLabel(cell.status) : null"
+                [attr.role]="cell && cell.status !== 'future' ? 'button' : null"
+                [attr.tabindex]="cell && cell.status !== 'future' ? 0 : null">
+                @if (cell) {
+                  <span class="day-num">{{ cell.date | slice:8 }}</span>
+                  @if (cell.status === 'leave') {
+                    <span class="day-icon">🌿</span>
+                  } @else if (cell.status === 'pending') {
+                    <span class="day-icon">⏳</span>
+                  } @else if (cell.regularized) {
+                  <span class="day-icon reg" aria-hidden="true">✎</span>
+                }
+                }
               </div>
-              <div class="dd-stat">
-                <span class="dd-label">{{ 'saEmpAtt.lastOut' | t }}</span>
-                <span class="dd-val font-mono">{{ day.checkOut ?? ('saEmpAtt.stillIn' | t) }}</span>
+            }
+          </div>
+
+          <div class="legend-row">
+            <span class="leg"><span class="ld present"></span> {{ 'saEmpAtt.present' | t }}</span>
+            <span class="leg"><span class="ld absent"></span> {{ 'saEmpAtt.absent' | t }}</span>
+            <span class="leg"><span class="ld leave"></span> {{ 'saEmpAtt.leave' | t }}</span>
+            <span class="leg"><span class="ld pending"></span> {{ 'saEmpAtt.pending' | t }}</span>
+          <span class="leg"><span class="ld regularized">✎</span> {{ 'saEmpAtt.regularized' | t }}</span>
+          </div>
+
+        </div>
+
+        @if (selectedDay(); as day) {
+          <div class="day-detail card card-padded fade-in">
+            <div class="dd-header">
+              <div>
+                <h3 class="dd-date">{{ formatDayDisplay(day.date) }}</h3>
+                <span class="badge" [class]="'badge-' + (day.status === 'present' ? 'success' : (day.status === 'leave' || day.status === 'pending') ? 'warning' : 'danger')">
+                  {{ statusLabel(day.status) }}
+                </span>
               </div>
-              <div class="dd-stat">
-                <span class="dd-label">{{ 'saEmpAtt.totalHours' | t }}</span>
-                <span class="dd-val font-mono">{{ formatWorkDuration(day.workHours ?? 0) }}</span>
+              <button class="close-btn" (click)="selectedDay.set(null)" [attr.aria-label]="'saEmpAtt.close' | t">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            @if (day.status === 'present') {
+              <div class="dd-row-grid">
+                <div class="dd-stat">
+                  <span class="dd-label">{{ 'saEmpAtt.firstIn' | t }}</span>
+                  <span class="dd-val font-mono">{{ day.checkIn }}</span>
+                </div>
+                <div class="dd-stat">
+                  <span class="dd-label">{{ 'saEmpAtt.lastOut' | t }}</span>
+                  <span class="dd-val font-mono">{{ day.checkOut ?? ('saEmpAtt.stillIn' | t) }}</span>
+                </div>
+                <div class="dd-stat">
+                  <span class="dd-label">{{ 'saEmpAtt.totalHours' | t }}</span>
+                  <span class="dd-val font-mono">{{ formatWorkDuration(day.workHours ?? 0) }}</span>
+                </div>
+              </div>
+              @if (day.regularized) {
+                <p class="dd-note">{{ 'saEmpAtt.regularizedNote' | t }}</p>
+              }
+            } @else if (day.status === 'absent') {
+              <p class="dd-note">{{ 'saEmpAtt.noCheckin' | t }}</p>
+            } @else if (day.status === 'leave') {
+              <p class="dd-note">{{ 'saEmpAtt.leaveApproved' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+            } @else if (day.status === 'pending') {
+              <p class="dd-note">{{ 'saEmpAtt.leavePending' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+            }
+          </div>
+        }
+
+      </div>
+    } @else if (loading()) {
+      <p class="empty-note">{{ 'saEmpAtt.loading' | t }}</p>
+    }
+  } @else {
+  <div class="card table-card">
+    @if (historyLoading()) {
+      <p class="empty-note">{{ 'saEmpProfile.loading' | t }}</p>
+    } @else if (tab() === 'leave') {
+      @if (leaves().length === 0) {
+        <p class="empty-note">{{ 'saEmpProfile.emptyLeave' | t }}</p>
+      } @else {
+        <div class="history-list">
+          @for (l of leaves(); track l.id) {
+            <div class="history-row">
+              <div class="history-main">
+                <div class="history-top">
+                  <span class="history-date font-mono">{{ l.date }}</span>
+                  <span class="badge" [class]="approvalBadgeClass(l.status)">{{ 'saEmpProfile.status.' + l.status | t }}</span>
+                </div>
+                <p class="history-desc">{{ l.reason }}</p>
+                @if (l.reviewNote) { <p class="history-note">{{ 'saEmpProfile.note' | t:{ note: l.reviewNote } }}</p> }
               </div>
             </div>
-          } @else if (day.status === 'absent') {
-            <p class="dd-note">{{ 'saEmpAtt.noCheckin' | t }}</p>
-          } @else if (day.status === 'leave') {
-            <p class="dd-note">{{ 'saEmpAtt.leaveApproved' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
-          } @else if (day.status === 'pending') {
-            <p class="dd-note">{{ 'saEmpAtt.leavePending' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
           }
         </div>
       }
-
-    </div>
-  } @else if (loading()) {
-    <p class="empty-note">{{ 'saEmpAtt.loading' | t }}</p>
+    } @else if (tab() === 'reimbursement') {
+      @if (reimbursements().length === 0) {
+        <p class="empty-note">{{ 'saEmpProfile.emptyReimb' | t }}</p>
+      } @else {
+        <div class="history-list">
+          @for (r of reimbursements(); track r.id) {
+            <div class="history-row">
+              <div class="history-main">
+                <div class="history-top">
+                  <span class="history-date font-mono">{{ r.date }}</span>
+                  <span class="history-amount">₹{{ r.amount | number }}</span>
+                  <span class="badge badge-info">{{ r.category }}</span>
+                  <span class="badge" [class]="approvalBadgeClass(r.status)">{{ 'saEmpProfile.status.' + r.status | t }}</span>
+                </div>
+                @if (r.description) { <p class="history-desc">{{ r.description }}</p> }
+                @if (r.reviewNote) { <p class="history-note">{{ 'saEmpProfile.note' | t:{ note: r.reviewNote } }}</p> }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    } @else if (tab() === 'advance') {
+      @if (advances().length === 0) {
+        <p class="empty-note">{{ 'saEmpProfile.emptyAdvance' | t }}</p>
+      } @else {
+        <div class="history-list">
+          @for (a of advances(); track a.id) {
+            <div class="history-row">
+              <div class="history-main">
+                <div class="history-top">
+                  <span class="history-date font-mono">{{ a.requestedDate }}</span>
+                  <span class="history-amount">₹{{ a.amount | number }}</span>
+                  <span class="badge" [class]="approvalBadgeClass(a.status)">{{ 'saEmpProfile.status.' + a.status | t }}</span>
+                </div>
+                <p class="history-desc">{{ a.reason }}</p>
+                @if (a.reviewNote) { <p class="history-note">{{ 'saEmpProfile.note' | t:{ note: a.reviewNote } }}</p> }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    } @else if (tab() === 'tasks') {
+      @if (tasks().length === 0) {
+        <p class="empty-note">{{ 'saEmpProfile.emptyTasks' | t }}</p>
+      } @else {
+        <div class="history-list">
+          @for (t of tasks(); track t.id) {
+            <div class="history-row">
+              <div class="history-main">
+                <div class="history-top">
+                  <span class="history-date font-mono">{{ t.date }}</span>
+                  <span class="history-title">{{ t.title }}</span>
+                  <span class="badge" [class]="taskBadgeClass(t.status)">{{ 'saEmpProfile.task.' + t.status | t }}</span>
+                </div>
+                @if (t.site) { <p class="history-desc">📍 {{ t.site }}</p> }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
   }
 </div>

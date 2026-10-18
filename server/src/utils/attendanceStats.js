@@ -1,5 +1,6 @@
 const Attendance = require('../models/Attendance');
 const Leave = require('../models/Leave');
+const AttendanceRegularization = require('../models/AttendanceRegularization');
 const { istHHMM, istDateString } = require('./istDate');
 
 // Reduces a day's list of punch sessions down to the figures everything else
@@ -47,16 +48,25 @@ function toDayAttendance(record) {
 // present, absent and leave — until the superadmin approves or rejects it.
 // A rejected request is treated as if it never existed, so it falls through
 // to the normal absent/future check below.
-async function computeMonthlyAttendance(employee, year, month) {
+// `markRegularized` (display views only — salary doesn't need it) flags a
+// present day whose attendance was created by an approved regularization
+// request, so it can be told apart from a real punch. A rejected request
+// (including one the owner overrode) never counts, and neither does a day
+// with no attendance record.
+async function computeMonthlyAttendance(employee, year, month, { markRegularized = false } = {}) {
   const pad = (n) => String(n).padStart(2, '0');
   const daysInMonth = new Date(year, month, 0).getDate();
   const start = `${year}-${pad(month)}-01`;
   const end = `${year}-${pad(month)}-${pad(daysInMonth)}`;
 
-  const [attendanceRecords, leaveRecords] = await Promise.all([
+  const [attendanceRecords, leaveRecords, regularizations] = await Promise.all([
     Attendance.find({ employee: employee._id, date: { $gte: start, $lte: end } }),
     Leave.find({ employee: employee._id, date: { $gte: start, $lte: end } }),
+    markRegularized
+      ? AttendanceRegularization.find({ employee: employee._id, status: 'approved', date: { $gte: start, $lte: end } }, 'date').lean()
+      : [],
   ]);
+  const regularizedDates = new Set(regularizations.map((r) => r.date));
   const byDate = new Map(attendanceRecords.map((r) => [r.date, r]));
   const leaveByDate = new Map(leaveRecords.map((r) => [r.date, r]));
 
@@ -69,7 +79,9 @@ async function computeMonthlyAttendance(employee, year, month) {
 
     const rec = byDate.get(dateStr);
     if (rec) {
-      days.push(toDayAttendance(rec));
+      const day = toDayAttendance(rec);
+      if (regularizedDates.has(dateStr)) day.regularized = true;
+      days.push(day);
       continue;
     }
 

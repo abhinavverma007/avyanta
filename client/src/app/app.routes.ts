@@ -137,19 +137,11 @@ export const routes: Routes = [
       },
       {
         path: 'employees/:id/attendance',
-        providers: [apiScopeProvider, AdminAttendanceService],
-        canActivate: [superadminAreaGuard('employees')],
-        loadComponent: () =>
-          import('./features/superadmin/employee-attendance/superadmin-employee-attendance.component').then(m => m.SuperadminEmployeeAttendanceComponent),
-      },
-      {
-        path: 'employees/:id/profile',
-        // Reaching the page needs "employees"; each tab inside it additionally
-        // checks its own specific permission (see the component) before
-        // showing that category's data to a delegated session.
+        // Reaching the page needs 'employees'; the leave/reimbursement/advance/
+        // task tabs inside it each check their own permission (see the component).
         providers: [
           apiScopeProvider,
-          AdminEmployeeService,
+          AdminAttendanceService,
           AdminLeaveService,
           AdminReimbursementService,
           AdminSalaryAdvanceService,
@@ -157,8 +149,10 @@ export const routes: Routes = [
         ],
         canActivate: [superadminAreaGuard('employees')],
         loadComponent: () =>
-          import('./features/superadmin/employee-profile/superadmin-employee-profile.component').then(m => m.SuperadminEmployeeProfileComponent),
+          import('./features/superadmin/employee-attendance/superadmin-employee-attendance.component').then(m => m.SuperadminEmployeeAttendanceComponent),
       },
+      // The old Profile page now lives inside Attendance History.
+      { path: 'employees/:id/profile', redirectTo: 'employees/:id/attendance' },
       {
         path: 'tasks',
         // AdminEmployeeService too — the employee filter on the Tasks

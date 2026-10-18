@@ -77,6 +77,12 @@ export class SuperadminEmployeesComponent implements OnInit {
       });
   }
 
+  // Tapping anywhere on a card opens that employee's attendance history; only
+  // the arrow expands the details (the Profile button is still in the expanded card).
+  openAttendance(id: string): void {
+    this.router.navigate(this.attendancePath(id));
+  }
+
   toggleExpand(id: string): void {
     this.expandedId.update(cur => (cur === id ? null : id));
   }
@@ -142,12 +148,10 @@ export class SuperadminEmployeesComponent implements OnInit {
   }
 
   // Same route serves both a true Admin and a delegated Supervisor/Manager
-  // now (see app.routes.ts) — API_SCOPE decides which backend it calls, not
-  // which frontend path it's reached at. Attendance is reached from inside
-  // the Profile page itself (see superadmin-employee-profile.component.html)
-  // rather than a second link here.
-  profilePath(employeeId: string): string[] {
-    return ['/superadmin/employees', employeeId, 'profile'];
+  // (see app.routes.ts) — API_SCOPE decides which backend it calls, not which
+  // frontend path it's reached at.
+  attendancePath(employeeId: string): string[] {
+    return ['/superadmin/employees', employeeId, 'attendance'];
   }
 
   async copyCredentials(email: string, password: string): Promise<void> {

@@ -268,3 +268,63 @@
   color: var(--text-muted);
   line-height: 1.6;
 }
+
+// A tab row stops scaling once there are more items than fit on a narrow
+// screen — they scroll off with no visual hint. Below 640px this becomes a
+// plain <select> instead; above it, the tab row has room and stays.
+.section-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+
+  @media (max-width: 640px) { display: none; }
+}
+.section-tab {
+  padding: 10px 4px;
+  margin-bottom: -1px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+
+  & + & { margin-left: var(--space-4); }
+}
+.section-tab:hover { color: var(--text); }
+.section-tab.active { color: var(--accent-2); border-bottom-color: var(--accent-2); }
+
+.section-select {
+  display: none;
+  margin-bottom: var(--space-5);
+
+  @media (max-width: 640px) { display: block; width: 100%; }
+}
+
+.table-card { overflow: hidden; }
+
+.history-list { display: flex; flex-direction: column; }
+.history-row {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+.history-row:last-child { border-bottom: none; }
+
+.history-top { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: 4px; }
+.history-date { font-size: 0.75rem; color: var(--text-muted); }
+.history-title { font-family: var(--font-display); font-size: 0.9375rem; font-weight: 700; }
+.history-amount { font-family: var(--font-mono); font-weight: 700; font-size: 0.9375rem; }
+.history-desc { font-size: 0.875rem; color: var(--text); }
+.history-note { font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px; }
+
+/* A present day created by an approved attendance fix rather than a live punch */
+.day-cell.status-present .day-icon.reg { color: #fff; font-size: 0.625rem; }
+.ld.regularized {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--success);
+  color: #fff;
+  font-size: 0.5rem;
+  line-height: 1;
+}

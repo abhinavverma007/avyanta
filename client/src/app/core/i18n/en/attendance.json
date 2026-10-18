@@ -40,5 +40,7 @@
   "attendance.errTime": "Check-out must be after check-in.",
   "attendance.submitted": "Regularization request submitted — awaiting superadmin approval.",
   "attendance.errSubmit": "Could not submit request. Please try again.",
-  "attendance.close": "Close"
+  "attendance.close": "Close",
+  "attendance.regularized": "Fixed via request",
+  "attendance.regularizedNote": "Times for this day were added through an approved attendance fix request, not a live punch."
 }

@@ -10,7 +10,7 @@ exports.monthly = async (req, res) => {
   const year = parseInt(req.query.year, 10) || now.getUTCFullYear();
   const month = parseInt(req.query.month, 10) || now.getUTCMonth() + 1;
 
-  const data = await computeMonthlyAttendance(employee, year, month);
+  const data = await computeMonthlyAttendance(employee, year, month, { markRegularized: true });
   res.json({
     ...data,
     employee: {
