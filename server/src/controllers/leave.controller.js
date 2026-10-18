@@ -1,6 +1,7 @@
 const Leave = require('../models/Leave');
 const Attendance = require('../models/Attendance');
 const { istNow } = require('../utils/istDate');
+const { sanitizeOverride } = require('../utils/reviewOverride');
 const { recordAudit } = require('../utils/audit');
 const { notifyReviewers } = require('../utils/notify');
 
@@ -33,6 +34,7 @@ function sanitize(l) {
     status: l.status,
     reviewNote: l.reviewNote,
     reviewedAt: l.reviewedAt,
+    override: sanitizeOverride(l.override),
     reviewedBy: l.reviewedBy && l.reviewedBy.name
       ? { id: String(l.reviewedBy.id), name: l.reviewedBy.name, actorType: l.reviewedBy.actorType }
       : null,
@@ -142,7 +144,7 @@ exports.create = async (req, res) => {
   for (const d of uniqueDates) {
     const rec = await Leave.findOneAndUpdate(
       { employee: req.employee._id, date: d },
-      { $set: { reason: trimmedReason, status: 'pending', reviewNote: '', reviewedAt: null, reviewedBy: null } },
+      { $set: { reason: trimmedReason, status: 'pending', reviewNote: '', reviewedAt: null, reviewedBy: null }, $unset: { override: 1 } },
       { upsert: true, new: true },
     );
     results.push(rec);

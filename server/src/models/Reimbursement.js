@@ -13,6 +13,7 @@ const reimbursementSchema = new mongoose.Schema(
     // Who approved/rejected it — either the owner (Admin) or a delegated
     // Supervisor/Manager (Employee). Absent on records reviewed before this
     // field existed (see scripts/backfillReviewedBy.js).
+    override: require('./overrideField'),
     reviewedBy: {
       id: { type: mongoose.Schema.Types.ObjectId },
       name: { type: String },

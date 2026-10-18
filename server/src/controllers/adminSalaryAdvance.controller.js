@@ -4,6 +4,7 @@ const { recordAudit } = require('../utils/audit');
 const { reviewerStamp } = require('../utils/reviewer');
 const { rejectSelfReview } = require('../utils/reviewGuard');
 const { notifyEmployee } = require('../utils/notify');
+const { checkOverridable, flipDecision, notifyOverride } = require('../utils/reviewOverride');
 
 function withEmployee(advance) {
   return {
@@ -64,4 +65,40 @@ exports.review = (status) => async (req, res) => {
   });
 
   res.json({ request: withEmployee(advance) });
+};
+
+// Owner flips an advance decision a delegated Supervisor/Manager made. The
+// deduction from next month's salary is derived live from `status`
+// (salary.controller.js), so approved<->rejected needs no other bookkeeping;
+// any payout already recorded just nets against the new payable as a balance.
+exports.override = async (req, res) => {
+  const targetStatus = req.body.status;
+  const advance = await SalaryAdvance.findById(req.params.id).populate('employee', 'name employeeId department');
+  if (!advance) return res.status(404).json({ message: 'Advance request not found.' });
+
+  const problem = checkOverridable(req, advance, targetStatus);
+  if (problem) return res.status(problem[0]).json({ message: problem[1] });
+
+  const updated = await flipDecision(SalaryAdvance, req, advance, targetStatus, req.body.reviewNote);
+  if (!updated) return res.status(409).json({ message: 'This request was changed by someone else — refresh and try again.' });
+  updated.employee = advance.employee;
+
+  await recordAudit(req, {
+    action: 'advance.override',
+    resourceType: 'SalaryAdvance',
+    resourceId: advance._id,
+    summary: `Overrode ${advance.reviewedBy.name}'s ${advance.status} decision on ${advance.employee.name}'s advance of ₹${advance.amount} — now ${targetStatus}`,
+    metadata: { from: advance.status, to: targetStatus, previousReviewer: advance.reviewedBy.name },
+  });
+
+  notifyOverride({
+    kind: 'advance',
+    section: 'advance',
+    label: `advance request of ₹${advance.amount}`,
+    previous: advance,
+    doc: updated,
+    employee: advance.employee,
+  });
+
+  res.json({ request: withEmployee(updated) });
 };
