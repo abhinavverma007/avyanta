@@ -1,10 +1,12 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminTaskService } from '../../../core/services/admin-task.service';
 import { AdminEmployeeService } from '../../../core/services/admin-employee.service';
 import { SiteLocation, TaskStatus } from '../../../core/models/admin-task.model';
+import { ClientOption } from '../../../core/models/client.model';
+import { AdminAuthService } from '../../../core/services/admin-auth.service';
 import { AdminEmployee } from '../../../core/models/admin.model';
 import { LocationPickerComponent } from '../../../shared/components/location-picker/location-picker.component';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -57,7 +59,7 @@ interface PickerEmployee {
 @Component({
   selector: 'app-superadmin-task-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, LocationPickerComponent, TPipe],
+  imports: [CommonModule, FormsModule, RouterLink, LocationPickerComponent, TPipe],
   templateUrl: './superadmin-task-form.component.html',
   styleUrl: './superadmin-task-form.component.scss',
 })
@@ -67,7 +69,15 @@ export class SuperadminTaskFormComponent implements OnInit {
   loadingTask = signal(false);
   loadError = signal('');
 
+  // A task is assigned against a client from the client database; its title is
+  // that client's name. `title` only carries the free-typed title of a task made
+  // before clients existed, so the form can show it until a client is chosen.
   title = signal('');
+  clientId = signal('');
+  clients = signal<ClientOption[]>([]);
+  clientsLoaded = signal(false);
+  private readonly adminAuth = inject(AdminAuthService);
+  readonly isOwner = this.adminAuth.isAuthenticated();
   description = signal('');
   site = signal('');
   siteLocation = signal<SiteLocation | null>(null);
@@ -115,6 +125,11 @@ export class SuperadminTaskFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.taskService
+      .clients()
+      .then(list => this.clients.set(list))
+      .catch(() => this.clients.set([]))
+      .finally(() => this.clientsLoaded.set(true));
     this.searchEmployees('');
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
@@ -125,6 +140,7 @@ export class SuperadminTaskFormComponent implements OnInit {
       .get(id)
       .then(task => {
         this.title.set(task.title);
+        this.clientId.set(task.clientId ?? '');
         this.description.set(task.description);
         this.site.set(task.site);
         this.siteLocation.set(task.siteLocation);
@@ -243,7 +259,9 @@ export class SuperadminTaskFormComponent implements OnInit {
   async submitForm(): Promise<void> {
     this.formError.set('');
 
-    if (!this.title().trim()) {
+    // New task: a client is required. Editing an older task that has only a typed
+    // title: leaving the client unselected keeps that title.
+    if (!this.clientId() && !(this.isEditMode() && this.title().trim())) {
       this.formError.set('saTaskForm.errTitle');
       return;
     }
@@ -262,7 +280,7 @@ export class SuperadminTaskFormComponent implements OnInit {
       this.saving.set(true);
       try {
         await this.taskService.update(id, {
-          title: this.title(),
+          ...(this.clientId() ? { clientId: this.clientId() } : {}),
           description: this.description(),
           site: this.site(),
           siteLocation: this.siteLocation(),
@@ -288,7 +306,7 @@ export class SuperadminTaskFormComponent implements OnInit {
     this.saving.set(true);
     try {
       await this.taskService.create({
-        title: this.title(),
+        clientId: this.clientId(),
         description: this.description(),
         site: this.site(),
         siteLocation: this.siteLocation() ?? undefined,

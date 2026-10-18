@@ -14,6 +14,7 @@ import enSaTasks from './en/sa-tasks.json';
 import enSaApprovals from './en/sa-approvals.json';
 import enSaSalary from './en/sa-salary.json';
 import enSaRoles from './en/sa-roles.json';
+import enSaClients from './en/sa-clients.json';
 
 import hiCommon from './hi/common.json';
 import hiDashboard from './hi/dashboard.json';
@@ -27,6 +28,7 @@ import hiSaTasks from './hi/sa-tasks.json';
 import hiSaApprovals from './hi/sa-approvals.json';
 import hiSaSalary from './hi/sa-salary.json';
 import hiSaRoles from './hi/sa-roles.json';
+import hiSaClients from './hi/sa-clients.json';
 
 export type Lang = 'en' | 'hi';
 export type Dictionary = Record<string, string>;
@@ -34,10 +36,10 @@ export type Dictionary = Record<string, string>;
 export const TRANSLATIONS: Record<Lang, Dictionary> = {
   en: {
     ...enCommon, ...enDashboard, ...enAttendance, ...enRequests, ...enTasks, ...enSalary,
-    ...enProfile, ...enSaEmployees, ...enSaTasks, ...enSaApprovals, ...enSaSalary, ...enSaRoles,
+    ...enProfile, ...enSaEmployees, ...enSaTasks, ...enSaApprovals, ...enSaSalary, ...enSaRoles, ...enSaClients,
   },
   hi: {
     ...hiCommon, ...hiDashboard, ...hiAttendance, ...hiRequests, ...hiTasks, ...hiSalary,
-    ...hiProfile, ...hiSaEmployees, ...hiSaTasks, ...hiSaApprovals, ...hiSaSalary, ...hiSaRoles,
+    ...hiProfile, ...hiSaEmployees, ...hiSaTasks, ...hiSaApprovals, ...hiSaSalary, ...hiSaRoles, ...hiSaClients,
   },
 };

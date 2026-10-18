@@ -32,8 +32,8 @@
   "saTaskForm.editSub": "इस काम की जानकारी, साइट या कर्मचारी बदलें।",
   "saTaskForm.assignSub": "एक या ज़्यादा कर्मचारियों को काम सौंपें, एक दिन के लिए या कई दिनों के लिए।",
   "saTaskForm.loading": "काम लोड हो रहा है…",
-  "saTaskForm.title": "काम का नाम",
-  "saTaskForm.titlePh": "जैसे पैनल लगाना",
+  "saTaskForm.title": "ग्राहक",
+  "saTaskForm.titlePh": "ग्राहक चुनें",
   "saTaskForm.date": "तारीख़",
   "saTaskForm.status": "स्थिति",
   "saTaskForm.statusPending": "बाकी",
@@ -65,10 +65,14 @@
   "saTaskForm.usingCoords": "आपके लिखे निर्देशांक (लैट/लॉन्ग) इस्तेमाल हो रहे हैं।",
   "saTaskForm.noMatch": "यह जगह नहीं मिली — नीचे मैप पर खुद पिन लगाएं।",
   "saTaskForm.lookupFailed": "जगह खोज नहीं सके — नीचे मैप पर खुद पिन लगाएं।",
-  "saTaskForm.errTitle": "काम का नाम ज़रूरी है।",
+  "saTaskForm.errTitle": "कृपया एक ग्राहक चुनें।",
   "saTaskForm.errEmployee": "कम से कम एक कर्मचारी चुनें।",
   "saTaskForm.errDate": "तारीख़ चुनें।",
   "saTaskForm.errSave": "बदलाव सेव नहीं हो सके। कृपया दोबारा कोशिश करें।",
   "saTaskForm.errRange": "सही तारीख़ें चुनें।",
-  "saTaskForm.errAssign": "काम नहीं सौंपा जा सका। कृपया दोबारा कोशिश करें।"
+  "saTaskForm.errAssign": "काम नहीं सौंपा जा सका। कृपया दोबारा कोशिश करें।",
+  "saTaskForm.clientCurrent": "मौजूदा नाम: \"{title}\"। बदलने के लिए ग्राहक चुनें, या ऐसे ही रहने दें।",
+  "saTaskForm.noClients": "अभी कोई ग्राहक नहीं — मालिक से जोड़ने को कहें।",
+  "saTaskForm.noClientsOwner": "अभी कोई ग्राहक नहीं।",
+  "saTaskForm.addClientLink": "ग्राहक जोड़ें"
 }

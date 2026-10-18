@@ -55,5 +55,6 @@
   "login.footerNote": "साइन इन में दिक्कत है? मालिक से पासवर्ड रीसेट करने को कहें।",
   "login.err.invalidEmail": "सही ईमेल पता लिखें।",
   "login.err.invalidCredentials": "ईमेल या पासवर्ड गलत है। कृपया फिर से कोशिश करें।",
-  "notice.accessUpdated": "मालिक ने इस सुविधा की आपकी अनुमति बदल दी है।"
+  "notice.accessUpdated": "मालिक ने इस सुविधा की आपकी अनुमति बदल दी है।",
+  "nav.clients": "ग्राहक"
 }

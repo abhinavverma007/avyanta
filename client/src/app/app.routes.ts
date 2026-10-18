@@ -211,6 +211,19 @@ export const routes: Routes = [
           import('./features/superadmin/roles/superadmin-role-form.component').then(m => m.SuperadminRoleFormComponent),
       },
       {
+        path: 'clients',
+        // Owner only — managing the client database is never delegable.
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/clients/superadmin-clients.component').then(m => m.SuperadminClientsComponent),
+      },
+      {
+        path: 'clients/:id/history',
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/clients/superadmin-client-history.component').then(m => m.SuperadminClientHistoryComponent),
+      },
+      {
         path: 'audit-log',
         canActivate: [adminAuthGuard],
         loadComponent: () =>

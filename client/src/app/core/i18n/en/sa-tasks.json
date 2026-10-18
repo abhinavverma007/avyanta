@@ -32,8 +32,8 @@
   "saTaskForm.editSub": "Update this task's details, site or assigned employees.",
   "saTaskForm.assignSub": "Assign work to one or more employees, for a single day or a date range.",
   "saTaskForm.loading": "Loading task…",
-  "saTaskForm.title": "Title",
-  "saTaskForm.titlePh": "e.g. Panel installation",
+  "saTaskForm.title": "Client",
+  "saTaskForm.titlePh": "Select a client",
   "saTaskForm.date": "Date",
   "saTaskForm.status": "Status",
   "saTaskForm.statusPending": "Pending",
@@ -65,10 +65,14 @@
   "saTaskForm.usingCoords": "Using the coordinates you typed.",
   "saTaskForm.noMatch": "No match found for that — pin the site manually on the map below.",
   "saTaskForm.lookupFailed": "Could not look up that location — pin the site manually on the map below.",
-  "saTaskForm.errTitle": "Title is required.",
+  "saTaskForm.errTitle": "Please select a client.",
   "saTaskForm.errEmployee": "Select at least one employee.",
   "saTaskForm.errDate": "Pick a date.",
   "saTaskForm.errSave": "Could not save changes. Please try again.",
   "saTaskForm.errRange": "Pick a valid date range.",
-  "saTaskForm.errAssign": "Could not assign task. Please try again."
+  "saTaskForm.errAssign": "Could not assign task. Please try again.",
+  "saTaskForm.clientCurrent": "Current title: \"{title}\". Choose a client to replace it, or leave as is.",
+  "saTaskForm.noClients": "No clients yet — ask the owner to add one.",
+  "saTaskForm.noClientsOwner": "No clients yet.",
+  "saTaskForm.addClientLink": "Add a client"
 }

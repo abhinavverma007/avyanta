@@ -1,0 +1,105 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <h1 class="page-title">{{ 'saClients.title' | t }}</h1>
+    <p class="page-sub">{{ 'saClients.sub' | t }}</p>
+  </div>
+
+  <div class="card card-padded form-panel">
+    <h2 class="panel-title">{{ (editingId() ? 'saClients.editTitle' : 'saClients.addTitle') | t }}</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">{{ 'saClients.clientName' | t }}</label>
+        <input
+          class="form-control"
+          maxlength="120"
+          [placeholder]="'saClients.clientPh' | t"
+          [value]="name()"
+          (input)="name.set($any($event.target).value)"
+          (keyup.enter)="save()"
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ 'saClients.vendorName' | t }}</label>
+        <input
+          class="form-control"
+          maxlength="120"
+          [placeholder]="'saClients.vendorPh' | t"
+          [value]="vendorName()"
+          (input)="vendorName.set($any($event.target).value)"
+          (keyup.enter)="save()"
+        />
+      </div>
+    </div>
+
+    @if (formError()) { <p class="error-msg">{{ formError() }}</p> }
+
+    <div class="form-actions">
+      @if (editingId()) {
+        <button class="btn btn-ghost" (click)="cancelEdit()">{{ 'saClients.cancel' | t }}</button>
+      }
+      <button class="btn btn-blue" [disabled]="saving()" (click)="save()">
+        {{ (saving() ? 'saClients.saving' : (editingId() ? 'saClients.save' : 'saClients.add')) | t }}
+      </button>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <input
+      class="form-control search-input"
+      [placeholder]="'saClients.searchPh' | t"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)"
+    />
+    <span class="result-count">{{ (clients().length === 1 ? 'saClients.countOne' : 'saClients.countMany') | t:{ n: clients().length } }}</span>
+  </div>
+
+  @if (listError()) { <p class="error-msg">{{ listError() }}</p> }
+
+  <div class="card table-card">
+    @if (loading()) {
+      <p class="empty-note">{{ 'saClients.loading' | t }}</p>
+    } @else if (loadError()) {
+      <p class="empty-note error-msg">{{ loadError() }}</p>
+    } @else if (clients().length === 0) {
+      <p class="empty-note">{{ 'saClients.empty' | t }}</p>
+    } @else if (filtered().length === 0) {
+      <p class="empty-note">{{ 'saClients.noMatch' | t }}</p>
+    } @else {
+      <div class="client-list">
+        @for (c of filtered(); track c.id) {
+          <div class="client-row" [class.editing]="editingId() === c.id">
+            <div class="client-main">
+              <span class="client-name">{{ c.name }}</span>
+              <span class="client-vendor">{{ 'saClients.vendorLine' | t:{ vendor: c.vendorName } }}</span>
+              <span class="client-tasks">
+                {{ (c.taskCount === 1 ? 'saClients.tasksOne' : 'saClients.tasksMany') | t:{ n: c.taskCount } }}
+                @if (c.lastServiced) { · {{ 'saClients.lastServiced' | t:{ date: (c.lastServiced | date:'d MMM y') } }} }
+              </span>
+            </div>
+
+            @if (confirmDeleteId() === c.id) {
+              <div class="client-confirm">
+                <p class="confirm-text">
+                  {{ 'saClients.confirmDelete' | t }}
+                  {{ (c.taskCount > 0 ? 'saClients.confirmHint' : 'saClients.confirmHintNone') | t:{ n: c.taskCount } }}
+                </p>
+                <div class="client-actions">
+                  <button class="btn btn-ghost btn-sm" (click)="confirmDeleteId.set(null)">{{ 'saClients.keep' | t }}</button>
+                  <button class="btn btn-danger btn-sm" [disabled]="deletingId() === c.id" (click)="confirmDelete(c)">
+                    {{ 'saClients.yesDelete' | t }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="client-actions">
+                <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/clients', c.id, 'history']">{{ 'saClients.history' | t }}</a>
+                <button class="btn btn-ghost btn-sm" (click)="startEdit(c)">{{ 'saClients.edit' | t }}</button>
+                <button class="btn btn-ghost btn-sm" (click)="askDelete(c.id)">{{ 'saClients.delete' | t }}</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

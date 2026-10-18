@@ -15,7 +15,21 @@
       <div class="form-grid">
         <div class="form-group span-2">
           <label class="form-label">{{ 'saTaskForm.title' | t }}</label>
-          <input class="form-control" [placeholder]="'saTaskForm.titlePh' | t" [value]="title()" (input)="title.set($any($event.target).value)" />
+          <select class="form-control" [ngModel]="clientId()" (ngModelChange)="clientId.set($event)">
+            <option value="">{{ 'saTaskForm.titlePh' | t }}</option>
+            @for (c of clients(); track c.id) {
+              <option [value]="c.id">{{ c.name }} — {{ c.vendorName }}</option>
+            }
+          </select>
+          @if (isEditMode() && !clientId() && title()) {
+            <p class="field-hint">{{ 'saTaskForm.clientCurrent' | t:{ title: title() } }}</p>
+          }
+          @if (clientsLoaded() && clients().length === 0) {
+            <p class="field-hint">
+              {{ (isOwner ? 'saTaskForm.noClientsOwner' : 'saTaskForm.noClients') | t }}
+              @if (isOwner) { <a routerLink="/superadmin/clients">{{ 'saTaskForm.addClientLink' | t }}</a> }
+            </p>
+          }
         </div>
         @if (isEditMode()) {
           <div class="form-group">

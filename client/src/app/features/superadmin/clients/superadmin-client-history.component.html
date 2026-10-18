@@ -1,0 +1,106 @@
+<div class="page fade-in">
+  <a class="back-link" [routerLink]="['/superadmin/clients']">{{ 'saClients.backToClients' | t }}</a>
+
+  @if (data(); as d) {
+    <div class="page-header">
+      <h1 class="page-title">{{ d.client.name }}</h1>
+      <p class="page-sub">{{ 'saClients.vendorLine' | t:{ vendor: d.client.vendorName } }} · {{ 'saClients.historyTitle' | t }}</p>
+    </div>
+
+    <div class="summary-strip">
+      <div class="summary-stat">
+        <span class="ss-value">{{ d.summary.totalTasks }}</span>
+        <span class="ss-label">{{ 'saClients.sumTasks' | t }}</span>
+      </div>
+      <div class="summary-stat">
+        <span class="ss-value">{{ d.summary.daysServiced }}</span>
+        <span class="ss-label">{{ 'saClients.sumDays' | t }}</span>
+      </div>
+      <div class="summary-stat">
+        <span class="ss-value">{{ d.summary.completed }}</span>
+        <span class="ss-label">{{ 'saClients.sumCompleted' | t }}</span>
+      </div>
+      <div class="summary-stat">
+        <span class="ss-value ss-date">{{ d.summary.firstServiced ? (d.summary.firstServiced | date:'d MMM y') : '—' }}</span>
+        <span class="ss-label">{{ 'saClients.sumFirst' | t }}</span>
+      </div>
+      <div class="summary-stat">
+        <span class="ss-value ss-date">{{ d.summary.lastServiced ? (d.summary.lastServiced | date:'d MMM y') : '—' }}</span>
+        <span class="ss-label">{{ 'saClients.sumLast' | t }}</span>
+      </div>
+    </div>
+  } @else {
+    <div class="page-header">
+      <h1 class="page-title">{{ 'saClients.historyTitle' | t }}</h1>
+    </div>
+  }
+
+  <div class="filter-row">
+    <select class="form-control" [value]="status()" (change)="setStatus($any($event.target).value)" [attr.aria-label]="'saClients.status' | t">
+      @for (o of statusOptions; track o.value) {
+        <option [value]="o.value">{{ o.label | t }}</option>
+      }
+    </select>
+    <label class="date-filter">
+      <span>{{ 'saClients.from' | t }}</span>
+      <input class="form-control" type="date" [value]="from()" (change)="setFrom($any($event.target).value)" />
+    </label>
+    <label class="date-filter">
+      <span>{{ 'saClients.to' | t }}</span>
+      <input class="form-control" type="date" [value]="to()" (change)="setTo($any($event.target).value)" />
+    </label>
+    @if (hasFilters) {
+      <button class="btn btn-ghost btn-sm" (click)="clearFilters()">{{ 'saClients.clearFilters' | t }}</button>
+    }
+  </div>
+
+  <div class="card table-card">
+    @if (error()) {
+      <p class="empty-note error-msg">{{ error() }}</p>
+    } @else if (loading() && !data()) {
+      <p class="empty-note">{{ 'saClients.loading' | t }}</p>
+    } @else if (data()) {
+      @if (data(); as d) {
+      @if (d.summary.totalTasks === 0) {
+        <p class="empty-note">{{ 'saClients.historyEmpty' | t }}</p>
+      } @else if (d.tasks.length === 0) {
+        <p class="empty-note">{{ 'saClients.historyNoMatch' | t }}</p>
+      } @else {
+        <div class="visit-list" [class.dim]="loading()">
+          @for (t of d.tasks; track t.id) {
+            <div class="visit-row">
+              <div class="visit-top">
+                <span class="visit-date">{{ t.date | date:'EEE, d MMM y' }}</span>
+                <span class="badge" [class]="badgeClass(t.status)">{{ statusKey(t.status) | t }}</span>
+              </div>
+              @if (t.site) { <p class="visit-site">📍 {{ t.site }}</p> }
+              @if (t.description) { <p class="visit-desc">{{ t.description }}</p> }
+              <p class="visit-meta">
+                {{ 'saClients.visitBy' | t }}
+                @for (e of t.employees; track e.id; let last = $last) {
+                  <span class="visit-emp">{{ e.name }}</span>@if (!last) {, }
+                }
+                @if (t.status === 'completed' && t.completedAt) {
+                  · {{ 'saClients.completedOn' | t:{ date: (t.completedAt | date:'d MMM y') } }}
+                }
+                @if (t.notes.length > 0) {
+                  · {{ (t.notes.length === 1 ? 'saClients.noteOne' : 'saClients.noteMany') | t:{ n: t.notes.length } }}
+                }
+              </p>
+              <a class="visit-link" [routerLink]="['/superadmin/tasks', t.id, 'edit']">{{ 'saClients.openTask' | t }}</a>
+            </div>
+          }
+        </div>
+
+        @if (d.totalPages > 1) {
+          <div class="pagination">
+            <button class="btn btn-ghost btn-sm" [disabled]="page() <= 1" (click)="goTo(page() - 1)">{{ 'saClients.prev' | t }}</button>
+            <span class="page-info">{{ 'saClients.pageOf' | t:{ page: d.page, total: d.totalPages } }}</span>
+            <button class="btn btn-ghost btn-sm" [disabled]="page() >= d.totalPages" (click)="goTo(page() + 1)">{{ 'saClients.next' | t }}</button>
+          </div>
+        }
+      }
+      }
+    }
+  </div>
+</div>
