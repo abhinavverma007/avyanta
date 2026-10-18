@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminLeaveService } from '../../../core/services/admin-leave.service';
 import { AdminLeave, LeaveStatus } from '../../../core/models/leave.model';
@@ -31,8 +32,9 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
 
   leaves = signal<AdminLeave[]>([]);
   loading = signal(true);
-  activeTab = signal<Tab>('pending');
+  activeTab = signal<Tab>('all');
   actingId = signal<string | null>(null);
+  overrideError = signal('');
   reviewNotes = signal<Record<string, string>>({});
 
   bulkNote = signal('');
@@ -49,6 +51,7 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
   readonly viewCount = computed(() => this.list.filtered().length);
 
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
+  private readonly i18n = inject(I18nService);
   private readonly authService = inject(AuthService);
 
   constructor(private leaveService: AdminLeaveService) {}
@@ -107,6 +110,20 @@ export class SuperadminLeaveApprovalsComponent implements OnInit {
     try {
       await this.leaveService.reject(leave.id, this.noteFor(leave.id));
       this.load();
+    } finally {
+      this.actingId.set(null);
+    }
+  }
+
+  // Owner-only override of a decision a delegated Supervisor/Manager made.
+  async override(leave: AdminLeave, status: 'approved' | 'rejected'): Promise<void> {
+    this.actingId.set(leave.id);
+    this.overrideError.set('');
+    try {
+      await this.leaveService.override(leave.id, status, this.noteFor(leave.id));
+      this.load();
+    } catch (err: any) {
+      this.overrideError.set(err?.error?.message ?? this.i18n.t('saApprovals.overrideFailed'));
     } finally {
       this.actingId.set(null);
     }

@@ -59,6 +59,9 @@
     } @else if (list.paged().length === 0) {
       <p class="empty-note">{{ 'saRegAppr.empty' | t }}</p>
     } @else {
+      @if (overrideError()) {
+        <p class="empty-note">{{ overrideError() }}</p>
+      }
       <div class="claims-list">
         @for (request of list.paged(); track request.id) {
           <div class="claim-row">
@@ -81,10 +84,13 @@
               <p class="claim-employee">{{ request.employee?.name }} · {{ request.employee?.employeeId }} · {{ request.employee?.department }}</p>
               <p class="claim-desc">{{ request.reason }}</p>
               @if (request.reviewedBy) {
-                <p class="claim-note">{{ ('saApprovals.' + request.status + 'By' + (list.isMine(request) ? 'You' : '')) | t:{ name: request.reviewedBy.name } }}</p>
+                <p class="claim-note">{{ ('saApprovals.' + request.status + 'By' + (list.isMine(request) ? 'You' : '')) | t:{ name: request.reviewedBy.name } }}@if (request.reviewedAt) { · {{ request.reviewedAt | date:'d MMM y, h:mm a' }}}</p>
               }
               @if (request.reviewNote) {
                 <p class="claim-note">{{ 'saApprovals.reviewNote' | t:{ note: request.reviewNote } }}</p>
+              }
+              @if (request.override) {
+                <p class="claim-note override-note">{{ ('saApprovals.overridden.' + request.override.previousStatus) | t:{ name: request.override.previousReviewedBy?.name ?? '' } }}</p>
               }
             </div>
 
@@ -105,6 +111,24 @@
                   </div>
                 </div>
               }
+            }
+
+            @if (list.canOverride(request)) {
+              <div class="claim-actions">
+                <input
+                  class="form-control note-input"
+                  [placeholder]="'saApprovals.overrideNotePh' | t"
+                  [value]="noteFor(request.id)"
+                  (input)="setNote(request.id, $any($event.target).value)"
+                />
+                <div class="claim-buttons">
+                  @if (request.status === 'approved') {
+                    <button class="btn btn-ghost btn-sm" [disabled]="actingId() === request.id" (click)="override(request, 'rejected')">{{ 'saApprovals.overrideToReject' | t }}</button>
+                  } @else {
+                    <button class="btn btn-success btn-sm" [disabled]="actingId() === request.id" (click)="override(request, 'approved')">{{ 'saApprovals.overrideToApprove' | t }}</button>
+                  }
+                </div>
+              </div>
             }
           </div>
         }

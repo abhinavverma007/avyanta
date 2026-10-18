@@ -35,4 +35,11 @@ export class AdminLeaveService {
       this.http.patch<{ leave: AdminLeave }>(`${this.base}/${id}/reject`, { reviewNote }),
     ).then(r => r.leave);
   }
+
+  // Owner-only: flips a decision a delegated Supervisor/Manager made.
+  override(id: string, status: 'approved' | 'rejected', reviewNote?: string): Promise<AdminLeave> {
+    return firstValueFrom(
+      this.http.patch<{ leave: AdminLeave }>(`${this.base}/${id}/override`, { status, reviewNote }),
+    ).then(r => r.leave);
+  }
 }

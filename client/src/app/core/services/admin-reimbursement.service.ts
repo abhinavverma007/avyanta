@@ -35,4 +35,11 @@ export class AdminReimbursementService {
       this.http.patch<{ claim: AdminReimbursement }>(`${this.base}/${id}/reject`, { reviewNote }),
     ).then(r => r.claim);
   }
+
+  // Owner-only: flips a decision a delegated Supervisor/Manager made.
+  override(id: string, status: 'approved' | 'rejected', reviewNote?: string): Promise<AdminReimbursement> {
+    return firstValueFrom(
+      this.http.patch<{ claim: AdminReimbursement }>(`${this.base}/${id}/override`, { status, reviewNote }),
+    ).then(r => r.claim);
+  }
 }

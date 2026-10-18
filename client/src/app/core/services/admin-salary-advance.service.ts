@@ -35,4 +35,11 @@ export class AdminSalaryAdvanceService {
       this.http.patch<{ request: AdminSalaryAdvance }>(`${this.base}/${id}/reject`, { reviewNote }),
     ).then(r => r.request);
   }
+
+  // Owner-only: flips a decision a delegated Supervisor/Manager made.
+  override(id: string, status: 'approved' | 'rejected', reviewNote?: string): Promise<AdminSalaryAdvance> {
+    return firstValueFrom(
+      this.http.patch<{ request: AdminSalaryAdvance }>(`${this.base}/${id}/override`, { status, reviewNote }),
+    ).then(r => r.request);
+  }
 }

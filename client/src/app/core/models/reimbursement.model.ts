@@ -1,4 +1,4 @@
-import { ReviewedBy } from './reviewer.model';
+import { ReviewedBy, ReviewOverride } from './reviewer.model';
 export type ReimbursementCategory = 'petrol' | 'food' | 'travel' | 'other';
 export type ReimbursementStatus = 'pending' | 'approved' | 'rejected';
 
@@ -12,6 +12,7 @@ export interface Reimbursement {
   reviewNote: string;
   reviewedAt?: string;
   reviewedBy?: ReviewedBy | null;
+  override?: ReviewOverride | null;
   createdAt: string;
 }
 

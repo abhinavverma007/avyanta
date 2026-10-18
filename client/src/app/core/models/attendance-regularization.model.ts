@@ -1,4 +1,4 @@
-import { ReviewedBy } from './reviewer.model';
+import { ReviewedBy, ReviewOverride } from './reviewer.model';
 // A request to correct a day with no valid attendance (forgot to punch).
 // Only makes sense for a day the employee didn't already complete a punch
 // cycle on, and that isn't an approved leave day.
@@ -15,6 +15,7 @@ export interface RegularizationRecord {
   reviewNote: string;
   reviewedAt?: string;
   reviewedBy?: ReviewedBy | null;
+  override?: ReviewOverride | null;
 }
 
 export interface AdminRegularization extends RegularizationRecord {
