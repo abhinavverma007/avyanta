@@ -55,5 +55,6 @@
   "login.footerNote": "Trouble signing in? Ask the owner to reset your password.",
   "login.err.invalidEmail": "Enter a valid email address.",
   "login.err.invalidCredentials": "Invalid credentials. Please try again.",
-  "notice.accessUpdated": "Your access to this feature was updated by the owner."
+  "notice.accessUpdated": "Your access to this feature was updated by the owner.",
+  "nav.clients": "Clients"
 }

@@ -6,7 +6,10 @@ const mongoose = require('mongoose');
 // are labourers, and more than one of them often works the same site.
 const taskSchema = new mongoose.Schema(
   {
+    // The client's name — copied when the task is assigned so the task still reads
+    // correctly if the client is later deleted; `client` links back to the record.
     title: { type: String, required: true, trim: true },
+    client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', default: undefined },
     description: { type: String, default: '' },
     site: { type: String, default: '' },
     siteLocation: {

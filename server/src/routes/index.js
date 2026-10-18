@@ -18,6 +18,7 @@ const adminSalaryAdvanceRoutes = require('./adminSalaryAdvance.routes');
 const adminRoleRoutes = require('./adminRole.routes');
 const maintenanceRoutes = require('./maintenance.routes');
 const adminAuditLogRoutes = require('./adminAuditLog.routes');
+const adminClientsRoutes = require('./adminClients.routes');
 const salarySelfRoutes = require('./salary.self.routes');
 const notificationsRoutes = require('./notifications.routes');
 const adminNotificationsRoutes = require('./adminNotifications.routes');
@@ -95,6 +96,7 @@ router.use('/maintenance', maintenanceRoutes);
 router.use('/admin/auth', adminAuthRoutes);
 router.use('/admin/roles', adminRoleRoutes);
 router.use('/admin/audit-logs', adminAuditLogRoutes);
+router.use('/admin/clients', adminClientsRoutes);
 router.use('/admin/notifications', adminNotificationsRoutes);
 
 // Dual-mounted — each of these routers is internally gated by

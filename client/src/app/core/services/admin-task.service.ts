@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { API_SCOPE } from '../tokens/api-scope';
+import { ClientOption } from '../models/client.model';
 import { AdminTask, CreateTaskPayload, ListTasksParams, PaginatedTasks, UpdateTaskPayload } from '../models/admin-task.model';
 
 // Not providedIn: 'root' — provided fresh per-route instead so it always
@@ -24,6 +25,12 @@ export class AdminTaskService {
     if (params.page) query['page'] = String(params.page);
     if (params.limit) query['limit'] = String(params.limit);
     return firstValueFrom(this.http.get<PaginatedTasks>(this.base, { params: query }));
+  }
+
+  // Read-only client list for the Assign Task dropdown — works for the owner and
+  // for a Supervisor/Manager who has the Tasks permission.
+  clients(): Promise<ClientOption[]> {
+    return firstValueFrom(this.http.get<{ clients: ClientOption[] }>(`${this.base}/clients`)).then(r => r.clients);
   }
 
   get(id: string): Promise<AdminTask> {

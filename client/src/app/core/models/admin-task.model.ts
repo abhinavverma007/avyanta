@@ -20,7 +20,8 @@ export interface TaskNote {
 
 export interface AdminTask {
   id: string;
-  title: string;
+  title: string;       // the client's name (free text on tasks made before clients existed)
+  clientId: string | null;
   description: string;
   site: string;
   siteLocation: SiteLocation | null;
@@ -34,7 +35,7 @@ export interface AdminTask {
 }
 
 export interface CreateTaskPayload {
-  title: string;
+  clientId: string;
   description?: string;
   site?: string;
   siteLocation?: SiteLocation;
@@ -43,7 +44,7 @@ export interface CreateTaskPayload {
 }
 
 export interface UpdateTaskPayload {
-  title?: string;
+  clientId?: string;
   description?: string;
   site?: string;
   siteLocation?: SiteLocation | null;

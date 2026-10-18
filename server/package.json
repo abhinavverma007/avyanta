@@ -12,6 +12,7 @@
     "migrate:leave-status": "node src/scripts/migrateLeaveStatus.js",
     "seed:roles": "node src/scripts/seedRoles.js",
     "backfill:reviewed-by": "node src/scripts/backfillReviewedBy.js",
+    "link:tasks-to-clients": "node src/scripts/linkTasksToClients.js",
     "migrate:employee-roles": "node src/scripts/migrateEmployeeRoles.js"
   },
   "engines": {

@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const Employee = require('../models/Employee');
+const Client = require('../models/Client');
 const { recordAudit } = require('../utils/audit');
 const { sendPushToEmployees } = require('../utils/pushNotify');
 const { notifyEmployees } = require('../utils/notify');
@@ -18,6 +19,7 @@ function sanitize(task) {
   return {
     id: task._id.toString(),
     title: task.title,
+    clientId: task.client ? String(task.client) : null,
     description: task.description,
     site: task.site,
     siteLocation: task.siteLocation ? { lat: task.siteLocation.lat, lng: task.siteLocation.lng } : null,
@@ -48,10 +50,19 @@ function sanitize(task) {
 // becomes several documents, one per date, so an employee's "today" view
 // (and the admin's filtered list) can just query by date.
 exports.create = async (req, res) => {
-  const { title, description, site, siteLocation, dates, employeeIds } = req.body;
+  const { description, site, siteLocation, dates, employeeIds, clientId } = req.body;
+  let { title } = req.body;
 
-  if (!title || !String(title).trim()) {
-    return res.status(400).json({ message: 'Title is required.' });
+  // A task is assigned against a client from the client database; its title is
+  // that client's name. (A bare `title` is still accepted so a page loaded
+  // before this change keeps working until it's refreshed.)
+  let client = null;
+  if (clientId) {
+    client = await Client.findById(clientId).catch(() => null);
+    if (!client) return res.status(400).json({ message: 'Selected client was not found.' });
+    title = client.name;
+  } else if (!title || !String(title).trim()) {
+    return res.status(400).json({ message: 'Client is required.' });
   }
   let cleanLocation;
   if (siteLocation != null) {
@@ -81,6 +92,7 @@ exports.create = async (req, res) => {
   const created = await Task.insertMany(
     uniqueDates.map((date) => ({
       title: String(title).trim(),
+      ...(client ? { client: client._id } : {}),
       description: description ? String(description).trim() : '',
       site: site ? String(site).trim() : '',
       siteLocation: cleanLocation,
@@ -183,10 +195,17 @@ exports.update = async (req, res) => {
   const task = await Task.findById(req.params.id);
   if (!task) return res.status(404).json({ message: 'Task not found.' });
 
-  const { title, description, site, siteLocation, date, employeeIds, status } = req.body;
+  const { title, description, site, siteLocation, date, employeeIds, status, clientId } = req.body;
 
-  if (title !== undefined) {
-    if (!String(title).trim()) return res.status(400).json({ message: 'Title is required.' });
+  if (clientId) {
+    const client = await Client.findById(clientId).catch(() => null);
+    if (!client) return res.status(400).json({ message: 'Selected client was not found.' });
+    task.client = client._id;
+    task.title = client.name;
+  } else if (title !== undefined) {
+    // Legacy tasks have a free-typed title and no client — leaving the client
+    // unselected keeps that title as it is.
+    if (!String(title).trim()) return res.status(400).json({ message: 'Client is required.' });
     task.title = String(title).trim();
   }
   if (description !== undefined) task.description = String(description).trim();
@@ -278,3 +297,5 @@ exports.remove = async (req, res) => {
 
   res.json({ success: true });
 };
+
+exports.sanitize = sanitize;
