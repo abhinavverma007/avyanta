@@ -59,6 +59,9 @@
     } @else if (list.paged().length === 0) {
       <p class="empty-note">{{ 'saLeaveAppr.empty' | t }}</p>
     } @else {
+      @if (overrideError()) {
+        <p class="empty-note">{{ overrideError() }}</p>
+      }
       <div class="claims-list">
         @for (leave of list.paged(); track leave.id) {
           <div class="claim-row">
@@ -80,10 +83,13 @@
               <p class="claim-employee">{{ leave.employee?.name }} · {{ leave.employee?.employeeId }} · {{ leave.employee?.department }}</p>
               <p class="claim-desc">{{ leave.reason }}</p>
               @if (leave.reviewedBy) {
-                <p class="claim-note">{{ ('saApprovals.' + leave.status + 'By' + (list.isMine(leave) ? 'You' : '')) | t:{ name: leave.reviewedBy.name } }}</p>
+                <p class="claim-note">{{ ('saApprovals.' + leave.status + 'By' + (list.isMine(leave) ? 'You' : '')) | t:{ name: leave.reviewedBy.name } }}@if (leave.reviewedAt) { · {{ leave.reviewedAt | date:'d MMM y, h:mm a' }}}</p>
               }
               @if (leave.reviewNote) {
                 <p class="claim-note">{{ 'saApprovals.reviewNote' | t:{ note: leave.reviewNote } }}</p>
+              }
+              @if (leave.override) {
+                <p class="claim-note override-note">{{ ('saApprovals.overridden.' + leave.override.previousStatus) | t:{ name: leave.override.previousReviewedBy?.name ?? '' } }}</p>
               }
             </div>
 
@@ -104,6 +110,24 @@
                   </div>
                 </div>
               }
+            }
+
+            @if (list.canOverride(leave)) {
+              <div class="claim-actions">
+                <input
+                  class="form-control note-input"
+                  [placeholder]="'saApprovals.overrideNotePh' | t"
+                  [value]="noteFor(leave.id)"
+                  (input)="setNote(leave.id, $any($event.target).value)"
+                />
+                <div class="claim-buttons">
+                  @if (leave.status === 'approved') {
+                    <button class="btn btn-ghost btn-sm" [disabled]="actingId() === leave.id" (click)="override(leave, 'rejected')">{{ 'saApprovals.overrideToReject' | t }}</button>
+                  } @else {
+                    <button class="btn btn-success btn-sm" [disabled]="actingId() === leave.id" (click)="override(leave, 'approved')">{{ 'saApprovals.overrideToApprove' | t }}</button>
+                  }
+                </div>
+              </div>
             }
           </div>
         }

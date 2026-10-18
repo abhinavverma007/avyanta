@@ -7,7 +7,7 @@ export type SortDir = 'asc' | 'desc';
 export interface ApprovableEntity {
   id: string;
   status: 'pending' | 'approved' | 'rejected';
-  reviewedBy?: { id: string } | null;
+  reviewedBy?: { id: string; actorType?: 'admin' | 'employee' } | null;
 }
 
 export interface SortOption {
@@ -93,6 +93,13 @@ export class ApprovalListController<T extends ApprovableEntity> {
   isMine(item: ApprovableEntity): boolean {
     const me = this.currentReviewerId();
     return !!me && !!item.reviewedBy && item.reviewedBy.id === me;
+  }
+
+  // The owner can flip an already-made decision, but only one a delegated
+  // Supervisor/Manager took — their own decisions stand, and so does a record
+  // with no known reviewer (the server enforces the same rule).
+  canOverride(item: ApprovableEntity): boolean {
+    return this.adminAuth.isAuthenticated() && item.status !== 'pending' && item.reviewedBy?.actorType === 'employee';
   }
 
   setMineOnly(value: boolean): void {

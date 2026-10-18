@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminSalaryAdvanceService } from '../../../core/services/admin-salary-advance.service';
 import { AdminSalaryAdvance, AdvanceStatus } from '../../../core/models/salary-advance.model';
@@ -32,8 +33,9 @@ export class SuperadminAdvanceApprovalsComponent implements OnInit {
 
   requests = signal<AdminSalaryAdvance[]>([]);
   loading = signal(true);
-  activeTab = signal<Tab>('pending');
+  activeTab = signal<Tab>('all');
   actingId = signal<string | null>(null);
+  overrideError = signal('');
   reviewNotes = signal<Record<string, string>>({});
 
   bulkNote = signal('');
@@ -55,6 +57,7 @@ export class SuperadminAdvanceApprovalsComponent implements OnInit {
   readonly viewTotal = computed(() => this.list.filtered().reduce((sum, r) => sum + r.amount, 0));
 
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
+  private readonly i18n = inject(I18nService);
   private readonly authService = inject(AuthService);
 
   constructor(private advanceService: AdminSalaryAdvanceService) {}
@@ -113,6 +116,20 @@ export class SuperadminAdvanceApprovalsComponent implements OnInit {
     try {
       await this.advanceService.reject(request.id, this.noteFor(request.id));
       this.load();
+    } finally {
+      this.actingId.set(null);
+    }
+  }
+
+  // Owner-only override of a decision a delegated Supervisor/Manager made.
+  async override(request: AdminSalaryAdvance, status: 'approved' | 'rejected'): Promise<void> {
+    this.actingId.set(request.id);
+    this.overrideError.set('');
+    try {
+      await this.advanceService.override(request.id, status, this.noteFor(request.id));
+      this.load();
+    } catch (err: any) {
+      this.overrideError.set(err?.error?.message ?? this.i18n.t('saApprovals.overrideFailed'));
     } finally {
       this.actingId.set(null);
     }

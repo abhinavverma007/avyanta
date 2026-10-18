@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { I18nService } from '../../../core/i18n/i18n.service';
 import { TPipe } from '../../../core/i18n/t.pipe';
 import { AdminAttendanceRegularizationService } from '../../../core/services/admin-attendance-regularization.service';
 import { AdminRegularization, RegularizationStatus } from '../../../core/models/attendance-regularization.model';
@@ -31,8 +32,9 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
 
   requests = signal<AdminRegularization[]>([]);
   loading = signal(true);
-  activeTab = signal<Tab>('pending');
+  activeTab = signal<Tab>('all');
   actingId = signal<string | null>(null);
+  overrideError = signal('');
   reviewNotes = signal<Record<string, string>>({});
 
   bulkNote = signal('');
@@ -50,6 +52,7 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
   readonly viewCount = computed(() => this.list.filtered().length);
 
   private readonly isAdminScope = inject(API_SCOPE) === 'admin';
+  private readonly i18n = inject(I18nService);
   private readonly authService = inject(AuthService);
 
   constructor(private regularizationService: AdminAttendanceRegularizationService) {}
@@ -108,6 +111,20 @@ export class SuperadminRegularizationApprovalsComponent implements OnInit {
     try {
       await this.regularizationService.reject(request.id, this.noteFor(request.id));
       this.load();
+    } finally {
+      this.actingId.set(null);
+    }
+  }
+
+  // Owner-only override of a decision a delegated Supervisor/Manager made.
+  async override(request: AdminRegularization, status: 'approved' | 'rejected'): Promise<void> {
+    this.actingId.set(request.id);
+    this.overrideError.set('');
+    try {
+      await this.regularizationService.override(request.id, status, this.noteFor(request.id));
+      this.load();
+    } catch (err: any) {
+      this.overrideError.set(err?.error?.message ?? this.i18n.t('saApprovals.overrideFailed'));
     } finally {
       this.actingId.set(null);
     }

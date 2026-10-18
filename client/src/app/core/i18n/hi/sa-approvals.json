@@ -60,5 +60,11 @@
   "saApprovals.approvedBy": "{name} ने मंज़ूर किया",
   "saApprovals.approvedByYou": "आपने मंज़ूर किया",
   "saApprovals.rejectedBy": "{name} ने मना किया",
-  "saApprovals.rejectedByYou": "आपने मना किया"
+  "saApprovals.rejectedByYou": "आपने मना किया",
+  "saApprovals.overrideToReject": "बदलें → मना करें",
+  "saApprovals.overrideToApprove": "बदलें → मंज़ूर करें",
+  "saApprovals.overrideNotePh": "बदलाव का कारण (वैकल्पिक)",
+  "saApprovals.overrideFailed": "यह फ़ैसला बदला नहीं जा सका। कृपया दोबारा कोशिश करें।",
+  "saApprovals.overridden.approved": "आपने बदला — {name} ने मंज़ूर किया था",
+  "saApprovals.overridden.rejected": "आपने बदला — {name} ने मना किया था"
 }

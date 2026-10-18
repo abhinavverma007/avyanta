@@ -1,4 +1,4 @@
-import { ReviewedBy } from './reviewer.model';
+import { ReviewedBy, ReviewOverride } from './reviewer.model';
 // A cash advance an employee asks for mid-month, recovered from *next*
 // month's payable salary once approved (see salary.controller.js).
 
@@ -13,6 +13,7 @@ export interface SalaryAdvanceRequest {
   reviewNote: string;
   reviewedAt?: string;
   reviewedBy?: ReviewedBy | null;
+  override?: ReviewOverride | null;
   createdAt: string;
 }
 

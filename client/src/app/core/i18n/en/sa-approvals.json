@@ -60,5 +60,11 @@
   "saApprovals.approvedBy": "Approved by {name}",
   "saApprovals.approvedByYou": "Approved by you",
   "saApprovals.rejectedBy": "Rejected by {name}",
-  "saApprovals.rejectedByYou": "Rejected by you"
+  "saApprovals.rejectedByYou": "Rejected by you",
+  "saApprovals.overrideToReject": "Override → Reject",
+  "saApprovals.overrideToApprove": "Override → Approve",
+  "saApprovals.overrideNotePh": "Reason for override (optional)",
+  "saApprovals.overrideFailed": "Couldn't override this decision. Please try again.",
+  "saApprovals.overridden.approved": "Overridden by you — was approved by {name}",
+  "saApprovals.overridden.rejected": "Overridden by you — was rejected by {name}"
 }

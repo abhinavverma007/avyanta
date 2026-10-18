@@ -34,4 +34,11 @@ export class AdminAttendanceRegularizationService {
       this.http.patch<{ request: AdminRegularization }>(`${this.base}/${id}/reject`, { reviewNote }),
     ).then(r => r.request);
   }
+
+  // Owner-only: flips a decision a delegated Supervisor/Manager made.
+  override(id: string, status: 'approved' | 'rejected', reviewNote?: string): Promise<AdminRegularization> {
+    return firstValueFrom(
+      this.http.patch<{ request: AdminRegularization }>(`${this.base}/${id}/override`, { status, reviewNote }),
+    ).then(r => r.request);
+  }
 }

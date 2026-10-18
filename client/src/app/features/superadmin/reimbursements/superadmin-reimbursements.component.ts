@@ -33,8 +33,9 @@ export class SuperadminReimbursementsComponent implements OnInit {
 
   claims = signal<AdminReimbursement[]>([]);
   loading = signal(true);
-  activeTab = signal<Tab>('pending');
+  activeTab = signal<Tab>('all');
   actingId = signal<string | null>(null);
+  overrideError = signal('');
   reviewNotes = signal<Record<string, string>>({});
 
   bulkNote = signal('');
@@ -115,6 +116,20 @@ export class SuperadminReimbursementsComponent implements OnInit {
     try {
       await this.reimbursementService.reject(claim.id, this.noteFor(claim.id));
       this.load();
+    } finally {
+      this.actingId.set(null);
+    }
+  }
+
+  // Owner-only override of a decision a delegated Supervisor/Manager made.
+  async override(claim: AdminReimbursement, status: 'approved' | 'rejected'): Promise<void> {
+    this.actingId.set(claim.id);
+    this.overrideError.set('');
+    try {
+      await this.reimbursementService.override(claim.id, status, this.noteFor(claim.id));
+      this.load();
+    } catch (err: any) {
+      this.overrideError.set(err?.error?.message ?? this.i18n.t('saApprovals.overrideFailed'));
     } finally {
       this.actingId.set(null);
     }
