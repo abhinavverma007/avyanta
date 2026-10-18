@@ -77,6 +77,11 @@ export const routes: Routes = [
           import('./features/tasks/tasks.component').then(m => m.TasksComponent),
       },
       {
+        path: 'daily-report',
+        loadComponent: () =>
+          import('./features/daily-report/daily-report.component').then(m => m.DailyReportComponent),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(m => m.ProfileComponent),
@@ -190,6 +195,13 @@ export const routes: Routes = [
         canActivate: [anySuperadminAreaGuard(['approvalsReimbursements', 'approvalsLeave', 'approvalsRegularization', 'approvalsAdvance'])],
         loadComponent: () =>
           import('./features/superadmin/approvals/superadmin-approvals.component').then(m => m.SuperadminApprovalsComponent),
+      },
+      {
+        path: 'daily-reports',
+        // Owner only — never delegable.
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/daily-reports/superadmin-daily-reports.component').then(m => m.SuperadminDailyReportsComponent),
       },
       {
         path: 'salary',

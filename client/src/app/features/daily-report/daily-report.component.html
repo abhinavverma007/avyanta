@@ -1,0 +1,86 @@
+<div class="report-page fade-in">
+  <div class="report-header">
+    <h1 class="report-title">{{ (isEdit() ? 'dailyReport.editTitle' : 'dailyReport.title') | t }}</h1>
+    @if (date) { <p class="report-date">{{ date | date:'EEEE, d MMMM y' }}</p> }
+    <p class="report-sub">{{ 'dailyReport.sub' | t }}</p>
+    @for (j of jobs(); track j.taskId) {
+      <p class="report-job">📍 {{ j.title }}@if (j.site) { · {{ j.site }} }</p>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="card card-padded"><p class="empty-note">{{ 'dailyReport.loading' | t }}</p></div>
+  } @else if (loadError()) {
+    <div class="card card-padded"><p class="error-msg">{{ loadError() }}</p></div>
+  } @else if (!punchedIn()) {
+    <div class="card card-padded">
+      <p class="empty-note">{{ 'dailyReport.notPunchedIn' | t }}</p>
+      <div class="actions"><button class="btn btn-ghost" (click)="later()">{{ 'dailyReport.back' | t }}</button></div>
+    </div>
+  } @else {
+
+    <!-- 1. What work -->
+    <section class="card card-padded block">
+      <h2 class="block-title">1. {{ 'dailyReport.workTitle' | t }}</h2>
+      <div class="chips">
+        @for (k of workTypes; track k) {
+          <button type="button" class="chip" [class.on]="isWorkSelected(k)" (click)="toggleWork(k)">{{ 'dailyReport.work.' + k | t }}</button>
+        }
+      </div>
+    </section>
+
+    <!-- 2. Problems -->
+    <section class="card card-padded block">
+      <h2 class="block-title">2. {{ 'dailyReport.problemTitle' | t }}</h2>
+      <div class="chips">
+        <button type="button" class="chip ok" [class.on]="hasProblem('none')" (click)="toggleProblem('none')">{{ 'dailyReport.problem.none' | t }}</button>
+        @for (k of problemOptions; track k) {
+          <button type="button" class="chip warn" [class.on]="hasProblem(k)" (click)="toggleProblem(k)">{{ 'dailyReport.problem.' + k | t }}</button>
+        }
+      </div>
+      @if (hasRealProblem) {
+        <label class="field">
+          <span class="field-label">{{ 'dailyReport.problemNote' | t }}</span>
+          <textarea class="form-control" rows="2" maxlength="500" [value]="problemNote()" (input)="problemNote.set($any($event.target).value)"></textarea>
+        </label>
+      }
+    </section>
+
+    <!-- 3. Safety -->
+    <section class="card card-padded block">
+      <h2 class="block-title">3. {{ 'dailyReport.safetyTitle' | t }}</h2>
+      <div class="yesno">
+        <button type="button" class="yn no" [class.on]="safety() === false" (click)="safety.set(false)">{{ 'dailyReport.no' | t }}</button>
+        <button type="button" class="yn yes" [class.on]="safety() === true" (click)="safety.set(true)">{{ 'dailyReport.yes' | t }}</button>
+      </div>
+      @if (safety() === true) {
+        <label class="field">
+          <span class="field-label">{{ 'dailyReport.safetyNote' | t }}</span>
+          <textarea class="form-control" rows="2" maxlength="500" [value]="safetyNote()" (input)="safetyNote.set($any($event.target).value)"></textarea>
+        </label>
+      }
+    </section>
+
+    <!-- 4. Message to the owner -->
+    <section class="card card-padded block">
+      <h2 class="block-title">4. {{ 'dailyReport.messageTitle' | t }}</h2>
+      <textarea
+        class="form-control"
+        rows="3"
+        maxlength="1000"
+        [placeholder]="'dailyReport.messagePh' | t"
+        [value]="messageToOwner()"
+        (input)="messageToOwner.set($any($event.target).value)"
+      ></textarea>
+    </section>
+
+    @if (formError()) { <p class="error-msg">{{ formError() }}</p> }
+
+    <div class="actions">
+      <button class="btn btn-ghost" [disabled]="saving()" (click)="later()">{{ 'dailyReport.later' | t }}</button>
+      <button class="btn btn-blue" [disabled]="saving()" (click)="submit()">
+        {{ (saving() ? 'dailyReport.saving' : (isEdit() ? 'dailyReport.update' : 'dailyReport.submit')) | t }}
+      </button>
+    </div>
+  }
+</div>

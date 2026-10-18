@@ -1,0 +1,107 @@
+<div class="page fade-in">
+  <div class="page-header">
+    <h1 class="page-title">{{ 'dailyReport.owner.title' | t }}</h1>
+    <p class="page-sub">{{ 'dailyReport.owner.sub' | t }}</p>
+  </div>
+
+  <div class="filter-row">
+    <button class="btn btn-ghost btn-sm" (click)="shiftDay(-1)" [attr.aria-label]="'dailyReport.owner.prevDay' | t">‹</button>
+    <input class="form-control date-input" type="date" [value]="date()" (change)="setDate($any($event.target).value)" />
+    <button class="btn btn-ghost btn-sm" (click)="shiftDay(1)" [disabled]="isToday()" [attr.aria-label]="'dailyReport.owner.nextDay' | t">›</button>
+    <label class="flag-toggle">
+      <input type="checkbox" [checked]="flaggedOnly()" (change)="setFlaggedOnly($any($event.target).checked)" />
+      <span>{{ 'dailyReport.owner.flaggedOnly' | t }}</span>
+    </label>
+    <span class="summary">
+      {{ 'dailyReport.owner.summary' | t:{ n: total(), flagged: flaggedCount() } }}
+    </span>
+  </div>
+
+  @if (error()) {
+    <div class="card card-padded"><p class="error-msg">{{ error() }}</p></div>
+  } @else if (loading() && reports().length === 0) {
+    <div class="card card-padded"><p class="empty-note">{{ 'dailyReport.owner.loading' | t }}</p></div>
+  } @else {
+
+    @if (missing().length > 0) {
+      <div class="card card-padded missing">
+        <h2 class="missing-title">{{ 'dailyReport.owner.missingTitle' | t:{ n: missing().length } }}</h2>
+        <div class="missing-chips">
+          @for (e of missing(); track e.id) {
+            <span class="missing-chip">{{ e.name }} <small>{{ e.employeeId }}</small></span>
+          }
+        </div>
+      </div>
+    }
+
+    @if (reports().length === 0) {
+      <div class="card card-padded"><p class="empty-note">{{ (flaggedOnly() ? 'dailyReport.owner.noFlagged' : 'dailyReport.owner.empty') | t }}</p></div>
+    } @else {
+      <div class="report-list" [class.dim]="loading()">
+        @for (r of reports(); track r.id) {
+          <article class="card report" [class.flagged]="r.flagged">
+            <header class="report-head">
+              <div>
+                <h3 class="who">{{ r.employee?.name }} <small>{{ r.employee?.employeeId }}</small></h3>
+                <p class="when">
+                  @if (r.punchedInAt) { {{ r.punchedInAt | date:'h:mm a' }} }
+                  @if (r.punchedOutAt) { – {{ r.punchedOutAt | date:'h:mm a' }} }
+                  @if (r.hoursWorked !== null) { · {{ formatWorkDuration(r.hoursWorked) }} }
+                </p>
+              </div>
+              @if (r.flagged) { <span class="badge badge-danger">{{ 'dailyReport.owner.needsAttention' | t }}</span> }
+            </header>
+
+            @if (r.safetyIncident) {
+              <div class="alert-box danger">
+                <strong>{{ 'dailyReport.owner.safetyIncident' | t }}</strong>
+                <p>{{ r.safetyNote }}</p>
+              </div>
+            }
+
+            @if (r.jobs.length > 0) {
+              <div class="row">
+                <span class="row-label">{{ 'dailyReport.owner.jobs' | t }}</span>
+                <ul class="jobs">
+                  @for (j of r.jobs; track j.taskId) {
+                    <li>
+                      <span class="job-name">{{ j.title }}</span>
+                      @if (j.site) { <span class="job-site">📍 {{ j.site }}</span> }
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            <div class="row">
+              <span class="row-label">{{ 'dailyReport.owner.work' | t }}</span>
+              <span class="tags">
+                @for (w of r.workTypes; track w) { <span class="tag">{{ 'dailyReport.work.' + w | t }}</span> }
+              </span>
+            </div>
+
+            <div class="row">
+              <span class="row-label">{{ 'dailyReport.owner.problems' | t }}</span>
+              @if (realProblems(r).length === 0) {
+                <span class="muted">{{ 'dailyReport.problem.none' | t }}</span>
+              } @else {
+                <span class="tags">
+                  @for (p of realProblems(r); track p) { <span class="tag warn">{{ 'dailyReport.problem.' + p | t }}</span> }
+                </span>
+              }
+            </div>
+            @if (r.problemNote) {
+              <div class="row"><span class="row-label"></span><span class="note">{{ r.problemNote }}</span></div>
+            }
+            @if (r.messageToOwner) {
+              <div class="row">
+                <span class="row-label">{{ 'dailyReport.owner.message' | t }}</span>
+                <span class="note message">{{ r.messageToOwner }}</span>
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  }
+</div>

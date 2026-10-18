@@ -1,5 +1,6 @@
 const Client = require('../models/Client');
 const Task = require('../models/Task');
+const DailyReport = require('../models/DailyReport');
 const { recordAudit } = require('../utils/audit');
 const { sanitize: sanitizeTask } = require('./adminTask.controller');
 
@@ -179,6 +180,26 @@ exports.history = async (req, res) => {
     ]),
   ]);
 
+  // The end-of-day work reports workers wrote about each of these visits.
+  const taskIds = tasks.map((t) => t._id);
+  const reports = taskIds.length
+    ? await DailyReport.find({ 'jobs.task': { $in: taskIds } }).populate('employee', 'name').lean()
+    : [];
+  const reportsByTask = new Map();
+  for (const r of reports) {
+    for (const j of r.jobs) {
+      const key = String(j.task);
+      if (!reportsByTask.has(key)) reportsByTask.set(key, []);
+      reportsByTask.get(key).push({
+        employeeName: r.employee ? r.employee.name : '',
+        workTypes: r.workTypes,
+        problems: r.problems,
+        problemNote: r.problemNote || '',
+        safetyIncident: !!r.safetyIncident,
+      });
+    }
+  }
+
   const a = agg[0];
   res.json({
     client: { id: client._id.toString(), name: client.name, vendorName: client.vendorName },
@@ -189,7 +210,7 @@ exports.history = async (req, res) => {
       firstServiced: a ? a.firstServiced : null,
       lastServiced: a ? a.lastServiced : null,
     },
-    tasks: tasks.map(sanitizeTask),
+    tasks: tasks.map((t) => ({ ...sanitizeTask(t), reports: reportsByTask.get(String(t._id)) || [] })),
     total,
     page,
     limit,

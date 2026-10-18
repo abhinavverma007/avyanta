@@ -34,7 +34,7 @@ interface NavItem {
   styleUrl: './superadmin-shell.component.scss',
 })
 export class SuperadminShellComponent {
-  // Roles & Audit Log live in the account dropdown (below) instead of here —
+  // Roles, Audit Log and Daily Reports live in the account dropdown (below) instead of here —
   // they're owner-account/settings-shaped actions, not day-to-day work, so
   // they don't compete for space in the main nav or the mobile tab bar.
   // They're also never shown to a delegated session at all (see the

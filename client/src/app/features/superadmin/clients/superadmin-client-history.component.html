@@ -87,6 +87,17 @@
                   · {{ (t.notes.length === 1 ? 'saClients.noteOne' : 'saClients.noteMany') | t:{ n: t.notes.length } }}
                 }
               </p>
+              @for (rep of t.reports; track $index) {
+                <div class="visit-report">
+                  <strong>{{ rep.employeeName }}</strong>
+                  · @for (w of rep.workTypes; track w; let last = $last) {{{ 'dailyReport.work.' + w | t }}@if (!last) {, }}
+                  @if (rep.safetyIncident) { <span class="vr-flag">⚠ {{ 'dailyReport.owner.safetyIncident' | t }}</span> }
+                  @for (pr of rep.problems; track pr) {
+                    @if (pr !== 'none') { <span class="vr-flag">{{ 'dailyReport.problem.' + pr | t }}</span> }
+                  }
+                  @if (rep.problemNote) { <span class="vr-note"> — {{ rep.problemNote }}</span> }
+                </div>
+              }
               <a class="visit-link" [routerLink]="['/superadmin/tasks', t.id, 'edit']">{{ 'saClients.openTask' | t }}</a>
             </div>
           }

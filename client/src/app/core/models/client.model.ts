@@ -33,10 +33,23 @@ export interface ClientHistorySummary {
   lastServiced: string | null;
 }
 
+// What a worker wrote in their end-of-day report about one visit.
+export interface VisitReport {
+  employeeName: string;
+  workTypes: string[];
+  problems: string[];
+  problemNote: string;
+  safetyIncident: boolean;
+}
+
+export interface ClientVisit extends AdminTask {
+  reports: VisitReport[];
+}
+
 export interface ClientHistory {
   client: { id: string; name: string; vendorName: string };
   summary: ClientHistorySummary;
-  tasks: AdminTask[];
+  tasks: ClientVisit[];
   total: number;
   page: number;
   limit: number;
