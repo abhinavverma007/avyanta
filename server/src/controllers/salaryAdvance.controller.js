@@ -1,5 +1,6 @@
 const SalaryAdvance = require('../models/SalaryAdvance');
 const { istDateString } = require('../utils/istDate');
+const { sanitizeOverride } = require('../utils/reviewOverride');
 const { recordAudit } = require('../utils/audit');
 const { notifyReviewers } = require('../utils/notify');
 
@@ -12,6 +13,7 @@ function sanitize(a) {
     status: a.status,
     reviewNote: a.reviewNote,
     reviewedAt: a.reviewedAt,
+    override: sanitizeOverride(a.override),
     reviewedBy: a.reviewedBy && a.reviewedBy.name
       ? { id: String(a.reviewedBy.id), name: a.reviewedBy.name, actorType: a.reviewedBy.actorType }
       : null,
@@ -25,8 +27,7 @@ exports.mine = async (req, res) => {
 };
 
 // Deducted from the salary of the month right after today (see
-// salary.controller.js) — capped at one month's salary so a single advance
-// can never demand more than the employee could plausibly earn back.
+// salary.controller.js). No cap on the amount — the reviewer decides.
 exports.create = async (req, res) => {
   const { amount, reason } = req.body;
 
@@ -35,10 +36,6 @@ exports.create = async (req, res) => {
   }
   if (!reason || !String(reason).trim()) {
     return res.status(400).json({ message: 'A reason is required.' });
-  }
-  const cap = req.employee.salaryMonthly || 0;
-  if (Number(amount) > cap) {
-    return res.status(400).json({ message: `Advance amount can't exceed your monthly salary of ₹${cap}.` });
   }
 
   const advance = await SalaryAdvance.create({

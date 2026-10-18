@@ -2,6 +2,7 @@ const AttendanceRegularization = require('../models/AttendanceRegularization');
 const Attendance = require('../models/Attendance');
 const Leave = require('../models/Leave');
 const { istDateString } = require('../utils/istDate');
+const { sanitizeOverride } = require('../utils/reviewOverride');
 const { recordAudit } = require('../utils/audit');
 const { notifyReviewers } = require('../utils/notify');
 
@@ -18,6 +19,7 @@ function sanitize(r) {
     status: r.status,
     reviewNote: r.reviewNote,
     reviewedAt: r.reviewedAt,
+    override: sanitizeOverride(r.override),
     reviewedBy: r.reviewedBy && r.reviewedBy.name
       ? { id: String(r.reviewedBy.id), name: r.reviewedBy.name, actorType: r.reviewedBy.actorType }
       : null,
@@ -95,6 +97,7 @@ exports.create = async (req, res) => {
         reviewedAt: null,
         reviewedBy: null,
       },
+      $unset: { override: 1 },
     },
     { upsert: true, new: true },
   );

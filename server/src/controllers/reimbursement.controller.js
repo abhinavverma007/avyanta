@@ -1,4 +1,5 @@
 const Reimbursement = require('../models/Reimbursement');
+const { sanitizeOverride } = require('../utils/reviewOverride');
 const { recordAudit } = require('../utils/audit');
 const { notifyReviewers } = require('../utils/notify');
 
@@ -14,6 +15,7 @@ function sanitize(r) {
     status: r.status,
     reviewNote: r.reviewNote,
     reviewedAt: r.reviewedAt,
+    override: sanitizeOverride(r.override),
     reviewedBy: r.reviewedBy && r.reviewedBy.name
       ? { id: String(r.reviewedBy.id), name: r.reviewedBy.name, actorType: r.reviewedBy.actorType }
       : null,

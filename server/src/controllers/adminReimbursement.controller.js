@@ -4,6 +4,7 @@ const { recordAudit } = require('../utils/audit');
 const { reviewerStamp } = require('../utils/reviewer');
 const { rejectSelfReview } = require('../utils/reviewGuard');
 const { notifyEmployee } = require('../utils/notify');
+const { checkOverridable, flipDecision, notifyOverride } = require('../utils/reviewOverride');
 
 function monthRange(year, month) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -75,4 +76,39 @@ exports.review = (status) => async (req, res) => {
   });
 
   res.json({ claim: withEmployee(claim) });
+};
+
+// Owner flips a reimbursement decision a delegated Supervisor/Manager made.
+// The amount added to that month's salary is derived live from `status`
+// (salary.controller.js), so no other bookkeeping is needed.
+exports.override = async (req, res) => {
+  const targetStatus = req.body.status;
+  const claim = await Reimbursement.findById(req.params.id).populate('employee', 'name employeeId department');
+  if (!claim) return res.status(404).json({ message: 'Claim not found.' });
+
+  const problem = checkOverridable(req, claim, targetStatus);
+  if (problem) return res.status(problem[0]).json({ message: problem[1] });
+
+  const updated = await flipDecision(Reimbursement, req, claim, targetStatus, req.body.reviewNote);
+  if (!updated) return res.status(409).json({ message: 'This claim was changed by someone else — refresh and try again.' });
+  updated.employee = claim.employee;
+
+  await recordAudit(req, {
+    action: 'reimbursement.override',
+    resourceType: 'Reimbursement',
+    resourceId: claim._id,
+    summary: `Overrode ${claim.reviewedBy.name}'s ${claim.status} decision on ${claim.employee.name}'s ${claim.category} claim of ₹${claim.amount} — now ${targetStatus}`,
+    metadata: { from: claim.status, to: targetStatus, previousReviewer: claim.reviewedBy.name },
+  });
+
+  notifyOverride({
+    kind: 'reimbursement',
+    section: 'reimbursements',
+    label: `${claim.category} claim of ₹${claim.amount}`,
+    previous: claim,
+    doc: updated,
+    employee: claim.employee,
+  });
+
+  res.json({ claim: withEmployee(updated) });
 };
