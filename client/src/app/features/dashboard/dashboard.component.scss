@@ -372,3 +372,15 @@
 
 /* A partly-counted day (owner-set percentage): filled green up to that share via an inline background. */
 .cal-cell.partial .cal-day { color: #fff; text-shadow: 0 0 3px rgba(0, 0, 0, 0.6); }
+
+.report-reminder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-left: 4px solid var(--warning);
+}
+.rr-text { display: flex; flex-direction: column; gap: 2px; font-size: 0.875rem; }
+.rr-text span { color: var(--text-muted); font-size: 0.8125rem; }
+.report-reminder.done { border-left-color: var(--success); }

@@ -17,6 +17,27 @@
 
   <div class="page-content">
 
+    @if (reportState() === 'pending') {
+      <div class="report-reminder card card-padded">
+        <div class="rr-text">
+          <strong>{{ 'dailyReport.reminderTitle' | t }}</strong>
+          <span>{{ 'dailyReport.reminderSub' | t }}</span>
+        </div>
+        <a class="btn btn-blue btn-sm" [routerLink]="['/daily-report']">{{ 'dailyReport.fillNow' | t }}</a>
+      </div>
+    } @else if (reportState() === 'submitted') {
+      <div class="report-reminder done card card-padded">
+        <div class="rr-text">
+          <strong>{{ 'dailyReport.submittedTitle' | t }}</strong>
+          <span>
+            {{ 'dailyReport.submittedSub' | t }}
+            @if (reportUpdatedAt(); as at) { · {{ 'dailyReport.lastSaved' | t:{ time: (at | date:'h:mm a') } }} }
+          </span>
+        </div>
+        <a class="btn btn-ghost btn-sm" [routerLink]="['/daily-report']">{{ 'dailyReport.editReport' | t }}</a>
+      </div>
+    }
+
     <section class="section">
       <div class="punch-card card card-padded">
         <div class="punch-buttons">

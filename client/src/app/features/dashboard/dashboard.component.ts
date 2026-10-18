@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { LeaveService } from '../../core/services/leave.service';
+import { DailyReportService } from '../../core/services/daily-report.service';
 import { MonthlyAttendance } from '../../core/models/attendance.model';
 import { dayFill } from '../../core/utils/day-fill';
 import { LeaveSummary } from '../../core/models/leave.model';
@@ -26,6 +27,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly punching = computed(() => this.attendance.punching());
   readonly formatWorkDuration = formatWorkDuration;
 
+  // Today's work report: 'pending' = worked but not written yet, 'submitted' = in (and
+  // still editable until the day ends), 'none' = nothing to report (didn't punch in).
+  reportState = signal<'none' | 'pending' | 'submitted'>('none');
+  reportUpdatedAt = signal<string | null>(null);
   currentTime = signal(new Date());
   readonly dayFill = dayFill;
   monthlyData = signal<MonthlyAttendance | null>(null);
@@ -43,6 +48,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private auth: AuthService,
     private attendance: AttendanceService,
     private leaveService: LeaveService,
+    private reports: DailyReportService,
+    private router: Router,
     readonly i18n: I18nService,
   ) {}
 
@@ -50,6 +57,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.attendance.getCurrentMonthAttendance().then(data => this.monthlyData.set(data));
     this.attendance.loadToday();
     this.leaveService.summary().then(summary => this.leaveSummary.set(summary));
+    this.loadPendingReports();
     this.clockTimer = window.setInterval(() => {
       this.currentTime.set(new Date());
     }, 1000);
@@ -62,6 +70,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
   async punch(): Promise<void> {
     await this.attendance.punch();
     this.attendance.getCurrentMonthAttendance().then(data => this.monthlyData.set(data));
+    // After punching out, land on the end-of-day work report — unless today's is
+    // already in (a lunch-break punch-out shouldn't ask again). A report is never
+    // required to punch in, and "do it later" on the form comes straight back here.
+    if (this.punchState() === 'out') {
+      try {
+        const today = await this.reports.get('today');
+        if (today.punchedIn && !today.report) await this.router.navigate(['/daily-report']);
+      } catch {
+        // The report is a convenience — never let it get in the way of punching.
+      }
+    }
+  }
+
+  private loadPendingReports(): void {
+    this.reports
+      .get('today')
+      .then(r => {
+        this.reportUpdatedAt.set(r.report?.updatedAt ?? null);
+        this.reportState.set(r.report ? 'submitted' : r.punchedIn ? 'pending' : 'none');
+      })
+      .catch(() => this.reportState.set('none'));
   }
 
   async unmarkToday(): Promise<void> {

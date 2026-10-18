@@ -1,0 +1,54 @@
+.report-page { padding: 20px 16px 96px; max-width: 640px; margin: 0 auto; }
+.report-header { margin-bottom: var(--space-5); }
+.report-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 700; color: var(--text); }
+.report-date { font-size: 0.9375rem; font-weight: 600; color: var(--accent-2); margin-top: 4px; }
+.report-sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+
+.block { margin-bottom: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.block-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text); }
+.hint { font-size: 0.8125rem; color: var(--text-muted); }
+.empty-note { text-align: center; color: var(--text-muted); padding: var(--space-4); }
+.error-msg { color: var(--danger); font-size: 0.875rem; margin: var(--space-3) 0; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); }
+.narrow { max-width: 140px; }
+
+.job { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.job.picked { border-color: var(--accent-2); background: var(--surface-raised); }
+.job-head { display: flex; align-items: center; gap: var(--space-3); width: 100%; padding: var(--space-3) var(--space-4); text-align: left; cursor: pointer; }
+.check {
+  width: 24px; height: 24px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--border); border-radius: 6px; font-weight: 700; color: #fff; background: var(--surface);
+}
+.job.picked .check { background: var(--accent-2); border-color: var(--accent-2); }
+.job-text { display: flex; flex-direction: column; min-width: 0; }
+.job-name { font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+.job-site { font-size: 0.8125rem; color: var(--text-muted); overflow-wrap: anywhere; }
+.progress-row { padding: 0 var(--space-4) var(--space-3); display: flex; flex-direction: column; gap: 6px; }
+.progress-label { font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); }
+
+// Big, thumb-sized tap targets — this is filled in on a phone, often with dirty hands.
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  min-height: 44px; padding: 8px 14px; font-size: 0.9375rem; font-weight: 600; color: var(--text);
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-pill); cursor: pointer;
+}
+.chip.on { color: #fff; background: var(--accent-2); border-color: var(--accent-2); }
+.chip.ok.on { background: var(--success); border-color: var(--success); }
+.chip.warn.on { background: var(--warning); border-color: var(--warning); color: #3b2300; }
+
+.yesno { display: flex; gap: var(--space-3); }
+.yn {
+  flex: 1; min-height: 52px; font-size: 1rem; font-weight: 700; color: var(--text);
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); cursor: pointer;
+}
+.yn.no.on { color: #fff; background: var(--success); border-color: var(--success); }
+.yn.yes.on { color: #fff; background: var(--danger); border-color: var(--danger); }
+
+.same-site { display: flex; align-items: center; gap: var(--space-3); font-size: 0.9375rem; color: var(--text); min-height: 44px; }
+.same-site input { width: 22px; height: 22px; }
+
+.actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); }
+.actions .btn { min-height: 48px; }
+.report-job { font-size: 0.875rem; font-weight: 600; color: var(--text); margin-top: 6px; overflow-wrap: anywhere; }
