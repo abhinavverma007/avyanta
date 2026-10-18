@@ -369,3 +369,6 @@
 }
 
 .ql-arrow { color: var(--text-muted); flex-shrink: 0; }
+
+/* A partly-counted day (owner-set percentage): filled green up to that share via an inline background. */
+.cal-cell.partial .cal-day { color: #fff; text-shadow: 0 0 3px rgba(0, 0, 0, 0.6); }

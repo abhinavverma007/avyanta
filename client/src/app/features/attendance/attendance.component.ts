@@ -8,6 +8,7 @@ import { RegularizationRecord } from '../../core/models/attendance-regularizatio
 import { I18nService } from '../../core/i18n/i18n.service';
 import { TPipe } from '../../core/i18n/t.pipe';
 import { formatWorkDuration } from '../../core/utils/format-duration';
+import { dayFill } from '../../core/utils/day-fill';
 
 @Component({
   selector: 'app-attendance',
@@ -20,6 +21,7 @@ export class AttendanceComponent implements OnInit {
   readonly DOW = ['attendance.dowSun', 'attendance.dowMon', 'attendance.dowTue', 'attendance.dowWed', 'attendance.dowThu', 'attendance.dowFri', 'attendance.dowSat'];
   readonly today = new Date();
   readonly formatWorkDuration = formatWorkDuration;
+  readonly dayFill = dayFill;
 
   viewYear = signal(new Date().getFullYear());
   viewMonth = signal(new Date().getMonth() + 1);

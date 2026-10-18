@@ -116,5 +116,19 @@
   "saEmp.viewAttendance": "Attendance History",
   "saEmpProfile.tabAttendance": "Attendance",
   "saEmpAtt.regularized": "Fixed via request",
-  "saEmpAtt.regularizedNote": "Times for this day were added through an approved attendance fix request, not a live punch."
+  "saEmpAtt.regularizedNote": "Times for this day were added through an approved attendance fix request, not a live punch.",
+  "saEmpAtt.overridden": "Set by owner",
+  "saEmpAtt.overriddenNote": "This day was set by the owner by hand, not from a live punch.",
+  "saEmpAtt.overrideTitle": "Change attendance",
+  "saEmpAtt.overrideReasonPh": "Reason (optional)",
+  "saEmpAtt.overrideSave": "Save change",
+  "saEmpAtt.saving": "Saving…",
+  "saEmpAtt.cancel": "Cancel",
+  "saEmpAtt.overrideFailed": "Couldn't change this day's attendance. Please try again.",
+  "saEmpAtt.partial": "Partial day",
+  "saEmpAtt.percentNote": "Counts as {pct}% of a day — the rest is unpaid.",
+  "saEmpAtt.overridePercent": "Counts as",
+  "saEmpAtt.fullDay": "Full day",
+  "saEmpAtt.halfDay": "Half day",
+  "saEmpAtt.percentHint": "Check-out adjusts to match (a full day is 8h 30m). You can still edit the times."
 }

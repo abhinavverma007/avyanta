@@ -109,7 +109,7 @@
             </div>
             <div class="cal-grid">
               @for (cell of getCalendarCells(); track $index) {
-                <div class="cal-cell" [class]="'status-' + cell.status" [class.today]="isToday(cell.day)">
+                <div class="cal-cell" [class]="'status-' + cell.status" [class.today]="isToday(cell.day)" [class.partial]="!!cell.percent" [style.background]="dayFill(cell.percent)">
                   @if (cell.day) {
                     <span class="cal-day">{{ cell.day }}</span>
                   }

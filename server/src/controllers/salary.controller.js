@@ -2,7 +2,7 @@ const Employee = require('../models/Employee');
 const Reimbursement = require('../models/Reimbursement');
 const SalaryAdvance = require('../models/SalaryAdvance');
 const Payout = require('../models/Payout');
-const { computeMonthlyAttendance } = require('../utils/attendanceStats');
+const { computeMonthlyAttendance, fractionOf } = require('../utils/attendanceStats');
 const { istNow, istDateString } = require('../utils/istDate');
 const { recordAudit } = require('../utils/audit');
 const { notifyEmployee } = require('../utils/notify');
@@ -61,11 +61,16 @@ async function computeSalary(employee, year, month) {
   // Bound "elapsed" by the actual calendar date, not the status label.
   const todayStr = istDateString();
   const elapsedDays = attendance.days.filter((d) => d.date <= todayStr);
-  const presentDays = elapsedDays.filter((d) => d.status === 'present').length;
-  const absentDays = elapsedDays.filter((d) => d.status === 'absent').length;
+  // A partial day (the owner marked it e.g. 62%) pays that share and the rest
+  // is unpaid, so present counts fractionally and its remainder counts as absent.
+  const presentList = elapsedDays.filter((d) => d.status === 'present');
+  const presentDays = round2(presentList.reduce((sum, d) => sum + fractionOf(d), 0));
+  const absentDays = round2(
+    elapsedDays.filter((d) => d.status === 'absent').length + presentList.reduce((sum, d) => sum + (1 - fractionOf(d)), 0),
+  );
   const leavesTaken = elapsedDays.filter((d) => d.status === 'leave').length;
   const paidDays = presentDays + leavesTaken;
-  const unpaidDays = elapsedDays.length - paidDays; // absent + pending (unapproved) leave, dated so far
+  const unpaidDays = elapsedDays.length - paidDays; // absent + unpaid part of partial days + pending (unapproved) leave, dated so far
 
   const paidLeavesPerMonth = employee.paidLeavesPerMonth || 0;
   const deduction = round2(unpaidDays * perDaySalary);

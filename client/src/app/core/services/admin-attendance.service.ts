@@ -22,4 +22,16 @@ export class AdminAttendanceService {
       }),
     );
   }
+
+  // Owner-only (the server rejects anyone else): sets one day to present
+  // (with in/out times), absent or leave.
+  overrideDay(
+    employeeId: string,
+    date: string,
+    body: { status: 'present' | 'absent' | 'leave'; checkIn?: string; checkOut?: string; percent?: number; reason?: string },
+  ): Promise<{ date: string; status: string; previousStatus: string }> {
+    return firstValueFrom(
+      this.http.put<{ date: string; status: string; previousStatus: string }>(`${this.base}/${employeeId}/day/${date}`, body),
+    );
+  }
 }

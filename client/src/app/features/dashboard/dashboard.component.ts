@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { LeaveService } from '../../core/services/leave.service';
 import { MonthlyAttendance } from '../../core/models/attendance.model';
+import { dayFill } from '../../core/utils/day-fill';
 import { LeaveSummary } from '../../core/models/leave.model';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { TPipe } from '../../core/i18n/t.pipe';
@@ -26,6 +27,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly formatWorkDuration = formatWorkDuration;
 
   currentTime = signal(new Date());
+  readonly dayFill = dayFill;
   monthlyData = signal<MonthlyAttendance | null>(null);
   leaveSummary = signal<LeaveSummary | null>(null);
   private clockTimer?: number;
@@ -81,18 +83,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return date.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
   }
 
-  getCalendarCells(): Array<{ day: number | null; status: string }> {
+  getCalendarCells(): Array<{ day: number | null; status: string; percent?: number }> {
     const data = this.monthlyData();
     if (!data) return [];
 
     const firstDay = new Date(data.year, data.month - 1, 1).getDay();
-    const cells: Array<{ day: number | null; status: string }> = [];
+    const cells: Array<{ day: number | null; status: string; percent?: number }> = [];
 
     for (let i = 0; i < firstDay; i++) cells.push({ day: null, status: '' });
 
     for (const d of data.days) {
       const dayNum = parseInt(d.date.split('-')[2], 10);
-      cells.push({ day: dayNum, status: d.status });
+      cells.push({ day: dayNum, status: d.status, percent: d.percent });
     }
     return cells;
   }

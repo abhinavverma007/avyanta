@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -17,6 +17,7 @@ import { AdminMonthlyAttendance, DayAttendance } from '../../../core/models/atte
 import { TPipe } from '../../../core/i18n/t.pipe';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { formatWorkDuration } from '../../../core/utils/format-duration';
+import { dayFill } from '../../../core/utils/day-fill';
 
 type HistoryTab = 'leave' | 'reimbursement' | 'advance' | 'tasks';
 type PageTab = 'attendance' | HistoryTab;
@@ -33,11 +34,23 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit {
   readonly i18n = inject(I18nService);
   readonly today = new Date();
   readonly formatWorkDuration = formatWorkDuration;
+  readonly dayFill = dayFill;
 
   employeeId = '';
   viewYear = signal(new Date().getFullYear());
   viewMonth = signal(new Date().getMonth() + 1);
   selectedDay = signal<DayAttendance | null>(null);
+
+  // Owner-only attendance override, shown inside the day popup. A delegated
+  // Supervisor/Manager never gets the editor (and the server refuses them too).
+  readonly canOverride = inject(API_SCOPE) === 'admin';
+  editStatus = signal<'present' | 'absent' | 'leave'>('present');
+  editIn = signal('09:30');
+  editOut = signal('18:00');
+  editPercent = signal<number | null>(100);
+  editReason = signal('');
+  saving = signal(false);
+  editError = signal('');
 
   monthlyData = signal<AdminMonthlyAttendance | null>(null);
   loading = signal(true);
@@ -125,9 +138,9 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit {
     }
   }
 
-  loadMonth(): void {
+  loadMonth(): Promise<void> {
     this.loading.set(true);
-    this.attendanceService
+    return this.attendanceService
       .getMonthly(this.employeeId, this.viewYear(), this.viewMonth())
       .then(data => {
         this.monthlyData.set(data);
@@ -162,10 +175,93 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit {
     return !(this.viewYear() >= now.getFullYear() && this.viewMonth() >= now.getMonth() + 1);
   }
 
+  @HostListener('document:keydown.escape')
+  closeDay(): void {
+    this.selectedDay.set(null);
+  }
+
   selectDay(day: DayAttendance | null): void {
     if (!day || day.status === 'future') return;
     this.selectedDay.set(day);
+    this.resetEditor(day);
   }
+
+  // A present day keeps its times; any other day starts with the usual hours.
+  private resetEditor(day: DayAttendance): void {
+    // The day's own status isn't offered again (except Present, whose times can be edited), so always start on Present.
+    this.editStatus.set('present');
+    this.editIn.set(day.status === 'present' && day.checkIn ? day.checkIn : '09:30');
+    this.editOut.set(day.status === 'present' && day.checkOut ? day.checkOut : '18:00');
+    this.editPercent.set(day.status === 'present' && day.percent ? day.percent : 100);
+    this.editReason.set('');
+    this.editError.set('');
+  }
+
+  // A full day's length, used to turn a percentage into a check-out time
+  // (09:30 -> 18:00, the usual hours the editor starts with). 50% => 4h 15m.
+  private readonly FULL_DAY_MINUTES = 510;
+
+  // Check-out follows the percentage: first punch-in + that share of a full
+  // day (capped at 23:59). Called whenever the percentage or check-in changes;
+  // editing the check-out by hand afterwards is still allowed.
+  private syncCheckOut(): void {
+    const pct = this.editPercent();
+    const [h, m] = this.editIn().split(':').map(Number);
+    if (pct === null || pct < 1 || pct > 100 || Number.isNaN(h) || Number.isNaN(m)) return;
+    const out = Math.min(23 * 60 + 59, h * 60 + m + Math.round((pct / 100) * this.FULL_DAY_MINUTES));
+    this.editOut.set(`${String(Math.floor(out / 60)).padStart(2, '0')}:${String(out % 60).padStart(2, '0')}`);
+  }
+
+  setPercent(pct: number): void {
+    this.editPercent.set(pct);
+    this.syncCheckOut();
+  }
+
+  onPercentInput(value: string): void {
+    const n = Number(value);
+    this.editPercent.set(value.trim() === '' || !Number.isFinite(n) ? null : n);
+    this.syncCheckOut();
+  }
+
+  onCheckInInput(value: string): void {
+    this.editIn.set(value);
+    this.syncCheckOut();
+  }
+
+  // Saving "absent" or "leave" on a day that already is that is a no-op.
+  canSaveOverride(day: DayAttendance): boolean {
+    if (this.saving()) return false;
+    const target = this.editStatus();
+    if (target === 'present') {
+      const pct = this.editPercent();
+      return !!this.editIn() && !!this.editOut() && pct !== null && pct >= 1 && pct <= 100;
+    }
+    return target !== day.status;
+  }
+
+  async saveOverride(day: DayAttendance): Promise<void> {
+    if (!this.canSaveOverride(day)) return;
+    this.saving.set(true);
+    this.editError.set('');
+    try {
+      const status = this.editStatus();
+      await this.attendanceService.overrideDay(this.employeeId, day.date, {
+        status,
+        checkIn: status === 'present' ? this.editIn() : undefined,
+        checkOut: status === 'present' ? this.editOut() : undefined,
+        percent: status === 'present' ? (this.editPercent() ?? 100) : undefined,
+        reason: this.editReason().trim() || undefined,
+      });
+      // Saved — close the popup and refresh the calendar behind it.
+      this.selectedDay.set(null);
+      await this.loadMonth();
+    } catch (err: any) {
+      this.editError.set(err?.error?.message ?? this.i18n.t('saEmpAtt.overrideFailed'));
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
 
   isToday(day: DayAttendance | null): boolean {
     if (!day) return false;

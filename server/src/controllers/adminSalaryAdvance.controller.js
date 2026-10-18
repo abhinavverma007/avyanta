@@ -92,6 +92,7 @@ exports.override = async (req, res) => {
   });
 
   notifyOverride({
+    actorName: req.admin.name,
     kind: 'advance',
     section: 'advance',
     label: `advance request of ₹${advance.amount}`,

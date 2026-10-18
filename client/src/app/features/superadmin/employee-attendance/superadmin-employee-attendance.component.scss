@@ -133,14 +133,14 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   .day-num { color: var(--danger); font-weight: 700; }
+  // Keep the date readable — the small ✕ sits under it like the leave/pending icons.
   &::after {
     content: '✕';
-    position: absolute;
-    font-size: 0.9375rem;
+    font-size: 0.5rem;
+    line-height: 1;
     font-weight: 700;
     color: var(--danger);
   }
-  .day-num { opacity: 0; }
   &:hover { background: var(--danger-bg); }
 }
 
@@ -207,7 +207,25 @@
 .ld.pending  { background: var(--surface); border: 1.5px dashed var(--warning); border-radius: 2px; }
 
 /* ─── Day detail ─────────────────────────────────────────────────── */
-.day-detail {}
+// The day detail opens as a modal over the calendar (click the backdrop,
+// the ✕ or press Esc to close).
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.5);
+}
+.day-detail {
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg, 0 20px 50px rgba(0, 0, 0, 0.25));
+}
 
 .dd-header {
   display: flex;
@@ -328,3 +346,60 @@
   font-size: 0.5rem;
   line-height: 1;
 }
+
+/* ─── Owner attendance override (inside the day popup) ───────────── */
+.override-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.override-title { font-family: var(--font-display); font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+.override-choices { display: flex; gap: 8px; }
+.choice {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.choice:hover { color: var(--text); }
+.choice.active { color: var(--accent-2); border-color: var(--accent-2); background: var(--surface-raised); }
+.override-times { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.override-field { display: flex; flex-direction: column; gap: 4px; }
+.override-error { font-size: 0.8125rem; color: var(--danger); }
+.override-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ★ on a leave day the owner set by hand (leave cells are amber, so a dark star) */
+.day-cell.status-leave .day-icon.reg { color: #92400E; font-size: 0.625rem; }
+
+/* A partly-counted day: the cell is filled green up to its percentage (inline
+   background), so the number needs a shadow to stay readable on both halves. */
+.day-cell.partial {
+  .day-num, .day-icon { color: #fff; text-shadow: 0 0 3px rgba(0, 0, 0, 0.6); }
+}
+.ld.partial { background: linear-gradient(to top, #16A34A 50%, #FEE2E2 50%); border: 1px solid var(--border); }
+
+.override-percent { display: flex; flex-direction: column; gap: 6px; }
+.percent-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.chip:hover { color: var(--text); }
+.chip.active { color: var(--accent-2); border-color: var(--accent-2); background: var(--surface-raised); }
+.percent-input { display: flex; align-items: center; gap: 4px; margin-left: auto; font-weight: 600; color: var(--text-muted); }
+.percent-input .form-control { width: 78px; text-align: right; }
+.percent-hint { font-size: 0.75rem; color: var(--text-muted); }

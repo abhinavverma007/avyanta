@@ -91,17 +91,18 @@ async function rollbackDecision(Model, previous) {
 // Supervisor/Manager whose decision it was. Reuses the employee-facing
 // `<kind>.approved|rejected` types so anything keyed on them keeps working.
 // Fire-and-forget like every other notification (see notify.js).
-function notifyOverride({ kind, section, label, previous, doc, employee }) {
+function notifyOverride({ kind, section, label, previous, doc, employee, actorName }) {
+  const by = actorName || 'the owner';
   const reviewNote = doc.reviewNote || '';
   notifyEmployee(employee._id, {
     type: `${kind}.${doc.status}`,
-    title: `Your ${label} was changed to ${doc.status} by the owner`,
+    title: `Your ${label} was changed to ${doc.status} by ${by}`,
     body: reviewNote,
     link: '/requests',
   });
   notifyEmployee(previous.reviewedBy.id, {
     type: `${kind}.overridden`,
-    title: `The owner changed your decision on ${employee.name}'s ${label} to ${doc.status}`,
+    title: `${by} changed your decision on ${employee.name}'s ${label} to ${doc.status}`,
     body: reviewNote,
     link: `/superadmin/approvals?section=${section}&employee=${employee.employeeId}`,
   });

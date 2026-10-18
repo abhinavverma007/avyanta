@@ -155,6 +155,7 @@ exports.override = async (req, res) => {
   });
 
   notifyOverride({
+    actorName: req.admin.name,
     kind: 'regularization',
     section: 'regularization',
     label: `attendance fix for ${request.date}`,

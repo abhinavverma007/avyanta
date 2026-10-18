@@ -128,14 +128,14 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   .day-num { color: var(--danger); font-weight: 700; }
+  // Keep the date readable — the small ✕ sits under it like the leave/pending icons.
   &::after {
     content: '✕';
-    position: absolute;
-    font-size: 0.9375rem;
+    font-size: 0.5rem;
+    line-height: 1;
     font-weight: 700;
     color: var(--danger);
   }
-  .day-num { opacity: 0; }
   &:hover { background: var(--danger-bg); }
 }
 
@@ -298,3 +298,13 @@
   font-size: 0.5rem;
   line-height: 1;
 }
+
+/* ★ on a leave day the owner set by hand (leave cells are amber, so a dark star) */
+.day-cell.status-leave .day-icon.reg { color: #92400E; font-size: 0.625rem; }
+
+/* A partly-counted day: the cell is filled green up to its percentage (inline
+   background), so the number needs a shadow to stay readable on both halves. */
+.day-cell.partial {
+  .day-num, .day-icon { color: #fff; text-shadow: 0 0 3px rgba(0, 0, 0, 0.6); }
+}
+.ld.partial { background: linear-gradient(to top, #16A34A 50%, #FEE2E2 50%); border: 1px solid var(--border); }

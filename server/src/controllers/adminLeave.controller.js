@@ -112,6 +112,7 @@ exports.override = async (req, res) => {
   });
 
   notifyOverride({
+    actorName: req.admin.name,
     kind: 'leave',
     section: 'leave',
     label: `leave for ${leave.date}`,
