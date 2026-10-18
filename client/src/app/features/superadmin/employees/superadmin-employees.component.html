@@ -56,7 +56,7 @@
               <th>{{ 'saEmp.salary' | t }}</th>
               <th>{{ 'saEmp.leavesPerMonth' | t }}</th>
               <th>{{ 'saEmp.status' | t }}</th>
-              <th>{{ 'saEmp.profile' | t }}</th>
+              <th>{{ 'saEmp.attendance' | t }}</th>
               <th></th>
             </tr>
           </thead>
@@ -79,7 +79,7 @@
                   </span>
                 </td>
                 <td>
-                  <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">{{ 'saEmp.viewProfile' | t }}</a>
+                  <a class="btn btn-ghost btn-sm" [routerLink]="attendancePath(emp.id)">{{ 'saEmp.viewAttendance' | t }}</a>
                 </td>
                 <td class="row-actions">
                   @if (!isOwnRow(emp)) {
@@ -103,7 +103,7 @@
       <!-- Card view — mobile / narrow screens -->
       <div class="employees-grid">
         @for (emp of employees(); track emp.id) {
-          <div class="employee-card" (click)="toggleExpand(emp.id)">
+          <div class="employee-card" (click)="openAttendance(emp.id)">
             <div class="ec-header">
               <div>
                 <div class="emp-name">{{ emp.name }}</div>
@@ -113,7 +113,7 @@
                 <span class="badge" [class]="emp.isActive ? 'badge-success' : 'badge-danger'">
                   {{ (emp.isActive ? 'saEmp.active' : 'saEmp.inactive') | t }}
                 </span>
-                <span class="ec-expand-arrow">{{ expandedId() === emp.id ? '▲' : '▼' }}</span>
+                <button type="button" class="ec-expand-arrow" [attr.aria-expanded]="expandedId() === emp.id" (click)="toggleExpand(emp.id); $event.stopPropagation()">{{ expandedId() === emp.id ? '▲' : '▼' }}</button>
               </div>
             </div>
 
@@ -127,7 +127,6 @@
                 <div class="ec-row"><span class="ec-label">{{ 'saEmp.leavesPerMonth' | t }}</span><span>{{ emp.paidLeavesPerMonth }}</span></div>
               </div>
               <div class="ec-actions" (click)="$event.stopPropagation()">
-                <a class="btn btn-ghost btn-sm" [routerLink]="profilePath(emp.id)">{{ 'saEmp.viewProfile' | t }}</a>
                 @if (!isOwnRow(emp)) {
                   <button class="btn btn-ghost btn-sm" (click)="openEditForm(emp)">{{ 'saEmp.edit' | t }}</button>
                 }

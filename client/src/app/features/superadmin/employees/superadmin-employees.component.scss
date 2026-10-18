@@ -112,7 +112,16 @@
   gap: var(--space-3);
 }
 .ec-header-actions { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
-.ec-expand-arrow { color: var(--text-light); font-size: 1.125rem; flex-shrink: 0; }
+.ec-expand-arrow {
+  color: var(--text-light);
+  font-size: 1.125rem;
+  flex-shrink: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+}
 
 .ec-body {
   display: flex;

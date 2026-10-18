@@ -286,3 +286,15 @@
   background: var(--success-bg);
   border-radius: var(--radius-sm);
 }
+
+/* A present day created by an approved attendance fix rather than a live punch */
+.day-cell.status-present .day-icon.reg { color: #fff; font-size: 0.625rem; }
+.ld.regularized {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--success);
+  color: #fff;
+  font-size: 0.5rem;
+  line-height: 1;
+}
