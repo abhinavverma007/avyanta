@@ -227,9 +227,24 @@ exports.overrideDay = async (req, res) => {
   notifyEmployee(employee._id, {
     type: 'attendance.overridden',
     title: `Your attendance for ${date} was set to ${STATUS_LABEL[status]}${percent ? ` (${percent}%)` : ''} by ${req.admin.name}`,
-    body: note,
+    body: [
+      note,
+      leaveRejected ? 'Your leave request for this day was cancelled.' : '',
+      regularizationClosed ? 'Your attendance fix request for this day was closed.' : '',
+    ].filter(Boolean).join(' '),
     link: '/attendance',
   });
+
+  // A delegated Supervisor/Manager who approved a leave this override just
+  // cancelled should know their decision no longer stands.
+  if (leaveRejected && leave.status === 'approved' && leave.reviewedBy?.actorType === 'employee') {
+    notifyEmployee(leave.reviewedBy.id, {
+      type: 'leave.overridden',
+      title: `${req.admin.name} set ${employee.name}'s attendance for ${date} to ${STATUS_LABEL[status]}, which cancelled the leave you approved`,
+      body: note,
+      link: `/superadmin/approvals?section=leave&employee=${employee.employeeId}`,
+    });
+  }
 
   res.json({ date, status, previousStatus: current, percent: percent ?? 100 });
 };
