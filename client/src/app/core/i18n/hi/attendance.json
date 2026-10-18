@@ -42,5 +42,9 @@
   "attendance.errSubmit": "अनुरोध नहीं भेज सके। कृपया फिर कोशिश करें।",
   "attendance.close": "बंद करें",
   "attendance.regularized": "अनुरोध से सुधारा गया",
-  "attendance.regularizedNote": "इस दिन का समय मंज़ूर हुए हाज़िरी सुधार अनुरोध से जोड़ा गया है, सीधे पंच से नहीं।"
+  "attendance.regularizedNote": "इस दिन का समय मंज़ूर हुए हाज़िरी सुधार अनुरोध से जोड़ा गया है, सीधे पंच से नहीं।",
+  "attendance.overridden": "मालिक ने तय किया",
+  "attendance.overriddenNote": "इस दिन की हाज़िरी मालिक ने तय की है, सीधे पंच से नहीं।",
+  "attendance.partial": "आंशिक दिन",
+  "attendance.percentNote": "दिन का {pct}% गिना गया — बाकी बिना वेतन।"
 }

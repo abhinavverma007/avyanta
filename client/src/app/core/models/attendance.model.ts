@@ -11,6 +11,8 @@ export interface DayAttendance {
   workHours?: number;  // total hours across all punch-in/out sessions that day
   lateBy?: number;     // minutes
   reason?: string;     // leave reason, present when status is 'leave' or 'pending'
+  percent?: number;      // partial day: share of the day that counts (1-99), set by the owner
+  overridden?: boolean;  // the owner set this day by hand
   regularized?: boolean; // present day whose times came from an approved attendance-fix request, not a live punch
 }
 

@@ -76,6 +76,8 @@
                 class="day-cell"
                 [class]="cell ? 'status-' + cell.status : 'empty'"
                 [class.today]="isToday(cell)"
+                [class.partial]="!!cell?.percent"
+                [style.background]="dayFill(cell?.percent)"
                 [class.selected]="selectedDay() === cell"
                 (click)="selectDay(cell)"
                 [attr.aria-label]="cell ? cell.date + ' ' + statusLabel(cell.status) : null"
@@ -85,9 +87,16 @@
                   <span class="day-num">{{ cell.date | slice:8 }}</span>
                   @if (cell.status === 'leave') {
                     <span class="day-icon">🌿</span>
+                  @if (cell.overridden) {
+                    <span class="day-icon reg" aria-hidden="true">★</span>
+                  }
                   } @else if (cell.status === 'pending') {
                     <span class="day-icon">⏳</span>
-                  } @else if (cell.regularized) {
+                  } @else if (cell.percent) {
+                  <span class="day-icon reg">{{ cell.percent }}%</span>
+                } @else if (cell.overridden) {
+                  <span class="day-icon reg" aria-hidden="true">★</span>
+                } @else if (cell.regularized) {
                   <span class="day-icon reg" aria-hidden="true">✎</span>
                 }
                 }
@@ -101,51 +110,11 @@
             <span class="leg"><span class="ld leave"></span> {{ 'saEmpAtt.leave' | t }}</span>
             <span class="leg"><span class="ld pending"></span> {{ 'saEmpAtt.pending' | t }}</span>
           <span class="leg"><span class="ld regularized">✎</span> {{ 'saEmpAtt.regularized' | t }}</span>
+          <span class="leg"><span class="ld regularized">★</span> {{ 'saEmpAtt.overridden' | t }}</span>
+          <span class="leg"><span class="ld partial"></span> {{ 'saEmpAtt.partial' | t }}</span>
           </div>
 
         </div>
-
-        @if (selectedDay(); as day) {
-          <div class="day-detail card card-padded fade-in">
-            <div class="dd-header">
-              <div>
-                <h3 class="dd-date">{{ formatDayDisplay(day.date) }}</h3>
-                <span class="badge" [class]="'badge-' + (day.status === 'present' ? 'success' : (day.status === 'leave' || day.status === 'pending') ? 'warning' : 'danger')">
-                  {{ statusLabel(day.status) }}
-                </span>
-              </div>
-              <button class="close-btn" (click)="selectedDay.set(null)" [attr.aria-label]="'saEmpAtt.close' | t">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-
-            @if (day.status === 'present') {
-              <div class="dd-row-grid">
-                <div class="dd-stat">
-                  <span class="dd-label">{{ 'saEmpAtt.firstIn' | t }}</span>
-                  <span class="dd-val font-mono">{{ day.checkIn }}</span>
-                </div>
-                <div class="dd-stat">
-                  <span class="dd-label">{{ 'saEmpAtt.lastOut' | t }}</span>
-                  <span class="dd-val font-mono">{{ day.checkOut ?? ('saEmpAtt.stillIn' | t) }}</span>
-                </div>
-                <div class="dd-stat">
-                  <span class="dd-label">{{ 'saEmpAtt.totalHours' | t }}</span>
-                  <span class="dd-val font-mono">{{ formatWorkDuration(day.workHours ?? 0) }}</span>
-                </div>
-              </div>
-              @if (day.regularized) {
-                <p class="dd-note">{{ 'saEmpAtt.regularizedNote' | t }}</p>
-              }
-            } @else if (day.status === 'absent') {
-              <p class="dd-note">{{ 'saEmpAtt.noCheckin' | t }}</p>
-            } @else if (day.status === 'leave') {
-              <p class="dd-note">{{ 'saEmpAtt.leaveApproved' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
-            } @else if (day.status === 'pending') {
-              <p class="dd-note">{{ 'saEmpAtt.leavePending' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
-            }
-          </div>
-        }
 
       </div>
     } @else if (loading()) {
@@ -238,3 +207,117 @@
   </div>
   }
 </div>
+
+<!-- Day popup lives outside .attendance-page on purpose: that container has a transform
+     (fade-in animation), which would make this position:fixed overlay relative to the page
+     instead of the viewport and push the popup off-screen. -->
+@if (selectedDay(); as day) {
+  <div class="modal-backdrop" (click)="selectedDay.set(null)">
+  <div class="day-detail card card-padded fade-in" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+    <div class="dd-header">
+      <div>
+        <h3 class="dd-date">{{ formatDayDisplay(day.date) }}</h3>
+        <span class="badge" [class]="'badge-' + (day.status === 'present' ? 'success' : (day.status === 'leave' || day.status === 'pending') ? 'warning' : 'danger')">
+          {{ statusLabel(day.status) }}
+        </span>
+      </div>
+      <button class="close-btn" (click)="selectedDay.set(null)" [attr.aria-label]="'saEmpAtt.close' | t">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    @if (day.status === 'present') {
+      <div class="dd-row-grid">
+        <div class="dd-stat">
+          <span class="dd-label">{{ 'saEmpAtt.firstIn' | t }}</span>
+          <span class="dd-val font-mono">{{ day.checkIn }}</span>
+        </div>
+        <div class="dd-stat">
+          <span class="dd-label">{{ 'saEmpAtt.lastOut' | t }}</span>
+          <span class="dd-val font-mono">{{ day.checkOut ?? ('saEmpAtt.stillIn' | t) }}</span>
+        </div>
+        <div class="dd-stat">
+          <span class="dd-label">{{ 'saEmpAtt.totalHours' | t }}</span>
+          <span class="dd-val font-mono">{{ formatWorkDuration(day.workHours ?? 0) }}</span>
+        </div>
+      </div>
+      @if (day.regularized) {
+        <p class="dd-note">{{ 'saEmpAtt.regularizedNote' | t }}</p>
+      }
+      @if (day.overridden) {
+        <p class="dd-note">{{ 'saEmpAtt.overriddenNote' | t }}</p>
+      }
+      @if (day.percent) {
+        <p class="dd-note">{{ 'saEmpAtt.percentNote' | t:{ pct: day.percent } }}</p>
+      }
+    } @else if (day.status === 'absent') {
+      <p class="dd-note">{{ 'saEmpAtt.noCheckin' | t }}</p>
+    } @else if (day.status === 'leave') {
+      <p class="dd-note">{{ 'saEmpAtt.leaveApproved' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+      @if (day.overridden) {
+        <p class="dd-note">{{ 'saEmpAtt.overriddenNote' | t }}</p>
+      }
+    } @else if (day.status === 'pending') {
+      <p class="dd-note">{{ 'saEmpAtt.leavePending' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+    }
+    @if (canOverride) {
+      <div class="override-box">
+        <h4 class="override-title">{{ 'saEmpAtt.overrideTitle' | t }}</h4>
+        <div class="override-choices" role="radiogroup">
+          <button type="button" class="choice" role="radio" [class.active]="editStatus() === 'present'" [attr.aria-checked]="editStatus() === 'present'" (click)="editStatus.set('present')">{{ 'saEmpAtt.present' | t }}</button>
+          @if (day.status !== 'absent') {
+            <button type="button" class="choice" role="radio" [class.active]="editStatus() === 'absent'" [attr.aria-checked]="editStatus() === 'absent'" (click)="editStatus.set('absent')">{{ 'saEmpAtt.absent' | t }}</button>
+          }
+          @if (day.status !== 'leave') {
+            <button type="button" class="choice" role="radio" [class.active]="editStatus() === 'leave'" [attr.aria-checked]="editStatus() === 'leave'" (click)="editStatus.set('leave')">{{ 'saEmpAtt.leave' | t }}</button>
+          }
+        </div>
+
+        @if (editStatus() === 'present') {
+          <div class="override-times">
+            <label class="override-field">
+              <span class="dd-label">{{ 'saEmpAtt.firstIn' | t }}</span>
+              <input class="form-control" type="time" [value]="editIn()" (input)="onCheckInInput($any($event.target).value)" />
+            </label>
+            <label class="override-field">
+              <span class="dd-label">{{ 'saEmpAtt.lastOut' | t }}</span>
+              <input class="form-control" type="time" [value]="editOut()" (input)="editOut.set($any($event.target).value)" />
+            </label>
+          </div>
+
+          <div class="override-percent">
+            <span class="dd-label">{{ 'saEmpAtt.overridePercent' | t }}</span>
+            <div class="percent-row">
+              <button type="button" class="chip" [class.active]="editPercent() === 100" (click)="setPercent(100)">{{ 'saEmpAtt.fullDay' | t }}</button>
+              <button type="button" class="chip" [class.active]="editPercent() === 50" (click)="setPercent(50)">{{ 'saEmpAtt.halfDay' | t }}</button>
+              <label class="percent-input">
+                <input class="form-control" type="number" min="1" max="100" step="1" inputmode="decimal" [value]="editPercent() ?? ''" (input)="onPercentInput($any($event.target).value)" />
+                <span>%</span>
+              </label>
+            </div>
+            <p class="percent-hint">{{ 'saEmpAtt.percentHint' | t }}</p>
+          </div>
+        }
+
+        <input
+          class="form-control"
+          [placeholder]="'saEmpAtt.overrideReasonPh' | t"
+          [value]="editReason()"
+          (input)="editReason.set($any($event.target).value)"
+        />
+
+        @if (editError()) {
+          <p class="override-error">{{ editError() }}</p>
+        }
+
+        <div class="override-actions">
+          <button class="btn btn-ghost btn-sm" (click)="selectedDay.set(null)">{{ 'saEmpAtt.cancel' | t }}</button>
+          <button class="btn btn-blue btn-sm" [disabled]="!canSaveOverride(day)" (click)="saveOverride(day)">
+            {{ (saving() ? 'saEmpAtt.saving' : 'saEmpAtt.overrideSave') | t }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+}

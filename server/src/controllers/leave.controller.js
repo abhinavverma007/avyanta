@@ -144,7 +144,7 @@ exports.create = async (req, res) => {
   for (const d of uniqueDates) {
     const rec = await Leave.findOneAndUpdate(
       { employee: req.employee._id, date: d },
-      { $set: { reason: trimmedReason, status: 'pending', reviewNote: '', reviewedAt: null, reviewedBy: null }, $unset: { override: 1 } },
+      { $set: { reason: trimmedReason, status: 'pending', reviewNote: '', reviewedAt: null, reviewedBy: null }, $unset: { override: 1, setByOwner: 1 } },
       { upsert: true, new: true },
     );
     results.push(rec);

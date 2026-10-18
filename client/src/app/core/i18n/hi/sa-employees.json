@@ -116,5 +116,19 @@
   "saEmp.viewAttendance": "हाज़िरी का इतिहास",
   "saEmpProfile.tabAttendance": "हाज़िरी",
   "saEmpAtt.regularized": "अनुरोध से सुधारा गया",
-  "saEmpAtt.regularizedNote": "इस दिन का समय मंज़ूर हुए हाज़िरी सुधार अनुरोध से जोड़ा गया है, सीधे पंच से नहीं।"
+  "saEmpAtt.regularizedNote": "इस दिन का समय मंज़ूर हुए हाज़िरी सुधार अनुरोध से जोड़ा गया है, सीधे पंच से नहीं।",
+  "saEmpAtt.overridden": "मालिक ने तय किया",
+  "saEmpAtt.overriddenNote": "इस दिन की हाज़िरी मालिक ने हाथ से तय की है, सीधे पंच से नहीं।",
+  "saEmpAtt.overrideTitle": "हाज़िरी बदलें",
+  "saEmpAtt.overrideReasonPh": "कारण (वैकल्पिक)",
+  "saEmpAtt.overrideSave": "बदलाव सहेजें",
+  "saEmpAtt.saving": "सहेज रहे हैं…",
+  "saEmpAtt.cancel": "रद्द करें",
+  "saEmpAtt.overrideFailed": "इस दिन की हाज़िरी बदली नहीं जा सकी। कृपया दोबारा कोशिश करें।",
+  "saEmpAtt.partial": "आंशिक दिन",
+  "saEmpAtt.percentNote": "दिन का {pct}% गिना गया — बाकी बिना वेतन।",
+  "saEmpAtt.overridePercent": "गिना जाएगा",
+  "saEmpAtt.fullDay": "पूरा दिन",
+  "saEmpAtt.halfDay": "आधा दिन",
+  "saEmpAtt.percentHint": "चेक-आउट अपने आप बदलता है (पूरा दिन 8 घंटे 30 मिनट)। समय आप खुद भी बदल सकते हैं।"
 }

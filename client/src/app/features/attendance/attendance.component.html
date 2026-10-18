@@ -57,6 +57,8 @@
               class="day-cell"
               [class]="cell ? 'status-' + cell.status : 'empty'"
               [class.today]="isToday(cell)"
+              [class.partial]="!!cell?.percent"
+              [style.background]="dayFill(cell?.percent)"
               [class.selected]="selectedDay() === cell"
               (click)="selectDay(cell)"
               [attr.aria-label]="cell ? cell.date + ' ' + cell.status : null"
@@ -66,8 +68,15 @@
                 <span class="day-num">{{ cell.date | slice:8 }}</span>
                 @if (cell.status === 'leave') {
                   <span class="day-icon">🌿</span>
+                  @if (cell.overridden) {
+                    <span class="day-icon reg" aria-hidden="true">★</span>
+                  }
                 } @else if (cell.status === 'pending') {
                   <span class="day-icon">⏳</span>
+                } @else if (cell.percent) {
+                  <span class="day-icon reg">{{ cell.percent }}%</span>
+                } @else if (cell.overridden) {
+                  <span class="day-icon reg" aria-hidden="true">★</span>
                 } @else if (cell.regularized) {
                   <span class="day-icon reg" aria-hidden="true">✎</span>
                 }
@@ -83,6 +92,8 @@
           <span class="leg"><span class="ld leave"></span> {{ 'attendance.leave' | t }}</span>
           <span class="leg"><span class="ld pending"></span> {{ 'attendance.pendingApproval' | t }}</span>
           <span class="leg"><span class="ld regularized">✎</span> {{ 'attendance.regularized' | t }}</span>
+          <span class="leg"><span class="ld regularized">★</span> {{ 'attendance.overridden' | t }}</span>
+          <span class="leg"><span class="ld partial"></span> {{ 'attendance.partial' | t }}</span>
         </div>
 
       </div>
@@ -119,6 +130,12 @@
             </div>
             @if (day.regularized) {
               <p class="dd-note">{{ 'attendance.regularizedNote' | t }}</p>
+            }
+            @if (day.overridden) {
+              <p class="dd-note">{{ 'attendance.overriddenNote' | t }}</p>
+            }
+            @if (day.percent) {
+              <p class="dd-note">{{ 'attendance.percentNote' | t:{ pct: day.percent } }}</p>
             }
           } @else if (day.status === 'absent') {
             <p class="dd-note">{{ 'attendance.noCheckIn' | t }}</p>
@@ -159,6 +176,9 @@
             }
           } @else if (day.status === 'leave') {
             <p class="dd-note">{{ 'attendance.leaveApproved' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
+            @if (day.overridden) {
+              <p class="dd-note">{{ 'attendance.overriddenNote' | t }}</p>
+            }
           } @else if (day.status === 'pending') {
             <p class="dd-note">{{ 'attendance.leavePending' | t }}{{ day.reason ? ' — ' + day.reason : '' }}.</p>
           }

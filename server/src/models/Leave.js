@@ -12,6 +12,9 @@ const leaveSchema = new mongoose.Schema(
     reason: { type: String, required: true, trim: true },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
     reviewNote: { type: String, default: '' },
+    // True only when the owner set this leave day by hand from the attendance
+    // calendar (adminAttendance.controller.js overrideDay), not via a request.
+    setByOwner: { type: Boolean },
     reviewedAt: { type: Date },
     // Who approved/rejected it — either the owner (Admin) or a delegated
     // Supervisor/Manager (Employee). Absent on records reviewed before this

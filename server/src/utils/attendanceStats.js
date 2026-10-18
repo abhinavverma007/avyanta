@@ -26,6 +26,14 @@ function summarizeSessions(sessions = []) {
   };
 }
 
+const round2 = (n) => Math.round(n * 100) / 100;
+
+// How much of a day counts as worked: 1 for a normal present day, less for an
+// owner-set partial day (percent 62 -> 0.62). Only present days carry one.
+function fractionOf(day) {
+  return day && day.percent && day.percent < 100 ? day.percent / 100 : 1;
+}
+
 function toDayAttendance(record) {
   const { firstPunchIn, lastPunchOut, workHours, hasCompletedSession } = summarizeSessions(record.sessions);
   return {
@@ -35,6 +43,8 @@ function toDayAttendance(record) {
     checkOut: lastPunchOut ? istHHMM(lastPunchOut) : undefined, // last punch-out of the day
     workHours: hasCompletedSession ? workHours : undefined, // total hours across all sessions that day
     lateBy: record.lateBy,
+    overridden: record.override && record.override.at ? true : undefined, // set by the owner by hand
+    percent: record.percent && record.percent < 100 ? record.percent : undefined, // partial day, 1-99
   };
 }
 
@@ -80,14 +90,15 @@ async function computeMonthlyAttendance(employee, year, month, { markRegularized
     const rec = byDate.get(dateStr);
     if (rec) {
       const day = toDayAttendance(rec);
-      if (regularizedDates.has(dateStr)) day.regularized = true;
+      // An owner-set day's times no longer come from the request, so it isn't "fixed via request".
+      if (regularizedDates.has(dateStr) && !day.overridden) day.regularized = true;
       days.push(day);
       continue;
     }
 
     const leave = leaveByDate.get(dateStr);
     if (leave && leave.status === 'approved') {
-      days.push({ date: dateStr, status: 'leave', reason: leave.reason });
+      days.push({ date: dateStr, status: 'leave', reason: leave.reason, overridden: leave.setByOwner ? true : undefined });
       continue;
     }
     if (leave && leave.status === 'pending') {
@@ -109,12 +120,17 @@ async function computeMonthlyAttendance(employee, year, month, { markRegularized
     year,
     days,
     calendarDaysInMonth: daysInMonth, // the actual number of days in this month, e.g. 30 for September
-    presentDays: workingDays.filter((d) => d.status === 'present').length,
-    absentDays: workingDays.filter((d) => d.status === 'absent').length,
+    // A partial day counts as that share present and the rest absent, so
+    // present + absent + leave always adds up to the working days.
+    presentDays: round2(workingDays.filter((d) => d.status === 'present').reduce((sum, d) => sum + fractionOf(d), 0)),
+    absentDays: round2(
+      workingDays.filter((d) => d.status === 'absent').length +
+        workingDays.filter((d) => d.status === 'present').reduce((sum, d) => sum + (1 - fractionOf(d)), 0),
+    ),
     leaveDays: workingDays.filter((d) => d.status === 'leave').length,
     pendingLeaveDays: days.filter((d) => d.status === 'pending').length,
     totalWorkingDays: workingDays.length,
   };
 }
 
-module.exports = { computeMonthlyAttendance, toDayAttendance, summarizeSessions };
+module.exports = { computeMonthlyAttendance, toDayAttendance, summarizeSessions, fractionOf };

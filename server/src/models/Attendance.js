@@ -20,6 +20,18 @@ const attendanceSchema = new mongoose.Schema(
     status: { type: String, enum: ['present'], default: 'present' },
     sessions: { type: [sessionSchema], default: [] },
     lateBy: { type: Number }, // minutes, measured against the first punch-in of the day
+    // Share of the day that counts as worked, 1-99 — only ever set by the owner
+    // (a half day is 50). Absent means a full day, so every existing record is unchanged.
+    percent: { type: Number, min: 1, max: 100 },
+    // Present only when the owner set this day's attendance by hand (see
+    // adminAttendance.controller.js overrideDay) rather than it coming from
+    // a real punch or an approved regularization. Absent on every other record.
+    override: {
+      at: { type: Date },
+      by: { id: { type: mongoose.Schema.Types.ObjectId }, name: { type: String } },
+      previousStatus: { type: String, enum: ['present', 'absent', 'leave', 'pending'] },
+      note: { type: String, default: '' },
+    },
   },
   { timestamps: true },
 );

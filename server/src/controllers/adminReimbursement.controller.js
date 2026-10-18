@@ -102,6 +102,7 @@ exports.override = async (req, res) => {
   });
 
   notifyOverride({
+    actorName: req.admin.name,
     kind: 'reimbursement',
     section: 'reimbursements',
     label: `${claim.category} claim of ₹${claim.amount}`,

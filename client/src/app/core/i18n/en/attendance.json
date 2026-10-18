@@ -42,5 +42,9 @@
   "attendance.errSubmit": "Could not submit request. Please try again.",
   "attendance.close": "Close",
   "attendance.regularized": "Fixed via request",
-  "attendance.regularizedNote": "Times for this day were added through an approved attendance fix request, not a live punch."
+  "attendance.regularizedNote": "Times for this day were added through an approved attendance fix request, not a live punch.",
+  "attendance.overridden": "Set by owner",
+  "attendance.overriddenNote": "This day was set by the owner, not from a live punch.",
+  "attendance.partial": "Partial day",
+  "attendance.percentNote": "Counts as {pct}% of a day — the rest is unpaid."
 }
