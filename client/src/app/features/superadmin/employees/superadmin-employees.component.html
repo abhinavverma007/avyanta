@@ -103,10 +103,10 @@
       <!-- Card view — mobile / narrow screens -->
       <div class="employees-grid">
         @for (emp of employees(); track emp.id) {
-          <div class="employee-card" (click)="openAttendance(emp.id)">
+          <div class="employee-card">
             <div class="ec-header">
               <div>
-                <div class="emp-name">{{ emp.name }}</div>
+                <a class="emp-name emp-link" [routerLink]="attendancePath(emp.id)">{{ emp.name }}</a>
                 <div class="emp-sub font-mono">{{ emp.employeeId }}</div>
               </div>
               <div class="ec-header-actions">

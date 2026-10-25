@@ -403,3 +403,35 @@
 .percent-input { display: flex; align-items: center; gap: 4px; margin-left: auto; font-weight: 600; color: var(--text-muted); }
 .percent-input .form-control { width: 78px; text-align: right; }
 .percent-hint { font-size: 0.75rem; color: var(--text-muted); }
+
+/* ─── Switch employee ───────────────────────────────────────────── */
+.employee-switch { position: relative; max-width: 360px; margin-bottom: var(--space-4); }
+.switch-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.switch-note { padding: var(--space-3) var(--space-4); font-size: 0.8125rem; color: var(--text-muted); }
+.switch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 10px var(--space-4);
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.switch-item:last-child { border-bottom: none; }
+.switch-item:hover { background: var(--surface-raised); }
+.switch-name { font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.switch-meta { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }

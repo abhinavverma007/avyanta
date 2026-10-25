@@ -151,6 +151,7 @@ export const routes: Routes = [
           AdminReimbursementService,
           AdminSalaryAdvanceService,
           AdminTaskService,
+          AdminEmployeeService, // the "switch employee" search on this page
         ],
         canActivate: [superadminAreaGuard('employees')],
         loadComponent: () =>

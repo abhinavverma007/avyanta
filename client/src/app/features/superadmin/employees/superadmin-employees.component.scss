@@ -101,9 +101,12 @@
   border-radius: var(--radius);
   background: var(--surface);
   padding: var(--space-4);
-  cursor: pointer;
 }
-.employee-card:hover { background: var(--surface-raised); }
+
+// Only the name is a link (to that employee's attendance history) — the rest of the
+// card does nothing when tapped, so it can't be opened by accident while scrolling.
+.emp-link { display: inline-block; color: var(--accent-2); cursor: pointer; }
+.emp-link:hover { text-decoration: underline; }
 
 .ec-header {
   display: flex;
