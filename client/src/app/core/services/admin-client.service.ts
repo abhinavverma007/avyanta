@@ -17,6 +17,10 @@ export class AdminClientService {
     return firstValueFrom(this.http.get<{ clients: ClientRecord[] }>(this.base)).then(r => r.clients);
   }
 
+  get(id: string): Promise<ClientRecord> {
+    return firstValueFrom(this.http.get<{ client: ClientRecord }>(`${this.base}/${id}`)).then(r => r.client);
+  }
+
   history(id: string, params: ClientHistoryParams = {}): Promise<ClientHistory> {
     const query: Record<string, string> = {};
     if (params.status) query['status'] = params.status;
