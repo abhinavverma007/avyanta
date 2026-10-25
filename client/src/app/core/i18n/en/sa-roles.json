@@ -27,7 +27,7 @@
   "saRoles.perm.approvalsRegularization.label": "Approve Attendance Fixes",
   "saRoles.perm.approvalsRegularization.desc": "Review and approve/reject attendance correction requests.",
   "saRoles.perm.approvalsAdvance.label": "Approve Salary Advances",
-  "saRoles.perm.approvalsAdvance.desc": "Review and approve/reject requests for a cash advance against next month's salary.",
+  "saRoles.perm.approvalsAdvance.desc": "Review and approve/reject requests for a cash advance against salary.",
   "saRoles.perm.salary.label": "View & Pay Salary",
   "saRoles.perm.salary.desc": "View payable salary and record payouts.",
   "saRoleForm.back": "← Back to Roles & Permissions",

@@ -160,6 +160,12 @@ export class SuperadminAdvanceApprovalsComponent implements OnInit {
     }
   }
 
+  // 'YYYY-MM' -> "October 2026" (the salary month the advance comes out of).
+  formatMonth(yyyyMm: string): string {
+    const [y, m] = yyyyMm.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  }
+
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
   }

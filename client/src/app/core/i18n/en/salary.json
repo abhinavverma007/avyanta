@@ -1,6 +1,6 @@
 {
   "salary.title": "My Salary",
-  "salary.subtitle": "Earned till date this month — present and approved-leave days are paid, absent and not-yet-approved leave days are withheld, plus approved reimbursements, minus advances taken last month",
+  "salary.subtitle": "Earned till date this month — present and approved-leave days are paid, absent and not-yet-approved leave days are withheld, plus approved reimbursements, minus approved advances",
   "salary.calculating": "Calculating…",
   "salary.earnedSoFar": "Earned So Far (Till Today)",
   "salary.notYetPaid": "Not Yet Paid Out",
@@ -11,7 +11,7 @@
   "salary.pendingLeave": "{n} leave day(s) still awaiting the owner's approval — withheld until reviewed.",
   "salary.approvedReimb": "Approved reimbursements:",
   "salary.noReimb": "No approved reimbursements this month.",
-  "salary.advancesDeducted": "Advances deducted (taken last month, approved):",
+  "salary.advancesDeducted": "Advances deducted (approved):",
   "salary.notPaidOut": "Not yet paid out:",
   "salary.alreadyPaid": "₹{amount} already paid",
   "salary.nothingPaid": "nothing paid yet",

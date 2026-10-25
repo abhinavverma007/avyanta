@@ -11,7 +11,7 @@ const PERMISSION_CATALOG = [
   { key: 'approvalsReimbursements', label: 'Approve Reimbursements', description: 'Review and approve/reject expense claims.' },
   { key: 'approvalsLeave', label: 'Approve Leave', description: 'Review and approve/reject leave requests.' },
   { key: 'approvalsRegularization', label: 'Approve Attendance Fixes', description: 'Review and approve/reject attendance correction requests.' },
-  { key: 'approvalsAdvance', label: 'Approve Salary Advances', description: 'Review and approve/reject requests for a cash advance against next month\'s salary.' },
+  { key: 'approvalsAdvance', label: 'Approve Salary Advances', description: 'Review and approve/reject requests for a cash advance against salary.' },
   { key: 'salary', label: 'View & Pay Salary', description: 'View payable salary and record payouts.' },
 ];
 

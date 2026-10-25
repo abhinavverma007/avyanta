@@ -45,7 +45,7 @@
   "saAdvAppr.countMany": "{n} requests · ₹{total} total",
   "saAdvAppr.loading": "Loading advance requests…",
   "saAdvAppr.empty": "No advance requests in this view.",
-  "saAdvAppr.requested": "Requested {date} — deducted from next month's salary once approved",
+  "saAdvAppr.requested": "Requested {date} — deducted from {month} salary once approved",
   "saReimbAppr.search": "Search by employee, department or category…",
   "saReimbAppr.countOne": "{n} claim · ₹{total} total",
   "saReimbAppr.countMany": "{n} claims · ₹{total} total",

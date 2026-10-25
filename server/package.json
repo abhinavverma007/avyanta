@@ -13,6 +13,8 @@
     "seed:roles": "node src/scripts/seedRoles.js",
     "backfill:reviewed-by": "node src/scripts/backfillReviewedBy.js",
     "link:tasks-to-clients": "node src/scripts/linkTasksToClients.js",
+    "verify:advance-months": "node src/scripts/verifyAdvanceMonths.js",
+    "migrate:advances-same-month": "node src/scripts/moveAdvancesToSameMonth.js",
     "migrate:employee-roles": "node src/scripts/migrateEmployeeRoles.js"
   },
   "engines": {
