@@ -56,6 +56,11 @@ export interface SalaryRow {
   advanceDeduction: number;
   advanceCount: number;
   payable: number;
+  // Carried over like an EMI when the owner paid a custom amount: what last month carried
+  // INTO this one, and what this month's payments carried on to the next. Positive = still
+  // owed to the employee, negative = paid ahead (to be recovered). Both 0 when nothing carried.
+  carriedIn: number;
+  carriedOut: number;
   paidAmount: number;
   balance: number;
   lastPaidAt?: string;
@@ -73,6 +78,7 @@ export interface PayoutRecord {
   amount: number;
   paidAt: string;
   note: string;
+  carryForward: number; // what this payment carried to next month (0 for a normal payout)
 }
 
 export interface SalaryDetail extends SalaryRow {

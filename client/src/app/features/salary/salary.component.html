@@ -30,8 +30,8 @@
           <span class="ss-label">{{ 'salary.earnedSoFar' | t }}</span>
         </div>
         <div class="summary-stat">
-          <span class="ss-value font-mono" [class.text-danger]="d.balance > 0" [class.text-success]="d.balance <= 0">₹{{ d.balance | number }}</span>
-          <span class="ss-label">{{ (d.balance > 0 ? 'salary.notYetPaid' : 'salary.paidUpToDate') | t }}</span>
+          <span class="ss-value font-mono" [class.text-danger]="d.balance > 0" [class.text-success]="d.balance <= 0">{{ d.balance < 0 ? '−' : '' }}₹{{ (d.balance < 0 ? -d.balance : d.balance) | number }}</span>
+          <span class="ss-label">{{ (d.balance > 0 ? 'salary.notYetPaid' : d.balance < 0 ? 'salary.aheadOfPay' : 'salary.paidUpToDate') | t }}</span>
         </div>
       </div>
 
@@ -61,6 +61,12 @@
         </ul>
       }
 
+      @if (d.carriedIn !== 0) {
+        <p class="detail-line" [class.text-danger]="d.carriedIn > 0" [class.text-success]="d.carriedIn < 0">
+          {{ (d.carriedIn > 0 ? 'salary.carriedInPlus' : 'salary.carriedInMinus') | t:{ amount: ((d.carriedIn < 0 ? -d.carriedIn : d.carriedIn) | number) } }}
+        </p>
+      }
+
       <div class="payout-section">
         @if (d.balance > 0) {
           <p class="detail-line">{{ 'salary.notPaidOut' | t }} <strong class="font-mono text-danger">₹{{ d.balance | number }}</strong> ({{ d.paidAmount > 0 ? ('salary.alreadyPaid' | t:{ amount: (d.paidAmount | number) }) : ('salary.nothingPaid' | t) }})</p>
@@ -72,7 +78,7 @@
           <p class="detail-line">{{ 'salary.paymentHistory' | t }}</p>
           <ul class="reimb-list">
             @for (p of d.payouts; track p.id) {
-              <li>{{ p.paidAt | date:'d MMM y, h:mm a' }} — ₹{{ p.amount | number }} @if (p.note) { — {{ p.note }} }</li>
+              <li>{{ p.paidAt | date:'d MMM y, h:mm a' }} — ₹{{ p.amount | number }} @if (p.note) { — {{ p.note }} }@if (p.carryForward) { — {{ (p.carryForward > 0 ? 'salary.carriedToNext' : 'salary.carriedToNextNeg') | t:{ amount: ((p.carryForward < 0 ? -p.carryForward : p.carryForward) | number) } }}}</li>
             }
           </ul>
         }
