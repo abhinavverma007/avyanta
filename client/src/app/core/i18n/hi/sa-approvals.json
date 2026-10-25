@@ -45,7 +45,7 @@
   "saAdvAppr.countMany": "{n} अनुरोध · कुल ₹{total}",
   "saAdvAppr.loading": "एडवांस के अनुरोध लोड हो रहे हैं…",
   "saAdvAppr.empty": "यहाँ कोई एडवांस अनुरोध नहीं है।",
-  "saAdvAppr.requested": "{date} को माँगा — मंज़ूर होने पर अगले महीने के वेतन से कटेगा",
+  "saAdvAppr.requested": "{date} को माँगा — मंज़ूर होने पर {month} के वेतन से कटेगा",
   "saReimbAppr.search": "कर्मचारी, विभाग या श्रेणी से खोजें…",
   "saReimbAppr.countOne": "{n} दावा · कुल ₹{total}",
   "saReimbAppr.countMany": "{n} दावे · कुल ₹{total}",

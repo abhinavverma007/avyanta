@@ -1,6 +1,6 @@
 {
   "saSalary.title": "Payable Salary",
-  "saSalary.subtitle": "Earned till date this month — present and approved-leave days are paid, absent and not-yet-approved leave days are withheld, plus approved reimbursements, minus advances taken last month",
+  "saSalary.subtitle": "Earned till date this month — present and approved-leave days are paid, absent and not-yet-approved leave days are withheld, plus approved reimbursements, minus approved advances",
   "saSalary.searchPlaceholder": "Search by employee name…",
   "saSalary.employeeOne": "{n} employee",
   "saSalary.employeeMany": "{n} employees",
@@ -13,7 +13,7 @@
   "saSalary.pendingLeaveNote": "{n} leave day(s) still awaiting your approval — withheld until reviewed.",
   "saSalary.approvedReimb": "Approved reimbursements:",
   "saSalary.noReimb": "No approved reimbursements this month.",
-  "saSalary.advancesDeducted": "Advances deducted (taken last month, approved):",
+  "saSalary.advancesDeducted": "Advances deducted (approved):",
   "saSalary.balanceOwed": "Balance owed:",
   "saSalary.alreadyPaid": "₹{amount} already paid",
   "saSalary.nothingPaid": "nothing paid yet",

@@ -22,20 +22,26 @@ function prevMonthOf(year, month) {
   return month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
 }
 
-// An advance is disbursed against a *future* month's pay, not the month it
-// was requested in (see SalaryAdvance.js) — so a month's payable is reduced
-// by advances the employee took during the *previous* calendar month, once
-// approved. Approved late (after the target month has already passed)?
-// It still applies retroactively to that same target month — the balance
-// simply nets it against whatever was already paid, same as a late-approved
-// leave/regularization would.
+// A month's payable is reduced by the approved advances that belong to that
+// month (see utils/advanceMonth.js for the two rules):
+//  - advances with a stored `deductMonth` come out of exactly that month — the
+//    month they were requested in;
+//  - older advances (no `deductMonth`) keep the original rule and come out of the
+//    month right after `requestedDate`, i.e. they're the ones requested in the
+//    *previous* calendar month. Nothing already approved moves.
+// Approved late (after the target month has already passed)? It still applies
+// retroactively to that same month — the balance simply nets it against
+// whatever was already paid, same as a late-approved leave/regularization would.
 async function advanceDeductionFor(employeeId, year, month) {
   const { year: py, month: pm } = prevMonthOf(year, month);
   const { start, end } = monthRange(py, pm);
   const advances = await SalaryAdvance.find({
     employee: employeeId,
     status: 'approved',
-    requestedDate: { $gte: start, $lte: end },
+    $or: [
+      { deductMonth: `${year}-${String(month).padStart(2, '0')}` },
+      { deductMonth: null, requestedDate: { $gte: start, $lte: end } }, // legacy: no deductMonth stored
+    ],
   });
   return { advances, total: round2(advances.reduce((sum, a) => sum + a.amount, 0)) };
 }

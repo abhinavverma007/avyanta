@@ -1,5 +1,6 @@
 const SalaryAdvance = require('../models/SalaryAdvance');
 const { istDateString } = require('../utils/istDate');
+const { deductMonthOf } = require('../utils/advanceMonth');
 const { sanitizeOverride } = require('../utils/reviewOverride');
 const { recordAudit } = require('../utils/audit');
 const { notifyReviewers } = require('../utils/notify');
@@ -10,6 +11,8 @@ function sanitize(a) {
     amount: a.amount,
     reason: a.reason,
     requestedDate: a.requestedDate,
+    // Always present in the response — for older advances it's the month after requestedDate.
+    deductMonth: deductMonthOf(a),
     status: a.status,
     reviewNote: a.reviewNote,
     reviewedAt: a.reviewedAt,
@@ -26,7 +29,7 @@ exports.mine = async (req, res) => {
   res.json({ requests: requests.map(sanitize) });
 };
 
-// Deducted from the salary of the month right after today (see
+// Deducted from this month's salary — the month it's requested in (see
 // salary.controller.js). No cap on the amount — the reviewer decides.
 exports.create = async (req, res) => {
   const { amount, reason } = req.body;
@@ -38,11 +41,13 @@ exports.create = async (req, res) => {
     return res.status(400).json({ message: 'A reason is required.' });
   }
 
+  const today = istDateString();
   const advance = await SalaryAdvance.create({
     employee: req.employee._id,
     amount: Number(amount),
     reason: String(reason).trim(),
-    requestedDate: istDateString(),
+    requestedDate: today,
+    deductMonth: today.slice(0, 7), // deducted from the month it's requested in
   });
 
   await recordAudit(req, {

@@ -2,6 +2,7 @@ const SalaryAdvance = require('../models/SalaryAdvance');
 const { sanitize } = require('./salaryAdvance.controller');
 const { recordAudit } = require('../utils/audit');
 const { reviewerStamp } = require('../utils/reviewer');
+const { deductMonthOf, monthLabel } = require('../utils/advanceMonth');
 const { rejectSelfReview } = require('../utils/reviewGuard');
 const { notifyEmployee } = require('../utils/notify');
 const { checkOverridable, flipDecision, notifyOverride } = require('../utils/reviewOverride');
@@ -52,7 +53,7 @@ exports.review = (status) => async (req, res) => {
     resourceType: 'SalaryAdvance',
     resourceId: advance._id,
     summary: status === 'approved'
-      ? `Approved ${advance.employee?.name}'s advance of ₹${advance.amount} (to be deducted from next month's salary)`
+      ? `Approved ${advance.employee?.name}'s advance of ₹${advance.amount} (to be deducted from ${monthLabel(deductMonthOf(advance))} salary)`
       : `Rejected ${advance.employee?.name}'s advance request of ₹${advance.amount}`,
   });
 
@@ -68,7 +69,7 @@ exports.review = (status) => async (req, res) => {
 };
 
 // Owner flips an advance decision a delegated Supervisor/Manager made. The
-// deduction from next month's salary is derived live from `status`
+// deduction from the advance's salary month is derived live from `status`
 // (salary.controller.js), so approved<->rejected needs no other bookkeeping;
 // any payout already recorded just nets against the new payable as a balance.
 exports.override = async (req, res) => {

@@ -82,7 +82,7 @@
               </div>
               <p class="claim-employee">{{ request.employee?.name }} · {{ request.employee?.employeeId }} · {{ request.employee?.department }}</p>
               <p class="claim-desc">{{ request.reason }}</p>
-              <p class="claim-date">{{ 'saAdvAppr.requested' | t:{ date: formatDate(request.requestedDate) } }}</p>
+              <p class="claim-date">{{ 'saAdvAppr.requested' | t:{ date: formatDate(request.requestedDate), month: formatMonth(request.deductMonth) } }}</p>
               @if (request.reviewedBy) {
                 <p class="claim-note">{{ ('saApprovals.' + request.status + 'By' + (list.isMine(request) ? 'You' : '')) | t:{ name: request.reviewedBy.name } }}@if (request.reviewedAt) { · {{ request.reviewedAt | date:'d MMM y, h:mm a' }}}</p>
               }

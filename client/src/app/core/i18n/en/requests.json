@@ -69,12 +69,12 @@
   "regularization.errDate": "A date is required.",
   "regularization.errTime": "Check-out must be after check-in.",
   "regularization.success": "Regularization request submitted — awaiting superadmin approval.",
-  "advance.intro": "Need cash before month-end? Request an advance — it's deducted from next month's salary once approved.",
+  "advance.intro": "Need cash before month-end? Request an advance — it's deducted from this month's salary once approved.",
   "advance.title": "Request Advance",
   "advance.reasonPh": "e.g. Family emergency",
   "advance.submit": "Request Advance",
   "advance.history": "Advance History",
   "advance.empty": "No advance requests yet.",
   "advance.requested": "Requested",
-  "advance.success": "Advance request submitted — awaiting superadmin approval. It'll be deducted from next month's salary once approved."
+  "advance.success": "Advance request submitted — awaiting superadmin approval. It'll be deducted from this month's salary once approved."
 }

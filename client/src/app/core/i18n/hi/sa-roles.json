@@ -27,7 +27,7 @@
   "saRoles.perm.approvalsRegularization.label": "हाज़िरी सुधार मंज़ूर करें",
   "saRoles.perm.approvalsRegularization.desc": "हाज़िरी सुधार के अनुरोध देखें और मंज़ूर/नामंज़ूर करें।",
   "saRoles.perm.approvalsAdvance.label": "वेतन एडवांस मंज़ूर करें",
-  "saRoles.perm.approvalsAdvance.desc": "अगले महीने के वेतन के बदले एडवांस के अनुरोध देखें और मंज़ूर/नामंज़ूर करें।",
+  "saRoles.perm.approvalsAdvance.desc": "वेतन के बदले एडवांस के अनुरोध देखें और मंज़ूर/नामंज़ूर करें।",
   "saRoles.perm.salary.label": "वेतन देखें और दें",
   "saRoles.perm.salary.desc": "देय वेतन देखें और भुगतान दर्ज करें।",
   "saRoleForm.back": "← भूमिकाओं और अनुमतियों पर वापस",
