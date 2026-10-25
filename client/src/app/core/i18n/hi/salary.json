@@ -29,5 +29,10 @@
   "salary.month.9": "सितंबर",
   "salary.month.10": "अक्टूबर",
   "salary.month.11": "नवंबर",
-  "salary.month.12": "दिसंबर"
+  "salary.month.12": "दिसंबर",
+  "salary.aheadOfPay": "पहले ही दिया गया — अगले महीने वसूला जाएगा",
+  "salary.carriedInPlus": "पिछले महीने से आया: +₹{amount} (आपको बकाया)",
+  "salary.carriedInMinus": "पिछले महीने से आया: −₹{amount} (आपको पहले ही दिया गया — वसूला जा रहा है)",
+  "salary.carriedToNext": "₹{amount} अगले महीने में गया",
+  "salary.carriedToNextNeg": "₹{amount} ज़्यादा दिया — अगले महीने वसूला जाएगा"
 }

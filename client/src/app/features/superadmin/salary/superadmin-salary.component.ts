@@ -58,6 +58,12 @@ export class SuperadminSalaryComponent implements OnInit {
   // mid-confirmation".
   payConfirmMode = signal<PayConfirmMode>('none');
 
+  // "Pay a different amount": the owner types what to pay now; the difference from the
+  // balance carries to next month. Kept separate from payConfirmMode on purpose so the
+  // existing Pay Now / Mark as Paid flows are exactly as they were.
+  customAmount = signal('');
+  customMode = signal<PayConfirmMode>('none');
+
   readonly filteredRows = computed(() => {
     const q = this.search().trim().toLowerCase();
     if (!q) return this.rows();
@@ -114,6 +120,7 @@ export class SuperadminSalaryComponent implements OnInit {
     this.expandedId.set(null);
     this.detail.set(null);
     this.payConfirmMode.set('none');
+    this.resetCustom();
     this.salaryService.summary(this.year(), this.month()).then(res => {
       this.rows.set(res.rows);
       this.search.set('');
@@ -124,6 +131,7 @@ export class SuperadminSalaryComponent implements OnInit {
 
   toggleDetail(row: SalaryRow): void {
     this.payConfirmMode.set('none');
+    this.resetCustom();
     this.payoutError.set('');
     if (this.expandedId() === row.employeeId) {
       this.expandedId.set(null);
@@ -186,6 +194,7 @@ export class SuperadminSalaryComponent implements OnInit {
   // needing any payment-gateway integration.
   initiatePayment(): void {
     this.payoutError.set('');
+    this.customMode.set('none');
     this.payConfirmMode.set('upi');
   }
 
@@ -196,6 +205,7 @@ export class SuperadminSalaryComponent implements OnInit {
   // that already happened outside the app rather than one about to start.
   initiateDirectMarkPaid(): void {
     this.payoutError.set('');
+    this.customMode.set('none');
     this.payConfirmMode.set('direct');
   }
 
@@ -209,5 +219,95 @@ export class SuperadminSalaryComponent implements OnInit {
   cancelPayConfirm(): void {
     this.payConfirmMode.set('none');
     this.payoutError.set('');
+  }
+
+  // ── Pay a different amount (carries the difference to next month) ──────────
+
+  abs(n: number): number {
+    return Math.abs(n);
+  }
+
+  // "−₹3,000" / "₹3,000" — a plain `₹{{ n | number }}` would print a negative as "₹-3,000".
+  signedMoney(n: number): string {
+    return `${n < 0 ? '−' : ''}₹${Math.abs(n).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+  }
+
+  private resetCustom(): void {
+    this.customAmount.set('');
+    this.customMode.set('none');
+  }
+
+  // Digits and one decimal point, at most two decimals — nothing else gets in.
+  onCustomAmountInput(value: string): void {
+    let cleaned = value.replace(/[^0-9.]/g, '');
+    const firstDot = cleaned.indexOf('.');
+    if (firstDot >= 0) cleaned = cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, '').slice(0, 2);
+    this.customAmount.set(cleaned);
+    this.customMode.set('none');
+    this.payoutError.set('');
+  }
+
+  customAmountValue(): number | null {
+    const t = this.customAmount().trim();
+    if (t === '' || t === '.') return null;
+    const n = Number(t);
+    return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null;
+  }
+
+  // What typing this amount would do, against the current balance. null = nothing to show/do.
+  customPreview(balance: number): { amount: number; carry: number; kind: 'same' | 'surplus' | 'over' | 'defer' | 'deferNegative' } | null {
+    const amount = this.customAmountValue();
+    if (amount === null) return null;
+    const carry = Math.round((balance - amount) * 100) / 100;
+    if (amount === 0 && carry === 0) return null;
+    if (carry === 0) return { amount, carry, kind: 'same' };
+    if (amount === 0) return { amount, carry, kind: carry > 0 ? 'defer' : 'deferNegative' };
+    return { amount, carry, kind: carry > 0 ? 'surplus' : 'over' };
+  }
+
+  // "November 2026" — the month a custom payment's difference lands in.
+  nextMonthLabel(row: SalaryRow): string {
+    const name = this.months[row.month % 12];
+    return `${name} ${row.month === 12 ? row.year + 1 : row.year}`;
+  }
+
+  // Same UPI request as Pay Now, but for the typed amount instead of the balance.
+  customPayUrl(row: SalaryRow): string {
+    const params = new URLSearchParams({
+      pa: row.upiId,
+      pn: row.name,
+      am: (this.customAmountValue() ?? 0).toFixed(2),
+      cu: 'INR',
+      tn: `Salary ${this.months[row.month - 1]} ${row.year} - ${row.name}`,
+    });
+    return `upi://pay?${params.toString()}`;
+  }
+
+  startCustom(mode: PayConfirmMode): void {
+    this.payoutError.set('');
+    this.payConfirmMode.set('none');
+    this.customMode.set(mode);
+  }
+
+  cancelCustom(): void {
+    this.customMode.set('none');
+    this.payoutError.set('');
+  }
+
+  async confirmCustom(row: SalaryRow): Promise<void> {
+    const amount = this.customAmountValue();
+    if (amount === null) return;
+    this.payoutError.set('');
+    this.payingId.set(row.employeeId);
+    try {
+      const updated = await this.salaryService.recordPayout(row.employeeId, row.year, row.month, amount, undefined, true);
+      this.rows.update(list => list.map(r => (r.employeeId === row.employeeId ? { ...r, ...updated } : r)));
+      if (this.expandedId() === row.employeeId) this.fetchDetail(row.employeeId);
+      this.resetCustom();
+    } catch (err: any) {
+      this.payoutError.set(err?.error?.message ?? this.i18n.t('saSalary.payoutFailed'));
+    } finally {
+      this.payingId.set(null);
+    }
   }
 }

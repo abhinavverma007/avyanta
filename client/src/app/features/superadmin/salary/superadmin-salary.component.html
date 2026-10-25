@@ -35,7 +35,7 @@
       <span class="ss-label">{{ 'saSalary.employees' | t }}</span>
     </div>
     <div class="summary-stat">
-      <span class="ss-value" style="color: var(--success)">₹{{ filteredTotalBalance() | number }}</span>
+      <span class="ss-value" style="color: var(--success)">{{ signedMoney(filteredTotalBalance()) }}</span>
       <span class="ss-label">{{ 'saSalary.totalBalanceOwed' | t }}</span>
     </div>
   </div>
@@ -71,6 +71,12 @@
             </ul>
           }
 
+          @if (d.carriedIn !== 0) {
+            <p class="detail-line" [class.text-danger]="d.carriedIn > 0" [class.text-success]="d.carriedIn < 0">
+              {{ (d.carriedIn > 0 ? 'saSalary.carriedInPlus' : 'saSalary.carriedInMinus') | t:{ amount: ((abs(d.carriedIn) | number) ?? '') } }}
+            </p>
+          }
+
           <div class="payout-section">
             @if (d.balance > 0) {
               <p class="detail-line">{{ 'saSalary.balanceOwed' | t }} <strong class="font-mono text-danger">₹{{ d.balance | number }}</strong> ({{ d.paidAmount > 0 ? ('saSalary.alreadyPaid' | t:{ amount: ((d.paidAmount | number) ?? '') }) : ('saSalary.nothingPaid' | t) }})</p>
@@ -97,11 +103,63 @@
               <p class="detail-line text-success">{{ d.lastPaidAt ? ('saSalary.fullyPaidLast' | t:{ amount: ((d.paidAmount | number) ?? ''), date: (d.lastPaidAt | date:'d MMM y') }) : ('saSalary.fullyPaid' | t:{ amount: ((d.paidAmount | number) ?? '') }) }}</p>
             }
 
+            <div class="custom-pay">
+              <p class="detail-line custom-title">{{ 'saSalary.customTitle' | t }}</p>
+              <p class="detail-line text-muted">{{ 'saSalary.customHint' | t }}</p>
+              <div class="custom-row">
+                <span class="rupee">₹</span>
+                <input
+                  class="form-control"
+                  type="text"
+                  inputmode="decimal"
+                  [placeholder]="'saSalary.customPh' | t"
+                  [value]="customAmount()"
+                  (input)="onCustomAmountInput($any($event.target).value)"
+                />
+              </div>
+
+              @if (customPreview(d.balance); as pv) {
+                <p class="custom-preview" [class.ok]="pv.kind === 'same'" [class.warn]="pv.kind !== 'same'">
+                  @switch (pv.kind) {
+                    @case ('same') { {{ 'saSalary.previewSame' | t }} }
+                    @case ('surplus') { {{ 'saSalary.previewSurplus' | t:{ amount: ((pv.amount | number) ?? ''), carry: ((abs(pv.carry) | number) ?? ''), month: nextMonthLabel(row), name: row.name } }} }
+                    @case ('over') { {{ 'saSalary.previewOver' | t:{ amount: ((pv.amount | number) ?? ''), carry: ((abs(pv.carry) | number) ?? ''), month: nextMonthLabel(row) } }} }
+                    @case ('defer') { {{ 'saSalary.previewDefer' | t:{ carry: ((abs(pv.carry) | number) ?? ''), month: nextMonthLabel(row) } }} }
+                    @case ('deferNegative') { {{ 'saSalary.previewDeferNeg' | t:{ carry: ((abs(pv.carry) | number) ?? ''), month: nextMonthLabel(row) } }} }
+                  }
+                </p>
+
+                @if (customMode() === 'none') {
+                  <div class="custom-actions">
+                    @if (row.upiId && pv.amount > 0) {
+                      <a class="btn btn-blue btn-sm" [href]="customPayUrl(row)" (click)="startCustom('upi')">{{ 'saSalary.customPayUpi' | t:{ amount: ((pv.amount | number) ?? '') } }}</a>
+                    }
+                    <button class="btn btn-success btn-sm" (click)="startCustom('direct')">
+                      {{ (pv.amount > 0 ? 'saSalary.customMarkPaid' : 'saSalary.customCarryOnly') | t:{ amount: ((pv.amount | number) ?? ''), month: nextMonthLabel(row) } }}
+                    </button>
+                  </div>
+                } @else {
+                  <div class="pay-confirm-bar">
+                    <p class="pay-confirm-question">
+                      {{ (customMode() === 'upi' ? 'saSalary.customConfirmUpi' : (pv.amount > 0 ? 'saSalary.customConfirmDirect' : 'saSalary.customConfirmCarry')) | t:{ amount: ((pv.amount | number) ?? ''), name: row.name, month: nextMonthLabel(row) } }}
+                    </p>
+                    @if (payoutError()) { <p class="error-msg">{{ payoutError() }}</p> }
+                    <div class="pay-confirm-actions">
+                      <button class="btn btn-success btn-sm" [disabled]="payingId() === row.employeeId" (click)="confirmCustom(row)">
+                        {{ (payingId() === row.employeeId ? 'saSalary.recording' : (customMode() === 'upi' ? 'saSalary.yesPaid' : 'saSalary.yesConfirm')) | t }}
+                      </button>
+                      <button class="btn btn-ghost btn-sm" [disabled]="payingId() === row.employeeId" (click)="cancelCustom()">{{ 'saSalary.cancel' | t }}</button>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+
             @if (d.payouts.length > 0) {
               <p class="detail-line">{{ 'saSalary.paymentHistory' | t }}</p>
               <ul class="reimb-list">
                 @for (p of d.payouts; track p.id) {
-                  <li>{{ p.paidAt | date:'d MMM y, h:mm a' }} — ₹{{ p.amount | number }} @if (p.note) { — {{ p.note }} }</li>
+                  <li>{{ p.paidAt | date:'d MMM y, h:mm a' }} — ₹{{ p.amount | number }} @if (p.note) { — {{ p.note }} }@if (p.carryForward) { — {{ (p.carryForward > 0 ? 'saSalary.carriedToNext' : 'saSalary.carriedToNextNeg') | t:{ amount: ((abs(p.carryForward) | number) ?? '') } }}}</li>
                 }
               </ul>
             }
@@ -164,7 +222,7 @@
                   {{ row.advanceDeduction > 0 ? '-₹' + (row.advanceDeduction | number) + ' (' + row.advanceCount + ')' : '—' }}
                 </td>
                 <td class="font-mono payable">
-                  ₹{{ row.balance | number }}
+                  {{ signedMoney(row.balance) }}
                   @if (row.paidAmount > 0) {
                     <div class="paid-note">{{ row.balance <= 0 ? ('saSalary.paidShort' | t) : ('saSalary.amountPaid' | t:{ amount: ((row.paidAmount | number) ?? '') }) }}</div>
                   }
@@ -194,7 +252,7 @@
               </div>
               <div class="sc-header-actions">
                 <div class="sc-amount">
-                  <span class="font-mono payable">₹{{ row.balance | number }}</span>
+                  <span class="font-mono payable">{{ signedMoney(row.balance) }}</span>
                   @if (row.paidAmount > 0) {
                     <span class="paid-note">{{ row.balance <= 0 ? ('saSalary.paidShort' | t) : ('saSalary.amountPaid' | t:{ amount: ((row.paidAmount | number) ?? '') }) }}</span>
                   }
@@ -225,6 +283,12 @@
                   }
                 </div>
                 <div class="sc-row"><span class="sc-label">{{ 'saSalary.reimbursements' | t }}</span><span class="font-mono text-success">+₹{{ row.reimbursementTotal | number }} ({{ row.reimbursementCount }})</span></div>
+                @if (row.carriedIn !== 0) {
+                  <div class="sc-row">
+                    <span class="sc-label">{{ 'saSalary.carriedOver' | t }}</span>
+                    <span class="font-mono" [class.text-danger]="row.carriedIn > 0" [class.text-success]="row.carriedIn < 0">{{ row.carriedIn > 0 ? '+' : '' }}{{ signedMoney(row.carriedIn) }}</span>
+                  </div>
+                }
                 <div class="sc-row">
                   <span class="sc-label">{{ 'saSalary.advance' | t }}</span>
                   <span class="font-mono" [class.text-danger]="row.advanceDeduction > 0">
@@ -233,7 +297,9 @@
                 </div>
               </div>
 
-              @if (row.balance <= 0) {
+              @if (row.balance < 0) {
+                <p class="pay-now-note" (click)="$event.stopPropagation()">{{ 'saSalary.aheadNote' | t:{ amount: ((abs(row.balance) | number) ?? '') } }}</p>
+              } @else if (row.balance <= 0) {
                 <p class="pay-now-note" (click)="$event.stopPropagation()">{{ 'saSalary.fullyPaidMonth' | t }}</p>
               } @else if (row.upiId) {
                 @if (payConfirmMode() === 'none') {

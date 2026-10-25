@@ -28,9 +28,11 @@ export class SalaryService {
   // Returns the recomputed row (payable/balance etc.) — not the full detail
   // (no reimbursements/payouts list); re-fetch detail() after this if that's
   // being displayed.
-  recordPayout(employeeId: string, year: number, month: number, amount: number, note?: string): Promise<SalaryRow> {
+  // `carryOver: true` is for a custom amount: the difference from the balance is carried to
+  // next month. Without it, the server only accepts a payment up to what's currently owed.
+  recordPayout(employeeId: string, year: number, month: number, amount: number, note?: string, carryOver?: boolean): Promise<SalaryRow> {
     return firstValueFrom(
-      this.http.post<{ salary: SalaryRow }>(`${this.base}/${employeeId}/pay`, { year, month, amount, note }),
+      this.http.post<{ salary: SalaryRow }>(`${this.base}/${employeeId}/pay`, { year, month, amount, note, ...(carryOver ? { carryOver: true } : {}) }),
     ).then(r => r.salary);
   }
 }

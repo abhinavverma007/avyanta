@@ -29,5 +29,10 @@
   "salary.month.9": "September",
   "salary.month.10": "October",
   "salary.month.11": "November",
-  "salary.month.12": "December"
+  "salary.month.12": "December",
+  "salary.aheadOfPay": "Paid ahead — recovered next month",
+  "salary.carriedInPlus": "Carried over from last month: +₹{amount} (still owed to you)",
+  "salary.carriedInMinus": "Carried over from last month: −₹{amount} (you were paid ahead — being recovered)",
+  "salary.carriedToNext": "carried ₹{amount} to next month",
+  "salary.carriedToNextNeg": "paid ₹{amount} extra — recovered next month"
 }

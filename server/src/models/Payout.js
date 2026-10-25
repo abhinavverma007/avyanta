@@ -12,9 +12,16 @@ const payoutSchema = new mongoose.Schema(
     employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
     year: { type: Number, required: true },
     month: { type: Number, required: true }, // 1-12
-    amount: { type: Number, required: true, min: 0.01 },
+    // 0 is allowed only for a payment that carries the whole amount to next month (see carryForward).
+    amount: { type: Number, required: true, min: 0 },
     paidAt: { type: Date, required: true },
     note: { type: String, default: '' },
+    // Set only when the owner paid a custom amount instead of the full balance. What was
+    // left over after this payment, carried into the NEXT month's balance: positive = still
+    // owed to the employee (paid less than the balance), negative = paid more than was owed
+    // (to be recovered from next month). Absent/0 on every normal payout — i.e. every
+    // payout that exists today — so those behave exactly as before.
+    carryForward: { type: Number, default: 0 },
   },
   { timestamps: true },
 );
