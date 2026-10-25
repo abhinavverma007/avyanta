@@ -18,7 +18,7 @@
           <select class="form-control" [ngModel]="clientId()" (ngModelChange)="clientId.set($event)">
             <option value="">{{ 'saTaskForm.titlePh' | t }}</option>
             @for (c of clients(); track c.id) {
-              <option [value]="c.id">{{ c.name }} — {{ c.vendorName }}</option>
+              <option [value]="c.id">{{ c.clientCode }} — {{ c.vendorName }}</option>
             }
           </select>
           @if (isEditMode() && !clientId() && title()) {

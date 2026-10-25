@@ -13,6 +13,7 @@ router.use(adminAuth);
 router.get('/', asyncHandler(ctrl.list));
 router.post('/', asyncHandler(ctrl.create));
 router.get('/:id/history', asyncHandler(ctrl.history));
+router.get('/:id', asyncHandler(ctrl.getOne));
 router.patch('/:id', asyncHandler(ctrl.update));
 router.delete('/:id', asyncHandler(ctrl.remove));
 

@@ -1,0 +1,140 @@
+<div class="page fade-in">
+  <button type="button" class="btn btn-ghost btn-sm back-btn" (click)="goBack()">{{ 'saClients.backToClients' | t }}</button>
+
+  <div class="page-header">
+    <h1 class="page-title">
+      {{ (isEdit() ? 'saClients.editTitle' : 'saClients.addTitle') | t }}
+      @if (isEdit() && clientCode()) { <span class="client-code font-mono">{{ clientCode() }}</span> }
+    </h1>
+    <p class="page-sub">{{ (isEdit() ? 'saClients.editSub' : 'saClients.addSub') | t }}</p>
+  </div>
+
+  @if (loadingClient()) {
+    <div class="card card-padded"><p class="empty-note">{{ 'saClients.loading' | t }}</p></div>
+  } @else if (loadError()) {
+    <div class="card card-padded"><p class="error-msg">{{ loadError() }}</p></div>
+  } @else {
+    <div class="card card-padded form-panel fade-in">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">{{ 'saClients.clientName' | t }}</label>
+          <input
+            class="form-control"
+            maxlength="120"
+            [placeholder]="'saClients.clientPh' | t"
+            [value]="name()"
+            (input)="name.set($any($event.target).value)"
+            (keyup.enter)="save()"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'saClients.vendorName' | t }}</label>
+          <input
+            class="form-control"
+            maxlength="120"
+            [placeholder]="'saClients.vendorPh' | t"
+            [value]="vendorName()"
+            (input)="vendorName.set($any($event.target).value)"
+            (keyup.enter)="save()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ 'saClients.mobile' | t }}</label>
+          <input
+            class="form-control"
+            type="tel"
+            inputmode="tel"
+            maxlength="24"
+            [placeholder]="'saClients.mobilePh' | t"
+            [value]="mobileNumber()"
+            (input)="mobileNumber.set($any($event.target).value)"
+            (keyup.enter)="save()"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'saClients.email' | t }}</label>
+          <input
+            class="form-control"
+            type="email"
+            maxlength="254"
+            [placeholder]="'saClients.emailPh' | t"
+            [value]="email()"
+            (input)="email.set($any($event.target).value)"
+            (keyup.enter)="save()"
+          />
+        </div>
+        <div class="form-group span-2">
+          <label class="form-label">{{ 'saClients.address' | t }}</label>
+          <textarea
+            class="form-control"
+            rows="2"
+            maxlength="500"
+            [placeholder]="'saClients.addressPh' | t"
+            [value]="address()"
+            (input)="onAddressInput($any($event.target).value)"
+          ></textarea>
+          @if (geocoding()) {
+            <p class="map-hint">{{ 'saClients.finding' | t }}</p>
+          } @else if (geocodeNote()) {
+            <p class="map-hint">{{ msg(geocodeNote()) }}</p>
+          }
+        </div>
+        <div class="form-group span-2">
+          <div class="map-label-row">
+            <label class="form-label">{{ 'saClients.mapLabel' | t }}</label>
+            <div class="map-label-actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="picker.useMyLocation()">📍 {{ 'saClients.useMyLocation' | t }}</button>
+              @if (addressLocation()) {
+                <button type="button" class="btn btn-ghost btn-sm" (click)="clearMapLocation()">{{ 'saClients.clearPin' | t }}</button>
+              }
+            </div>
+          </div>
+          <app-location-picker #picker [location]="addressLocation()" [editable]="true" (locationChange)="onMapLocation($event)" />
+          <p class="map-hint">{{ 'saClients.mapHint' | t }}</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ 'saClients.wifiEmail' | t }}</label>
+          <input
+            class="form-control"
+            type="email"
+            maxlength="254"
+            autocomplete="off"
+            [placeholder]="'saClients.wifiEmailPh' | t"
+            [value]="wifiEmail()"
+            (input)="wifiEmail.set($any($event.target).value)"
+            (keyup.enter)="save()"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ 'saClients.wifiPassword' | t }}</label>
+          <div class="password-row">
+            <input
+              class="form-control"
+              [type]="showPassword() ? 'text' : 'password'"
+              maxlength="200"
+              autocomplete="new-password"
+              [placeholder]="'saClients.wifiPasswordPh' | t"
+              [value]="wifiPassword()"
+              (input)="wifiPassword.set($any($event.target).value)"
+              (keyup.enter)="save()"
+            />
+            <button type="button" class="btn btn-ghost btn-sm" (click)="showPassword.set(!showPassword())">
+              {{ (showPassword() ? 'saClients.hide' : 'saClients.show') | t }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      @if (formError()) { <p class="error-msg">{{ formError() }}</p> }
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" [disabled]="saving()" (click)="goBack()">{{ 'saClients.cancel' | t }}</button>
+        <button class="btn btn-blue" [disabled]="saving()" (click)="save()">
+          {{ (saving() ? 'saClients.saving' : (isEdit() ? 'saClients.save' : 'saClients.add')) | t }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

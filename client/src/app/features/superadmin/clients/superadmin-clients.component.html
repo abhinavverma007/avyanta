@@ -1,46 +1,10 @@
 <div class="page fade-in">
   <div class="page-header">
-    <h1 class="page-title">{{ 'saClients.title' | t }}</h1>
+    <div class="page-header-row">
+      <h1 class="page-title">{{ 'saClients.title' | t }}</h1>
+      <a class="btn btn-blue" [routerLink]="['/superadmin/clients/new']">{{ 'saClients.addButton' | t }}</a>
+    </div>
     <p class="page-sub">{{ 'saClients.sub' | t }}</p>
-  </div>
-
-  <div class="card card-padded form-panel">
-    <h2 class="panel-title">{{ (editingId() ? 'saClients.editTitle' : 'saClients.addTitle') | t }}</h2>
-    <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label">{{ 'saClients.clientName' | t }}</label>
-        <input
-          class="form-control"
-          maxlength="120"
-          [placeholder]="'saClients.clientPh' | t"
-          [value]="name()"
-          (input)="name.set($any($event.target).value)"
-          (keyup.enter)="save()"
-        />
-      </div>
-      <div class="form-group">
-        <label class="form-label">{{ 'saClients.vendorName' | t }}</label>
-        <input
-          class="form-control"
-          maxlength="120"
-          [placeholder]="'saClients.vendorPh' | t"
-          [value]="vendorName()"
-          (input)="vendorName.set($any($event.target).value)"
-          (keyup.enter)="save()"
-        />
-      </div>
-    </div>
-
-    @if (formError()) { <p class="error-msg">{{ formError() }}</p> }
-
-    <div class="form-actions">
-      @if (editingId()) {
-        <button class="btn btn-ghost" (click)="cancelEdit()">{{ 'saClients.cancel' | t }}</button>
-      }
-      <button class="btn btn-blue" [disabled]="saving()" (click)="save()">
-        {{ (saving() ? 'saClients.saving' : (editingId() ? 'saClients.save' : 'saClients.add')) | t }}
-      </button>
-    </div>
   </div>
 
   <div class="search-row">
@@ -67,10 +31,36 @@
     } @else {
       <div class="client-list">
         @for (c of filtered(); track c.id) {
-          <div class="client-row" [class.editing]="editingId() === c.id">
+          <div class="client-row">
             <div class="client-main">
-              <span class="client-name">{{ c.name }}</span>
+              <span class="client-name"><span class="client-code font-mono">{{ c.clientCode }}</span> {{ c.name }}</span>
               <span class="client-vendor">{{ 'saClients.vendorLine' | t:{ vendor: c.vendorName } }}</span>
+              @if (c.mobileNumber) {
+                <span class="client-detail">{{ 'saClients.lineMobile' | t }}: <a class="detail-link" [href]="'tel:' + c.mobileNumber">{{ c.mobileNumber }}</a></span>
+              }
+              @if (c.email) {
+                <span class="client-detail">{{ 'saClients.lineEmail' | t }}: <a class="detail-link" [href]="'mailto:' + c.email">{{ c.email }}</a></span>
+              }
+              @if (c.address) {
+                <span class="client-detail">
+                  {{ 'saClients.lineAddress' | t }}: {{ c.address }}
+                  @if (c.addressLocation; as loc) {
+                    · <a class="detail-link" target="_blank" rel="noopener noreferrer"
+                         [href]="'https://www.openstreetmap.org/?mlat=' + loc.lat + '&mlon=' + loc.lng + '#map=17/' + loc.lat + '/' + loc.lng">📍 {{ 'saClients.viewOnMap' | t }}</a>
+                  }
+                </span>
+              }
+              @if (c.wifiEmail || c.wifiPassword) {
+                <span class="client-detail client-wifi">
+                  {{ 'saClients.lineWifi' | t }}:
+                  @if (c.wifiEmail) { {{ c.wifiEmail }} }
+                  @if (c.wifiPassword) {
+                    · {{ 'saClients.linePassword' | t }}:
+                    <span class="font-mono">{{ revealedWifi().has(c.id) ? c.wifiPassword : '••••••••' }}</span>
+                    <button type="button" class="detail-toggle" (click)="toggleWifi(c.id)">{{ (revealedWifi().has(c.id) ? 'saClients.hide' : 'saClients.show') | t }}</button>
+                  }
+                </span>
+              }
               <span class="client-tasks">
                 {{ (c.taskCount === 1 ? 'saClients.tasksOne' : 'saClients.tasksMany') | t:{ n: c.taskCount } }}
                 @if (c.lastServiced) { · {{ 'saClients.lastServiced' | t:{ date: (c.lastServiced | date:'d MMM y') } }} }
@@ -93,7 +83,7 @@
             } @else {
               <div class="client-actions">
                 <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/clients', c.id, 'history']">{{ 'saClients.history' | t }}</a>
-                <button class="btn btn-ghost btn-sm" (click)="startEdit(c)">{{ 'saClients.edit' | t }}</button>
+                <a class="btn btn-ghost btn-sm" [routerLink]="['/superadmin/clients', c.id, 'edit']">{{ 'saClients.edit' | t }}</a>
                 <button class="btn btn-ghost btn-sm" (click)="askDelete(c.id)">{{ 'saClients.delete' | t }}</button>
               </div>
             }

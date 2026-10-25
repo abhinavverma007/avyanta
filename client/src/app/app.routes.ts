@@ -231,6 +231,18 @@ export const routes: Routes = [
           import('./features/superadmin/clients/superadmin-clients.component').then(m => m.SuperadminClientsComponent),
       },
       {
+        path: 'clients/new',
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/clients/superadmin-client-form.component').then(m => m.SuperadminClientFormComponent),
+      },
+      {
+        path: 'clients/:id/edit',
+        canActivate: [adminAuthGuard],
+        loadComponent: () =>
+          import('./features/superadmin/clients/superadmin-client-form.component').then(m => m.SuperadminClientFormComponent),
+      },
+      {
         path: 'clients/:id/history',
         canActivate: [adminAuthGuard],
         loadComponent: () =>

@@ -3,7 +3,7 @@
 
   @if (data(); as d) {
     <div class="page-header">
-      <h1 class="page-title">{{ d.client.name }}</h1>
+      <h1 class="page-title">{{ d.client.name }} <span class="client-code font-mono">{{ d.client.clientCode }}</span></h1>
       <p class="page-sub">{{ 'saClients.vendorLine' | t:{ vendor: d.client.vendorName } }} · {{ 'saClients.historyTitle' | t }}</p>
     </div>
 
