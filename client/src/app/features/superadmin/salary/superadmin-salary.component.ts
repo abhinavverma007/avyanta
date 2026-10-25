@@ -1,10 +1,12 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TPipe } from '../../../core/i18n/t.pipe';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SalaryService } from '../../../core/services/salary.service';
+import { AdminAuthService } from '../../../core/services/admin-auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { SalaryDetail, SalaryRow } from '../../../core/models/reimbursement.model';
 
 // Card view (mobile) only — the laptop table shows every matching row with
@@ -35,6 +37,11 @@ export class SuperadminSalaryComponent implements OnInit {
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
   readonly years: number[];
+
+  // The name opens that employee's attendance history — but that page needs the Employees
+  // permission, so a Salary-only Supervisor/Manager just sees the name as plain text.
+  readonly canOpenAttendance =
+    inject(AdminAuthService).isAuthenticated() || !!inject(AuthService).user()?.role?.permissions?.employees;
 
   year = signal(new Date().getFullYear());
   month = signal(new Date().getMonth() + 1);

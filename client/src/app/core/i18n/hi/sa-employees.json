@@ -130,5 +130,9 @@
   "saEmpAtt.overridePercent": "गिना जाएगा",
   "saEmpAtt.fullDay": "पूरा दिन",
   "saEmpAtt.halfDay": "आधा दिन",
-  "saEmpAtt.percentHint": "चेक-आउट अपने आप बदलता है (पूरा दिन 8 घंटे 30 मिनट)। समय आप खुद भी बदल सकते हैं।"
+  "saEmpAtt.percentHint": "चेक-आउट अपने आप बदलता है (पूरा दिन 8 घंटे 30 मिनट)। समय आप खुद भी बदल सकते हैं।",
+  "saEmpAtt.switchPh": "दूसरा कर्मचारी चुनें — नाम लिखें",
+  "saEmpAtt.switchNone": "कोई कर्मचारी नहीं मिला",
+  "saEmpAtt.switchSearching": "खोज रहे हैं…",
+  "saEmpAtt.switchInactive": "निष्क्रिय"
 }

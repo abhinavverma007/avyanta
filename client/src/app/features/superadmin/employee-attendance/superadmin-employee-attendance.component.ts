@@ -1,12 +1,15 @@
-import { Component, HostListener, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AdminAttendanceService } from '../../../core/services/admin-attendance.service';
 import { AdminLeaveService } from '../../../core/services/admin-leave.service';
 import { AdminReimbursementService } from '../../../core/services/admin-reimbursement.service';
 import { AdminSalaryAdvanceService } from '../../../core/services/admin-salary-advance.service';
 import { AdminTaskService } from '../../../core/services/admin-task.service';
+import { AdminEmployeeService } from '../../../core/services/admin-employee.service';
+import { AdminEmployee } from '../../../core/models/admin.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { API_SCOPE } from '../../../core/tokens/api-scope';
 import { AdminLeave } from '../../../core/models/leave.model';
@@ -29,7 +32,7 @@ type PageTab = 'attendance' | HistoryTab;
   templateUrl: './superadmin-employee-attendance.component.html',
   styleUrl: './superadmin-employee-attendance.component.scss',
 })
-export class SuperadminEmployeeAttendanceComponent implements OnInit {
+export class SuperadminEmployeeAttendanceComponent implements OnInit, OnDestroy {
   readonly DOW = ['saEmpAtt.dow.sun', 'saEmpAtt.dow.mon', 'saEmpAtt.dow.tue', 'saEmpAtt.dow.wed', 'saEmpAtt.dow.thu', 'saEmpAtt.dow.fri', 'saEmpAtt.dow.sat'];
   readonly i18n = inject(I18nService);
   readonly today = new Date();
@@ -78,6 +81,17 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit {
   // tabs — no need to hit the server again for a tab already fetched.
   private loadedTabs = new Set<HistoryTab>();
 
+  // "Switch employee" — look at another employee's data without going back to the
+  // Employees list: pick them here and this same page reloads for them, keeping the
+  // month and tab you were on.
+  switchQuery = signal('');
+  switchResults = signal<AdminEmployee[]>([]);
+  switchOpen = signal(false);
+  switchLoading = signal(false);
+  private switchDebounce?: ReturnType<typeof setTimeout>;
+  private switchSeq = 0;
+  private paramSub?: Subscription;
+
   leaves = signal<AdminLeave[]>([]);
   reimbursements = signal<AdminReimbursement[]>([]);
   advances = signal<AdminSalaryAdvance[]>([]);
@@ -106,11 +120,86 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit {
     private reimbursementService: AdminReimbursementService,
     private advanceService: AdminSalaryAdvanceService,
     private taskService: AdminTaskService,
+    private employeeService: AdminEmployeeService,
+    private router: Router,
   ) {}
 
+  // Subscribed (not read once): switching employee only changes the :id, and Angular
+  // reuses this component for that, so ngOnInit wouldn't run again.
   ngOnInit(): void {
-    this.employeeId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.loadMonth();
+    this.paramSub = this.route.paramMap.subscribe(pm => {
+      this.employeeId = pm.get('id') ?? '';
+      this.resetForEmployee();
+      this.loadMonth();
+      const tab = this.tab();
+      if (tab !== 'attendance') this.loadHistory(tab);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.paramSub?.unsubscribe();
+    clearTimeout(this.switchDebounce);
+  }
+
+  // Clear everything that belonged to the previous employee, so nothing of theirs is
+  // shown (or edited) under the new one's name. The viewed month and tab are kept.
+  private resetForEmployee(): void {
+    this.selectedDay.set(null);
+    this.monthlyData.set(null);
+    this.loadedTabs.clear();
+    this.leaves.set([]);
+    this.reimbursements.set([]);
+    this.advances.set([]);
+    this.tasks.set([]);
+    this.editError.set('');
+  }
+
+  onSwitchFocus(): void {
+    this.switchOpen.set(true);
+    if (this.switchResults().length === 0) this.searchSwitch(this.switchQuery());
+  }
+
+  onSwitchInput(value: string): void {
+    this.switchQuery.set(value);
+    this.switchOpen.set(true);
+    clearTimeout(this.switchDebounce);
+    this.switchLoading.set(true);
+    this.switchDebounce = setTimeout(() => this.searchSwitch(value), 300);
+  }
+
+  // A slow earlier search must never overwrite the results of a newer one.
+  private searchSwitch(search: string): void {
+    const seq = ++this.switchSeq;
+    this.switchLoading.set(true);
+    this.employeeService
+      .list({ search, limit: 8 })
+      .then(res => {
+        if (seq !== this.switchSeq) return;
+        this.switchResults.set(res.employees.filter(e => e.id !== this.employeeId));
+      })
+      .catch(() => {
+        if (seq === this.switchSeq) this.switchResults.set([]);
+      })
+      .finally(() => {
+        if (seq === this.switchSeq) this.switchLoading.set(false);
+      });
+  }
+
+  // Closed on a short delay so a click on a result lands before the input's blur hides the list.
+  onSwitchBlur(): void {
+    setTimeout(() => this.switchOpen.set(false), 150);
+  }
+
+  pickFirstEmployee(): void {
+    const first = this.switchResults()[0];
+    if (first) this.pickEmployee(first);
+  }
+
+  pickEmployee(emp: AdminEmployee): void {
+    this.switchOpen.set(false);
+    this.switchQuery.set('');
+    this.switchResults.set([]);
+    this.router.navigate(['/superadmin/employees', emp.id, 'attendance']);
   }
 
   setTab(tab: PageTab): void {
@@ -122,27 +211,33 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit {
   private loadHistory(tab: HistoryTab): void {
     if (this.loadedTabs.has(tab)) return;
     this.historyLoading.set(true);
+    // If the owner switches employee while this is in flight, the late answer belongs to
+    // the previous employee and must be dropped.
+    const id = this.employeeId;
     const done = () => {
       this.loadedTabs.add(tab);
       this.historyLoading.set(false);
     };
+    const current = () => id === this.employeeId;
 
     if (tab === 'leave') {
-      this.leaveService.list(undefined, this.employeeId).then(rows => { this.leaves.set(rows); done(); });
+      this.leaveService.list(undefined, id).then(rows => { if (!current()) return; this.leaves.set(rows); done(); });
     } else if (tab === 'reimbursement') {
-      this.reimbursementService.list(undefined, this.employeeId).then(rows => { this.reimbursements.set(rows); done(); });
+      this.reimbursementService.list(undefined, id).then(rows => { if (!current()) return; this.reimbursements.set(rows); done(); });
     } else if (tab === 'advance') {
-      this.advanceService.list(undefined, this.employeeId).then(rows => { this.advances.set(rows); done(); });
+      this.advanceService.list(undefined, id).then(rows => { if (!current()) return; this.advances.set(rows); done(); });
     } else {
-      this.taskService.list({ employeeId: this.employeeId, limit: 100 }).then(res => { this.tasks.set(res.tasks); done(); });
+      this.taskService.list({ employeeId: id, limit: 100 }).then(res => { if (!current()) return; this.tasks.set(res.tasks); done(); });
     }
   }
 
   loadMonth(): Promise<void> {
     this.loading.set(true);
+    const id = this.employeeId;
     return this.attendanceService
-      .getMonthly(this.employeeId, this.viewYear(), this.viewMonth())
+      .getMonthly(id, this.viewYear(), this.viewMonth())
       .then(data => {
+        if (id !== this.employeeId) return; // the owner switched employee meanwhile — drop it
         this.monthlyData.set(data);
         this.loading.set(false);
       });

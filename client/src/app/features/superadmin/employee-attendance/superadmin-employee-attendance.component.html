@@ -13,6 +13,41 @@
     </div>
   </div>
 
+  <!-- Switch to another employee without going back to the Employees list -->
+  <div class="employee-switch">
+    <input
+      class="form-control"
+      type="search"
+      autocomplete="off"
+      [placeholder]="'saEmpAtt.switchPh' | t"
+      [value]="switchQuery()"
+      (input)="onSwitchInput($any($event.target).value)"
+      (focus)="onSwitchFocus()"
+      (blur)="onSwitchBlur()"
+      (keydown.enter)="pickFirstEmployee()"
+      (keydown.escape)="switchOpen.set(false)"
+    />
+    @if (switchOpen()) {
+      <div class="switch-menu" role="listbox">
+        @if (switchLoading() && switchResults().length === 0) {
+          <p class="switch-note">{{ 'saEmpAtt.switchSearching' | t }}</p>
+        } @else if (switchResults().length === 0) {
+          <p class="switch-note">{{ 'saEmpAtt.switchNone' | t }}</p>
+        } @else {
+          @for (e of switchResults(); track e.id) {
+            <button type="button" class="switch-item" role="option" (mousedown)="pickEmployee(e); $event.preventDefault()">
+              <span class="switch-name">{{ e.name }}</span>
+              <span class="switch-meta">
+                {{ e.employeeId }}
+                @if (!e.isActive) { · {{ 'saEmpAtt.switchInactive' | t }} }
+              </span>
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+
   @if (tabOptions.length > 1) {
     <div class="section-switcher">
       @for (opt of tabOptions; track opt.value) {

@@ -196,7 +196,11 @@
             @for (row of filteredRows(); track row.employeeId) {
               <tr class="row-clickable" (click)="toggleDetail(row)">
                 <td>
-                  <div class="emp-name">{{ row.name }}</div>
+                  @if (canOpenAttendance) {
+                    <a class="emp-name emp-link" [routerLink]="['/superadmin/employees', row.employeeId, 'attendance']" (click)="$event.stopPropagation()">{{ row.name }}</a>
+                  } @else {
+                    <div class="emp-name">{{ row.name }}</div>
+                  }
                   <div class="emp-sub">{{ row.employeeCode }} · {{ row.department || '—' }}</div>
                 </td>
                 <td class="font-mono">₹{{ row.baseSalary | number }}</td>
@@ -247,7 +251,11 @@
           <div class="salary-card" (click)="toggleDetail(row)">
             <div class="sc-header">
               <div>
-                <div class="emp-name">{{ row.name }}</div>
+                @if (canOpenAttendance) {
+                    <a class="emp-name emp-link" [routerLink]="['/superadmin/employees', row.employeeId, 'attendance']" (click)="$event.stopPropagation()">{{ row.name }}</a>
+                  } @else {
+                    <div class="emp-name">{{ row.name }}</div>
+                  }
                 <div class="emp-sub">{{ row.employeeCode }} · {{ row.department || '—' }}</div>
               </div>
               <div class="sc-header-actions">

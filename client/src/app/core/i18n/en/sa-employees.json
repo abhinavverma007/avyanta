@@ -130,5 +130,9 @@
   "saEmpAtt.overridePercent": "Counts as",
   "saEmpAtt.fullDay": "Full day",
   "saEmpAtt.halfDay": "Half day",
-  "saEmpAtt.percentHint": "Check-out adjusts to match (a full day is 8h 30m). You can still edit the times."
+  "saEmpAtt.percentHint": "Check-out adjusts to match (a full day is 8h 30m). You can still edit the times.",
+  "saEmpAtt.switchPh": "Switch employee — type a name",
+  "saEmpAtt.switchNone": "No employees found",
+  "saEmpAtt.switchSearching": "Searching…",
+  "saEmpAtt.switchInactive": "Inactive"
 }

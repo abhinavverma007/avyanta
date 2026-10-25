@@ -77,12 +77,6 @@ export class SuperadminEmployeesComponent implements OnInit {
       });
   }
 
-  // Tapping anywhere on a card opens that employee's attendance history; only
-  // the arrow expands the details (the Profile button is still in the expanded card).
-  openAttendance(id: string): void {
-    this.router.navigate(this.attendancePath(id));
-  }
-
   toggleExpand(id: string): void {
     this.expandedId.update(cur => (cur === id ? null : id));
   }
