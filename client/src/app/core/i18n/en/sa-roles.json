@@ -53,5 +53,6 @@
   "saAudit.delegated": "Delegated",
   "saAudit.prev": "← Prev",
   "saAudit.next": "Next →",
-  "saAudit.pageOf": "Page {page} of {total}"
+  "saAudit.pageOf": "Page {page} of {total}",
+  "saAudit.system": "System"
 }

@@ -46,5 +46,7 @@
   "attendance.overridden": "Set by owner",
   "attendance.overriddenNote": "This day was set by the owner, not from a live punch.",
   "attendance.partial": "Partial day",
-  "attendance.percentNote": "Counts as {pct}% of a day — the rest is unpaid."
+  "attendance.percentNote": "Counts as {pct}% of a day — the rest is unpaid.",
+  "attendance.systemAbsentNote": "Marked absent: you punched in but didn't submit your daily work report before the day ended. Ask the owner if this is a mistake.",
+  "attendance.noReportAbsent": "Absent — no daily report"
 }

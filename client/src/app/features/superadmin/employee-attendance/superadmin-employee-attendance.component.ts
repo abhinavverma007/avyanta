@@ -285,8 +285,10 @@ export class SuperadminEmployeeAttendanceComponent implements OnInit, OnDestroy 
   private resetEditor(day: DayAttendance): void {
     // The day's own status isn't offered again (except Present, whose times can be edited), so always start on Present.
     this.editStatus.set('present');
-    this.editIn.set(day.status === 'present' && day.checkIn ? day.checkIn : '09:30');
-    this.editOut.set(day.status === 'present' && day.checkOut ? day.checkOut : '18:00');
+    // (a day the system marked absent for a missing report starts from its original punch times)
+    const hasTimes = day.status === 'present' || !!day.systemAbsent;
+    this.editIn.set(hasTimes && day.checkIn ? day.checkIn : '09:30');
+    this.editOut.set(hasTimes && day.checkOut ? day.checkOut : '18:00');
     this.editPercent.set(day.status === 'present' && day.percent ? day.percent : 100);
     this.editReason.set('');
     this.editError.set('');

@@ -46,5 +46,7 @@
   "attendance.overridden": "मालिक ने तय किया",
   "attendance.overriddenNote": "इस दिन की हाज़िरी मालिक ने तय की है, सीधे पंच से नहीं।",
   "attendance.partial": "आंशिक दिन",
-  "attendance.percentNote": "दिन का {pct}% गिना गया — बाकी बिना वेतन।"
+  "attendance.percentNote": "दिन का {pct}% गिना गया — बाकी बिना वेतन।",
+  "attendance.systemAbsentNote": "ग़ैरहाज़िर गिना गया: आपने पंच-इन किया पर दिन खत्म होने से पहले अपनी दैनिक काम रिपोर्ट नहीं भरी। अगर यह गलती है तो मालिक से कहें।",
+  "attendance.noReportAbsent": "ग़ैरहाज़िर — रिपोर्ट नहीं भरी"
 }

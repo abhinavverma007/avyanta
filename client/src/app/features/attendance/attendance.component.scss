@@ -308,3 +308,7 @@
   .day-num, .day-icon { color: #fff; text-shadow: 0 0 3px rgba(0, 0, 0, 0.6); }
 }
 .ld.partial { background: linear-gradient(to top, #16A34A 50%, #FEE2E2 50%); border: 1px solid var(--border); }
+
+/* A day the system marked absent because the daily work report wasn't submitted */
+.day-cell.status-absent .day-icon.sys { color: var(--danger); font-size: 0.625rem; font-weight: 700; }
+.ld.sysabsent { display: inline-flex; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 0.5rem; font-weight: 700; line-height: 1; border-radius: 2px; }
