@@ -25,10 +25,10 @@
 
     @if (missing().length > 0) {
       <div class="card card-padded missing">
-        <h2 class="missing-title">{{ 'dailyReport.owner.missingTitle' | t:{ n: missing().length } }}</h2>
+        <h2 class="missing-title">{{ (isPast() ? 'dailyReport.owner.markedAbsentTitle' : 'dailyReport.owner.missingTitle') | t:{ n: missing().length } }}</h2>
         <div class="missing-chips">
           @for (e of missing(); track e.id) {
-            <span class="missing-chip">{{ e.name }} <small>{{ e.employeeId }}</small></span>
+            <span class="missing-chip" [class.absent]="e.markedAbsent">{{ e.name }} <small>{{ e.employeeId }}</small></span>
           }
         </div>
       </div>

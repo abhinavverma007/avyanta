@@ -20,6 +20,14 @@ const attendanceSchema = new mongoose.Schema(
     status: { type: String, enum: ['present'], default: 'present' },
     sessions: { type: [sessionSchema], default: [] },
     lateBy: { type: Number }, // minutes, measured against the first punch-in of the day
+    // Set by the end-of-day check when the employee punched in but never submitted their daily
+    // work report. The punch stays on record (so it can be restored), but the day counts as
+    // ABSENT everywhere — calendars, salary, summaries. Only the owner can undo it, by setting
+    // the day to Present (which clears this). Absent on every other record.
+    voided: {
+      at: { type: Date },
+      reason: { type: String, enum: ['no_daily_report'] },
+    },
     // Share of the day that counts as worked, 1-99 — only ever set by the owner
     // (a half day is 50). Absent means a full day, so every existing record is unchanged.
     percent: { type: Number, min: 1, max: 100 },

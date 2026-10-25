@@ -46,15 +46,17 @@ exports.missing = async (req, res) => {
   if (!DATE_RE.test(date)) return res.status(400).json({ message: 'date must be in YYYY-MM-DD format.' });
 
   const [attendance, reports] = await Promise.all([
-    Attendance.find({ date }, 'employee').lean(),
+    Attendance.find({ date }, 'employee voided').lean(),
     DailyReport.find({ date }, 'employee').lean(),
   ]);
   const reported = new Set(reports.map((r) => String(r.employee)));
   const missingIds = attendance.map((a) => String(a.employee)).filter((id) => !reported.has(id));
+  // For a finished day these are the people the end-of-day check marked absent.
+  const markedAbsent = new Set(attendance.filter((a) => a.voided && a.voided.at).map((a) => String(a.employee)));
 
   const employees = await Employee.find({ _id: { $in: missingIds }, isActive: true }, 'name employeeId').sort({ name: 1 }).lean();
   res.json({
     date,
-    employees: employees.map((e) => ({ id: e._id.toString(), name: e.name, employeeId: e.employeeId })),
+    employees: employees.map((e) => ({ id: e._id.toString(), name: e.name, employeeId: e.employeeId, markedAbsent: markedAbsent.has(String(e._id)) })),
   });
 };

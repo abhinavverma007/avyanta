@@ -12,6 +12,7 @@ export interface DayAttendance {
   lateBy?: number;     // minutes
   reason?: string;     // leave reason, present when status is 'leave' or 'pending'
   percent?: number;      // partial day: share of the day that counts (1-99), set by the owner
+  systemAbsent?: boolean; // marked absent by the system: punched in but never submitted that day's daily report
   overridden?: boolean;  // the owner set this day by hand
   regularized?: boolean; // present day whose times came from an approved attendance-fix request, not a live punch
 }

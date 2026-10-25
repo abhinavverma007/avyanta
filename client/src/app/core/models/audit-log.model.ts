@@ -1,6 +1,6 @@
 export interface AuditLogEntry {
   id: string;
-  actorType: 'admin' | 'employee';
+  actorType: 'admin' | 'employee' | 'system';
   actorId: string;
   actorName: string;
   action: string;

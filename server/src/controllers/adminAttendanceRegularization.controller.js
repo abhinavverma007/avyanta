@@ -47,6 +47,8 @@ exports.review = (status) => async (req, res) => {
   if (rejectSelfReview(req, res, request.employee._id)) return;
 
   if (status === 'approved') {
+    const voided = await Attendance.findOne({ employee: request.employee._id, date: request.date, 'voided.at': { $exists: true } }, '_id').lean();
+    if (voided) return res.status(409).json({ message: 'That day was marked absent because the daily work report was not submitted — only the owner can restore it.' });
     const checkIn = istToDate(request.date, request.requestedCheckIn);
     const checkOut = istToDate(request.date, request.requestedCheckOut);
     const [h, m] = request.requestedCheckIn.split(':').map(Number);
@@ -102,6 +104,7 @@ exports.override = async (req, res) => {
 
   // Checked before anything is written, so a refusal leaves everything as it was.
   if (targetStatus === 'approved') {
+    if (existing && existing.voided && existing.voided.at) return res.status(409).json({ message: 'That day was marked absent because the daily work report was not submitted — only the owner can restore it.' });
     // Same guard the employee hits when applying — never overwrite a real punch.
     if (existing?.sessions.some((s) => s.checkOut)) {
       return res.status(409).json({ message: `${request.date} already has attendance recorded — nothing to regularize.` });

@@ -44,3 +44,4 @@
 
 @media (max-width: 640px) { .row-label { flex-basis: 100%; } }
 .message { white-space: pre-wrap; }
+.missing-chip.absent { border-color: var(--danger); background: var(--danger-bg); }

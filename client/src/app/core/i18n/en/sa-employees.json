@@ -134,5 +134,8 @@
   "saEmpAtt.switchPh": "Switch employee — type a name",
   "saEmpAtt.switchNone": "No employees found",
   "saEmpAtt.switchSearching": "Searching…",
-  "saEmpAtt.switchInactive": "Inactive"
+  "saEmpAtt.switchInactive": "Inactive",
+  "saEmpAtt.systemAbsentNote": "Marked absent by the system: they punched in but didn't submit their daily work report before the day ended. Restore it below if that's wrong.",
+  "saEmpAtt.systemAbsentWas": "Punched in {from}, out {to} (kept on record).",
+  "saEmpAtt.noReportAbsent": "Absent — no daily report"
 }

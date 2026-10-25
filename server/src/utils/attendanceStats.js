@@ -88,6 +88,14 @@ async function computeMonthlyAttendance(employee, year, month, { markRegularized
     const dateStr = `${year}-${pad(month)}-${pad(d)}`;
 
     const rec = byDate.get(dateStr);
+    if (rec && rec.voided && rec.voided.at) {
+      // Punched in, but never submitted that day's daily report: the end-of-day check voided it.
+      // It is absent for every purpose (salary, summaries, calendars); the original punch times
+      // are kept on the day so the owner can see what is being restored.
+      const was = toDayAttendance(rec);
+      days.push({ date: dateStr, status: 'absent', systemAbsent: true, checkIn: was.checkIn, checkOut: was.checkOut, workHours: was.workHours });
+      continue;
+    }
     if (rec) {
       const day = toDayAttendance(rec);
       // An owner-set day's times no longer come from the request, so it isn't "fixed via request".

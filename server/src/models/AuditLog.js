@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 // own entries in it.
 const auditLogSchema = new mongoose.Schema(
   {
-    actorType: { type: String, enum: ['admin', 'employee'], required: true },
+    actorType: { type: String, enum: ['admin', 'employee', 'system'], required: true },
     actorId: { type: mongoose.Schema.Types.ObjectId, required: true },
     actorName: { type: String, required: true },
     action: { type: String, required: true }, // e.g. 'employee.update', 'leave.approve'

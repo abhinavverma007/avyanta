@@ -67,4 +67,5 @@ export interface MissingReportEmployee {
   id: string;
   name: string;
   employeeId: string;
+  markedAbsent?: boolean; // for a finished day: the end-of-day check marked them absent
 }

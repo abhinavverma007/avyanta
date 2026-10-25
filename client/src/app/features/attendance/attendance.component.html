@@ -77,6 +77,8 @@
                   <span class="day-icon reg">{{ cell.percent }}%</span>
                 } @else if (cell.overridden) {
                   <span class="day-icon reg" aria-hidden="true">★</span>
+                } @else if (cell.systemAbsent) {
+                  <span class="day-icon sys" aria-hidden="true">!</span>
                 } @else if (cell.regularized) {
                   <span class="day-icon reg" aria-hidden="true">✎</span>
                 }
@@ -94,6 +96,7 @@
           <span class="leg"><span class="ld regularized">✎</span> {{ 'attendance.regularized' | t }}</span>
           <span class="leg"><span class="ld regularized">★</span> {{ 'attendance.overridden' | t }}</span>
           <span class="leg"><span class="ld partial"></span> {{ 'attendance.partial' | t }}</span>
+          <span class="leg"><span class="ld sysabsent">!</span> {{ 'attendance.noReportAbsent' | t }}</span>
         </div>
 
       </div>
@@ -137,6 +140,8 @@
             @if (day.percent) {
               <p class="dd-note">{{ 'attendance.percentNote' | t:{ pct: day.percent } }}</p>
             }
+          } @else if (day.status === 'absent' && day.systemAbsent) {
+            <p class="dd-note">{{ 'attendance.systemAbsentNote' | t }}</p>
           } @else if (day.status === 'absent') {
             <p class="dd-note">{{ 'attendance.noCheckIn' | t }}</p>
 

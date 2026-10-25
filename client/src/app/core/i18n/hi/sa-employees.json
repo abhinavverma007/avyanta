@@ -134,5 +134,8 @@
   "saEmpAtt.switchPh": "दूसरा कर्मचारी चुनें — नाम लिखें",
   "saEmpAtt.switchNone": "कोई कर्मचारी नहीं मिला",
   "saEmpAtt.switchSearching": "खोज रहे हैं…",
-  "saEmpAtt.switchInactive": "निष्क्रिय"
+  "saEmpAtt.switchInactive": "निष्क्रिय",
+  "saEmpAtt.systemAbsentNote": "सिस्टम ने ग़ैरहाज़िर गिना: इन्होंने पंच-इन किया पर दिन खत्म होने से पहले दैनिक काम रिपोर्ट नहीं भरी। गलत हो तो नीचे से बहाल करें।",
+  "saEmpAtt.systemAbsentWas": "पंच-इन {from}, पंच-आउट {to} (रिकॉर्ड में सुरक्षित)।",
+  "saEmpAtt.noReportAbsent": "ग़ैरहाज़िर — रिपोर्ट नहीं भरी"
 }

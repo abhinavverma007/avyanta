@@ -39,8 +39,8 @@
           <div class="log-row">
             <div class="log-main">
               <div class="log-top">
-                <span class="badge" [class]="entry.actorType === 'admin' ? 'badge-info' : 'badge-warning'">
-                  {{ (entry.actorType === 'admin' ? 'saAudit.owner' : 'saAudit.delegated') | t }}
+                <span class="badge" [class]="entry.actorType === 'admin' ? 'badge-info' : entry.actorType === 'system' ? 'badge-success' : 'badge-warning'">
+                  {{ (entry.actorType === 'admin' ? 'saAudit.owner' : entry.actorType === 'system' ? 'saAudit.system' : 'saAudit.delegated') | t }}
                 </span>
                 <span class="log-actor">{{ entry.actorName }}</span>
               </div>

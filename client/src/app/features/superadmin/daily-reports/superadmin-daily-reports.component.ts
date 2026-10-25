@@ -80,6 +80,11 @@ export class SuperadminDailyReportsComponent implements OnInit {
     return this.date() === istDateString();
   }
 
+  // A finished day: anyone still without a report was marked absent by the end-of-day check.
+  isPast(): boolean {
+    return this.date() < istDateString();
+  }
+
   realProblems(r: DailyReport): string[] {
     return r.problems.filter(p => p !== 'none');
   }

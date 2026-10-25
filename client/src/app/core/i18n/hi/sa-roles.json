@@ -53,5 +53,6 @@
   "saAudit.delegated": "सौंपा गया",
   "saAudit.prev": "← पिछला",
   "saAudit.next": "अगला →",
-  "saAudit.pageOf": "पेज {page} / {total}"
+  "saAudit.pageOf": "पेज {page} / {total}",
+  "saAudit.system": "सिस्टम"
 }

@@ -1,7 +1,7 @@
 {
   "dailyReport.title": "आज की काम रिपोर्ट",
   "dailyReport.editTitle": "अपनी काम रिपोर्ट बदलें",
-  "dailyReport.sub": "लगभग एक मिनट लगेगा। बस अपने जवाब चुनें।",
+  "dailyReport.sub": "लगभग एक मिनट लगेगा। बस अपने जवाब चुनें। दिन खत्म होने से पहले भर दें — वरना आज ग़ैरहाज़िर गिना जाएगा।",
   "dailyReport.loading": "लोड हो रहा है…",
   "dailyReport.loadError": "रिपोर्ट खुल नहीं सकी। कृपया दोबारा कोशिश करें।",
   "dailyReport.notPunchedIn": "उस दिन आपने पंच-इन नहीं किया, इसलिए भरने के लिए कोई रिपोर्ट नहीं है।",
@@ -23,7 +23,7 @@
   "dailyReport.errSafety": "कृपया चोट / सुरक्षा वाले सवाल का जवाब दें।",
   "dailyReport.errSafetyNote": "कृपया बताएँ क्या हुआ।",
   "dailyReport.reminderTitle": "आपकी काम रिपोर्ट बाकी है",
-  "dailyReport.reminderSub": "मालिक को बताएँ आपने आज क्या किया।",
+  "dailyReport.reminderSub": "मालिक को बताएँ आपने आज क्या किया। दिन खत्म होने से पहले भर दें — वरना आज ग़ैरहाज़िर गिना जाएगा।",
   "dailyReport.fillNow": "अभी भरें",
   "dailyReport.work.structure": "स्ट्रक्चर / माउंटिंग",
   "dailyReport.work.panel_fitting": "पैनल लगाना",
@@ -67,5 +67,6 @@
   "dailyReport.submittedTitle": "आपकी काम रिपोर्ट जमा हो गई है",
   "dailyReport.submittedSub": "दिन खत्म होने तक आप इसे कभी भी बदल सकते हैं।",
   "dailyReport.lastSaved": "आख़िरी बार {time} पर सहेजी",
-  "dailyReport.editReport": "रिपोर्ट बदलें"
+  "dailyReport.editReport": "रिपोर्ट बदलें",
+  "dailyReport.owner.markedAbsentTitle": "ग़ैरहाज़िर गिने गए — रिपोर्ट नहीं भरी ({n})"
 }

@@ -115,11 +115,19 @@ exports.overrideDay = async (req, res) => {
     AttendanceRegularization.findOne({ employee: employee._id, date }),
   ]);
 
-  const current = attendance ? 'present' : leave?.status === 'approved' ? 'leave' : leave?.status === 'pending' ? 'pending' : 'absent';
-  if (status === 'absent' && current === 'absent') return res.status(409).json({ message: `${date} is already marked absent.` });
+  // A day the end-of-day check voided still has its punch on record, but it counts as absent.
+  const systemAbsent = !!(attendance && attendance.voided && attendance.voided.at);
+  const current = attendance && !systemAbsent ? 'present' : leave?.status === 'approved' ? 'leave' : leave?.status === 'pending' ? 'pending' : 'absent';
+  if (status === 'absent' && current === 'absent') {
+    return res.status(409).json({
+      message: systemAbsent
+        ? `${date} is already marked absent (no daily report). Set it to Present to restore it.`
+        : `${date} is already marked absent.`,
+    });
+  }
   if (status === 'leave' && current === 'leave') return res.status(409).json({ message: `${date} is already marked as leave.` });
   if (
-    status === 'present' && attendance && attendance.sessions.length === 1 &&
+    status === 'present' && attendance && !systemAbsent && attendance.sessions.length === 1 &&
     attendance.sessions[0].checkOut &&
     attendance.sessions[0].checkIn.getTime() === inAt.getTime() &&
     attendance.sessions[0].checkOut.getTime() === outAt.getTime() &&
@@ -152,7 +160,8 @@ exports.overrideDay = async (req, res) => {
             override: { at: now, by: { id: req.admin._id, name: req.admin.name }, previousStatus: current, note },
             ...(percent ? { percent } : {}),
           },
-          ...(percent ? {} : { $unset: { percent: 1 } }),
+          // Setting a day to Present also lifts a "no daily report" absence.
+          $unset: { voided: 1, ...(percent ? {} : { percent: 1 }) },
         },
         { upsert: true },
       );
@@ -220,6 +229,7 @@ exports.overrideDay = async (req, res) => {
       previousSessions: attendanceSnap ? attendanceSnap.sessions : [],
       leaveRejected,
       regularizationClosed,
+      restoredFromNoReportAbsence: systemAbsent,
     },
   });
 

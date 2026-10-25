@@ -71,6 +71,9 @@ exports.create = async (req, res) => {
   }
 
   const existingAttendance = await Attendance.findOne({ employee: req.employee._id, date });
+  if (existingAttendance && existingAttendance.voided && existingAttendance.voided.at) {
+    return res.status(409).json({ message: 'That day was marked absent because the daily work report was not submitted — only the owner can restore it.' });
+  }
   if (existingAttendance?.sessions.some((s) => s.checkOut)) {
     return res.status(409).json({ message: `${date} already has attendance recorded — nothing to regularize.` });
   }

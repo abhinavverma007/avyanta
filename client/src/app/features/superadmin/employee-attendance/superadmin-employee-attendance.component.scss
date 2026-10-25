@@ -435,3 +435,7 @@
 .switch-item:hover { background: var(--surface-raised); }
 .switch-name { font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
 .switch-meta { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+
+/* A day the system marked absent because the daily work report wasn't submitted */
+.day-cell.status-absent .day-icon.sys { color: var(--danger); font-size: 0.625rem; font-weight: 700; }
+.ld.sysabsent { display: inline-flex; align-items: center; justify-content: center; background: var(--danger); color: #fff; font-size: 0.5rem; font-weight: 700; line-height: 1; border-radius: 2px; }
