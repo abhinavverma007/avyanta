@@ -1,5 +1,6 @@
 const Attendance = require('../models/Attendance');
 const DailyReport = require('../models/DailyReport');
+const Leave = require('../models/Leave');
 const Employee = require('../models/Employee');
 const DayClose = require('../models/DayClose');
 const SystemSetting = require('../models/SystemSetting');
@@ -96,7 +97,7 @@ async function voidOne(att, date, now) {
 
 // Processes ONE finished day.
 async function closeDay(date, { now = new Date() } = {}) {
-  const [attendance, reports] = await Promise.all([
+  const [attendance, reports, leaves] = await Promise.all([
     // Real attendance only: not already voided, and not one the owner set by hand (their decision stands).
     Attendance.find({
       date,
@@ -105,12 +106,18 @@ async function closeDay(date, { now = new Date() } = {}) {
       'override.at': { $exists: false },
     }).lean(),
     DailyReport.find({ date }, 'employee').lean(),
+    // Approved leave for that date, whoever set it up (the employee's request, or the owner).
+    Leave.find({ date, status: 'approved' }, 'employee').lean(),
   ]);
   const reported = new Set(reports.map((r) => String(r.employee)));
+  // Someone on approved leave isn't expected to work or report. If they punched in anyway, the
+  // day stays as it was — it must not cost them a paid leave day.
+  const onLeave = new Set(leaves.map((l) => String(l.employee)));
 
   const voidedIds = [];
   for (const att of attendance) {
     if (reported.has(String(att.employee))) continue;
+    if (onLeave.has(String(att.employee))) continue;
     if (await voidOne(att, date, now)) voidedIds.push(att.employee);
   }
 
