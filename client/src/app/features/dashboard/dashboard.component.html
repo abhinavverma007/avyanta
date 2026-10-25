@@ -114,59 +114,7 @@
           </div>
         </div>
       </section>
-
-      <!-- ── Mini attendance calendar ──────────────────────────── -->
-      <section class="section">
-        <div class="section-header">
-          <h2 class="section-title">{{ 'dashboard.attendanceMonth' | t:{ month: getMonthLabel() } }}</h2>
-          <a routerLink="/attendance" class="see-all">{{ 'dashboard.viewAll' | t }}</a>
-        </div>
-        <div class="card card-padded">
-          <div class="mini-cal">
-            <div class="cal-header">
-              @for (d of DAYS_OF_WEEK; track d + $index) {
-                <span class="cal-dow">{{ d | t }}</span>
-              }
-            </div>
-            <div class="cal-grid">
-              @for (cell of getCalendarCells(); track $index) {
-                <div class="cal-cell" [class]="'status-' + cell.status" [class.today]="isToday(cell.day)" [class.partial]="!!cell.percent" [style.background]="dayFill(cell.percent)">
-                  @if (cell.day) {
-                    <span class="cal-day">{{ cell.day }}</span>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-          <!-- Legend -->
-          <div class="cal-legend">
-            <span class="legend-item"><span class="dot present"></span> {{ 'dashboard.present' | t }}</span>
-            <span class="legend-item"><span class="dot absent"></span> {{ 'dashboard.absent' | t }}</span>
-            <span class="legend-item"><span class="dot leave"></span> {{ 'dashboard.leave' | t }}</span>
-          </div>
-        </div>
-      </section>
     }
-
-    <!-- ── Quick links ───────────────────────────────────────────── -->
-    <section class="section">
-      <div class="quick-links">
-        <a routerLink="/requests" class="quick-link-card card card-padded">
-          <span class="ql-icon" style="color: var(--success)">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8C8 10 5.9 16.17 3.82 19.11a1.006 1.006 0 0 0 1.41 1.41C9.54 18.29 15.5 16 21 16a1 1 0 0 0 1-1c0-5-2-9-5-7z"/></svg>
-          </span>
-          <span class="ql-label">{{ 'dashboard.requests' | t }}</span>
-          <svg class="ql-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </a>
-        <a routerLink="/attendance" class="quick-link-card card card-padded">
-          <span class="ql-icon" style="color: var(--accent-2)">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </span>
-          <span class="ql-label">{{ 'dashboard.attendanceHistory' | t }}</span>
-          <svg class="ql-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </a>
-      </div>
-    </section>
 
   </div>
 </div>
